@@ -1,88 +1,81 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Cell : MonoBehaviour
+public abstract class Cell
 {
-    // Start is called before the first frame update
-    void Start() { }
+    virtual protected Color liveColor { get; set; }
+    virtual protected Color deadColor { get; set; }
+    virtual protected Color currentColor { get; set; }
+    protected bool isAlive = false;
 
-    // Update is called once per frame
-    void Update() { }
-
-    private int cellType = 0;
-    private Color color = Color.white;
-
-    public void updateCellType(int cellType)
+    public Cell()
     {
-        this.cellType = cellType;
-        switch (cellType)
+
+    }
+    public Cell(bool isAlive)
+    {
+        this.isAlive = isAlive;
+        liveColor = Color.black;
+        deadColor = Color.white;
+        if (isAlive)
         {
-            case 1:
-                live();
-                break;
-            default:
-                die();
-                break;
+            currentColor = liveColor;
+        }
+        else
+        {
+            currentColor = deadColor;
         }
     }
-
-    public int isAlive()
+    public bool GetIsAlive()
     {
-        return cellType;
+        return isAlive;
     }
 
-    public void live()
+    public Color getCurrentColor()
     {
-        cellType = 1;
-        color = Color.black;
-        GetComponent<Renderer>().material.SetColor("_Color", color);
+        return this.currentColor;
     }
 
-    public void die()
+    public virtual void Live()
     {
-        cellType = 0;
-        color = Color.white;
-        GetComponent<Renderer>().material.SetColor("_Color", Color.white);
+        isAlive = true;
+        currentColor = liveColor;
     }
 
-    public int applyLife(int liveNeighbors)
+    public virtual void Die()
     {
-        int nextVal;
+        isAlive = false;
+        currentColor = deadColor;
+    }
+
+    public virtual bool IsAliveNextGen(int liveNeighbors)
+    {
+        bool isAliveNextGen;
         // Apply the rules of the game.
-        if (cellType == 1 && liveNeighbors < 2)
+        if (isAlive && liveNeighbors < 2)
         {
-            nextVal = 0; // Die due to underpopulation
+            isAliveNextGen = false; // Die due to underpopulation
         }
-        else if (cellType == 1 && (liveNeighbors == 2 || liveNeighbors == 3))
+        else if (isAlive && (liveNeighbors == 2 || liveNeighbors == 3))
         {
-            nextVal = 1; // Live on
+            isAliveNextGen = true; // Live on
         }
-        else if (cellType == 1 && liveNeighbors > 3)
+        else if (isAlive && liveNeighbors > 3)
         {
-            nextVal = 0; // Die due to overpopulation
+            isAliveNextGen = false; // Die due to overpopulation
         }
-        else if (cellType == 0 && liveNeighbors == 3)
+        else if (!isAlive && liveNeighbors == 3)
         {
-            nextVal = 1; // Become alive due to reproduction
+            isAliveNextGen = true; // Become alive due to reproduction
         }
-        else if (cellType == 0 && liveNeighbors != 3)
+        else if (!isAlive && liveNeighbors != 3)
         {
-            nextVal = 0; // Stays dead
+            isAliveNextGen = false; // Stays dead
         }
         else
         {
-            nextVal = cellType; // Stay the same
+            isAliveNextGen = isAlive; // Stay the same
         }
 
-        if (nextVal == 1)
-        {
-            live();
-        }
-        else
-        {
-            die();
-        }
-        return nextVal;
+        return isAliveNextGen;
     }
 }

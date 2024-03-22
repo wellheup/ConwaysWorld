@@ -5,10 +5,14 @@ using UnityEngine;
 
 public class ConwaysWorld : MonoBehaviour
 {
-    public Cell cell_Prefab;
-    private Cell[,] grid;
+
+    private Cell[,] cellGrid;
+    private int[,] currentNeighborsGrid;
+    public GameObject ViewObject_Prefab;
+    private GameObject worldViewObject;
+    private View worldView;
     public bool lifeGoesOn = false;
-    public int spawnRate = 10;
+    public int spawnPercent = 10;
     private int generation = 0,
         attemptsAtLife = 1,
         currentPopulation = 0;
@@ -26,73 +30,63 @@ public class ConwaysWorld : MonoBehaviour
         horizontal = vertical * (Screen.width / Screen.height);
         columns = horizontal * 2f;
         rows = vertical * 2f;
-        grid = populateGrid(columns, rows, spawnRate);
+        PopulateGrid((int)columns, (int)rows, spawnPercent);
+
+        worldViewObject = Instantiate(ViewObject_Prefab, new Vector3(0, 0, 0), Quaternion.identity);
+        worldView = worldViewObject.GetComponent<View>();
+        worldView.InitiateDisplayGrid(cellGrid, vertical, horizontal);
+        worldView.RenderWorldState(cellGrid, attemptsAtLife, generation, currentPopulation);
+
 
         InvokeRepeating("GridUpdate", timeBeforeStart, timeBetweenGenerations);
         lifeGoesOn = true;
     }
 
-    private Cell[,] populateGrid(float columns, float rows, int spawnRate)
+    private Cell SpawnCell(int spawnPercent)
     {
-        Cell[,] newGrid = new Cell[(int)columns, (int)rows];
-        for (int i = 0; i < columns; i++)
+        int cellType = Random.Range(1, 101);
+        Cell cell;
+        if (cellType == 1)
         {
-            for (int j = 0; j < rows; j++)
-            {
-                if (Random.Range(1, 101) < 100 - spawnRate)
-                {
-                    newGrid[i, j] = SpawnCell(0, i, j);
-                }
-                else
-                {
-                    newGrid[i, j] = SpawnCell(1, i, j);
-                }
-            }
+            cell = new Cell_Immortal(true);
         }
-        return newGrid;
-    }
-
-    private void eradicateGrid(Cell[,] grid)
-    {
-        for (int i = 0; i < columns; i++)
+        else if (cellType > 1 && cellType < spawnPercent)
         {
-            for (int j = 0; j < rows; j++)
-            {
-                grid[i, j].die();
-            }
+            cell = new Cell_Basic(true);
         }
-    }
-
-    private void resetGrid(Cell[,] grid, int spawnRate)
-    {
-        for (int i = 0; i < columns; i++)
+        else
         {
-            for (int j = 0; j < rows; j++)
-            {
-                if (Random.Range(1, 101) < 100 - spawnRate)
-                {
-                    grid[i, j].die();
-                }
-                else
-                {
-                    grid[i, j].live();
-                }
-            }
+            cell = new Cell_Basic(false);
         }
-    }
-
-    private Cell SpawnCell(int cellType, int x, int y)
-    {
-        Cell cell = Instantiate(cell_Prefab, new Vector3(x, y, 0), Quaternion.identity); //FIGURE OUT HOW TO USE CONSTRUCTOR METHODS...
-        cell.updateCellType(cellType);
-        cell.name = "x: " + x + " y: " + y;
-        cell.transform.position = new Vector3(x - (horizontal - 0.5f), y - (vertical - 0.5f));
         return cell;
     }
 
-    private static int findNeighbors(Cell[,] grid, int x, int y)
+    private void PopulateGrid(int columns, int rows, int spawnPercent)
     {
-        int liveNeighbors = 0;
+        cellGrid = new Cell[columns, rows];
+        for (int i = 0; i < columns; i++)
+        {
+            for (int j = 0; j < rows; j++)
+            {
+                cellGrid[i, j] = SpawnCell(spawnPercent);
+            }
+        }
+    }
+
+    private void PopulateGrid(Cell[,] cellGrid, int spawnPercent)
+    {
+        for (int i = 0; i < cellGrid.GetLength(0); i++)
+        {
+            for (int j = 0; j < cellGrid.GetLength(1); j++)
+            {
+                cellGrid[i, j] = SpawnCell(spawnPercent);
+            }
+        }
+    }
+
+    private int FindCellNeighbors(Cell[,] grid, int x, int y)
+    {
+        int cellNeighbors = 0;
         for (int xOffset = -1; xOffset <= 1; xOffset++)
         {
             for (int yOffset = -1; yOffset <= 1; yOffset++)
@@ -108,49 +102,65 @@ public class ConwaysWorld : MonoBehaviour
                 int neighborY = (y + yOffset + grid.GetLength(1)) % grid.GetLength(1);
 
                 // Count the live neighbor.
-                if (grid[neighborX, neighborY].isAlive() != 0)
+                if (grid[neighborX, neighborY].GetIsAlive())
                 {
-                    liveNeighbors++;
+                    cellNeighbors++;
                 }
             }
         }
-        return liveNeighbors;
+        return cellNeighbors;
+    }
+
+    private void UpdateCurrentNeighborsGrid()
+    {
+        currentNeighborsGrid = new int[cellGrid.GetLength(0), cellGrid.GetLength(1)];
+        for (int x = 0; x < cellGrid.GetLength(0); x++)
+        {
+            for (int y = 0; y < cellGrid.GetLength(1); y++)
+            {
+                currentNeighborsGrid[x, y] = FindCellNeighbors(cellGrid, x, y);
+            }
+        }
+    }
+
+    private void UpdateCellGridLifeStatuses()
+    {
+        currentPopulation = 0;
+        bool[,] liveNextGen = new bool[cellGrid.GetLength(0), cellGrid.GetLength(1)];
+        for (int x = 0; x < cellGrid.GetLength(0); x++)
+        {
+            for (int y = 0; y < cellGrid.GetLength(1); y++)
+            {
+                liveNextGen[x, y] = cellGrid[x, y].IsAliveNextGen(currentNeighborsGrid[x, y]);
+            }
+        }
+        for (int x = 0; x < cellGrid.GetLength(0); x++)
+        {
+            for (int y = 0; y < cellGrid.GetLength(1); y++)
+            {
+                if (liveNextGen[x, y])
+                {
+                    cellGrid[x, y].Live();
+                    currentPopulation++;
+                }
+                else
+                {
+                    cellGrid[x, y].Die();
+                }
+            }
+        }
     }
 
     private void GridUpdate()
     {
+        print("Grid Updating");
         if (lifeGoesOn)
         {
-            int[,] liveNeighbors = new int[grid.GetLength(0), grid.GetLength(1)];
-            currentPopulation = 0;
-            // Loop through every cell
-            for (int x = 0; x < grid.GetLength(0); x++)
-            {
-                for (int y = 0; y < grid.GetLength(1); y++)
-                {
-                    liveNeighbors[x, y] = findNeighbors(grid, x, y);
-                }
-            }
-            for (int x = 0; x < grid.GetLength(0); x++)
-            {
-                for (int y = 0; y < grid.GetLength(1); y++)
-                {
-                    int isAlive = grid[x, y].applyLife(liveNeighbors[x, y]);
-                    if (isAlive != 0)
-                    {
-                        currentPopulation++;
-                    }
-                }
-            }
+            UpdateCurrentNeighborsGrid();
+            UpdateCellGridLifeStatuses();
             generation++;
-            print(
-                "Attempt at Life: "
-                    + attemptsAtLife
-                    + "    Generation: "
-                    + generation
-                    + "    Current Population: "
-                    + currentPopulation
-            );
+            worldView.RenderWorldState(cellGrid, attemptsAtLife, generation, currentPopulation);
+
             if (currentPopulation == 0)
             {
                 Restart();
@@ -161,11 +171,11 @@ public class ConwaysWorld : MonoBehaviour
     private void Restart()
     {
         lifeGoesOn = false;
-        eradicateGrid(grid);
-        resetGrid(grid, spawnRate);
+        PopulateGrid(cellGrid, spawnPercent);
         generation = 0;
         attemptsAtLife++;
         currentPopulation = 0;
+        worldView.RenderWorldState(cellGrid, attemptsAtLife, generation, currentPopulation);
 
         lifeGoesOn = true;
     }
@@ -181,24 +191,26 @@ public class ConwaysWorld : MonoBehaviour
     }
 }
 /*TO DO
-- create new cell types inheriting from Cell, but overwriting their color
-    - change the live() functions
-- change the applyLife function for different cells
-
+- **** STOP UPDATING THE PREFABS IN VIEW FROM THE CELL OBJECTS, INSTEAD USE A VIEWER THAT INTERPRETS WHAT EACH PREFAB SHOULD LOOK LIKE AND BE UPDATED TO
 - Add different types of specialzed cells inheriting from Cell
-    - disease vector
-    - immune
-    - explorer
-    - invincible
-    - doctor/ vaccine
-    - warrior
-    - breeder
-    - mutant/ mutator
-    - islander
-    - bomber
-    - savior
-    - conqueror
-    - teacher/ elder
+    - Simple
+        - disease vector
+        - immune
+        - invincible
+    - Complex
+        - explorer
+        - doctor/ vaccine
+        - necromancer (revives neighbors the turn after they die)
+        - zombie (die if their necromancer dies, do not die from overpopulation)
+        - warrior
+        - breeder
+        - mutant/ mutator
+        - islander
+        - bomber
+        - savior (cells follow it)
+        - conqueror
+        - teacher/ elder
+        - irradiated (cell cannot live ever again except under certain circumstance)
 - add fields for "nations" to distinguish between different cell groups
 - add getters/setters for fields
 - make some of Cell class private
@@ -207,4 +219,13 @@ public class ConwaysWorld : MonoBehaviour
 - add cloning method to Cell class
 - add circumstances for the live() and die() methods
 - add a way to change the size of the grid
+*/
+
+/*
+- enums instead of ints
+- make cell an abstract class
+    - it MUST implement its own version of differing methods
+- in ConwaysWorld update method, you'll need to tell the number of cells and surrounding info to each cell object in the grid so they can update appropriately
+- move Grid into its own class
+- mvc "model view controller"
 */
