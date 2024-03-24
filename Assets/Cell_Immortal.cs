@@ -23,7 +23,7 @@ public class Cell_Immortal : Cell
         currentColor = liveColor;
     }
 
-    public override bool IsAliveNextGen(int liveNeighbors)
+    public override bool IsAliveNextGen(Neighborhood neighborhood)
     {
         return isAlive;
     }

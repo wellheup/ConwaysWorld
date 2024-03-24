@@ -5,13 +5,14 @@ public abstract class Cell
     virtual protected Color liveColor { get; set; }
     virtual protected Color deadColor { get; set; }
     virtual protected Color currentColor { get; set; }
+    public string[] attributes;
     protected bool isAlive = false;
 
     public Cell()
     {
 
     }
-    public Cell(bool isAlive)
+    public Cell(bool isAlive, int x, int y)
     {
         this.isAlive = isAlive;
         liveColor = Color.black;
@@ -47,27 +48,27 @@ public abstract class Cell
         currentColor = deadColor;
     }
 
-    public virtual bool IsAliveNextGen(int liveNeighbors)
+    public virtual bool IsAliveNextGen(Neighborhood neighborhood)
     {
         bool isAliveNextGen;
         // Apply the rules of the game.
-        if (isAlive && liveNeighbors < 2)
+        if (isAlive && neighborhood.numNeighbors < 2)
         {
             isAliveNextGen = false; // Die due to underpopulation
         }
-        else if (isAlive && (liveNeighbors == 2 || liveNeighbors == 3))
+        else if (isAlive && (neighborhood.numNeighbors == 2 || neighborhood.numNeighbors == 3))
         {
             isAliveNextGen = true; // Live on
         }
-        else if (isAlive && liveNeighbors > 3)
+        else if (isAlive && neighborhood.numNeighbors > 3)
         {
             isAliveNextGen = false; // Die due to overpopulation
         }
-        else if (!isAlive && liveNeighbors == 3)
+        else if (!isAlive && neighborhood.numNeighbors == 3)
         {
             isAliveNextGen = true; // Become alive due to reproduction
         }
-        else if (!isAlive && liveNeighbors != 3)
+        else if (!isAlive && neighborhood.numNeighbors != 3)
         {
             isAliveNextGen = false; // Stays dead
         }

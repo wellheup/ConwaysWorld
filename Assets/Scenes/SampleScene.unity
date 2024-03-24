@@ -338,11 +338,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6096185500fab44fb6ee49789cbf8c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cell_Prefab: {fileID: 3446475972503670655, guid: 164a1c43bee365d4897b9f6d7a8f2d30, type: 3}
+  ViewObject_Prefab: {fileID: 2737391919638232372, guid: 6334204118963b44d98d1bef134328cb, type: 3}
   lifeGoesOn: 0
-  spawnRate: 10
+  spawnPercent: 10
   timeBeforeStart: 1
-  timeBetweenGenerations: 0.25
+  timeBetweenGenerations: 2
 --- !u!4 &1583144137
 Transform:
   m_ObjectHideFlags: 0
