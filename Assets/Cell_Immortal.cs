@@ -2,29 +2,25 @@ using UnityEngine;
 
 public class Cell_Immortal : Cell
 {
-    public Cell_Immortal(bool isAlive)
+    public Cell_Immortal(int column, int row, bool isAlive = true)
     {
-        this.isAlive = isAlive;
-        liveColor = Color.red;
-        deadColor = Color.white;
-        if (isAlive)
-        {
-            currentColor = liveColor;
-        }
-        else
-        {
-            currentColor = deadColor;
-        }
+        this.IsAlive = isAlive;
+        LiveColor = Color.black;
+        DeadColor = Color.white;
+        CurrentColor = isAlive ? LiveColor : DeadColor;
+        IsAliveNextGen = IsAlive;
+        Column = column;
+        Row = row;
     }
 
     public override void Die()
     {
-        isAlive = true;
-        currentColor = liveColor;
+        IsAlive = true;
+        CurrentColor = LiveColor;
     }
 
-    public override bool IsAliveNextGen(Neighborhood neighborhood)
+    public override bool DetermineAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
     {
-        return isAlive;
+        return IsAlive;
     }
 }

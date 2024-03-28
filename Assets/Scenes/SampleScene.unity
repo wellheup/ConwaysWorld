@@ -338,11 +338,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6096185500fab44fb6ee49789cbf8c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ViewObject_Prefab: {fileID: 2737391919638232372, guid: 6334204118963b44d98d1bef134328cb, type: 3}
-  lifeGoesOn: 0
-  spawnPercent: 10
+  viewObject_Prefab: {fileID: 2737391919638232372, guid: 6334204118963b44d98d1bef134328cb, type: 3}
+  LifeGoesOn: 0
+  FToContinue: 0
+  IsRendering: 0
+  SpawnPercent: 10
+  Generation: 0
+  AttemptsAtLife: 1
+  CurrentPopulation: 0
   timeBeforeStart: 1
-  timeBetweenGenerations: 2
+  TimeBetweenGenerations: 0.5
 --- !u!4 &1583144137
 Transform:
   m_ObjectHideFlags: 0

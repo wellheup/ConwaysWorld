@@ -2,81 +2,104 @@ using UnityEngine;
 
 public abstract class Cell
 {
-    virtual protected Color liveColor { get; set; }
-    virtual protected Color deadColor { get; set; }
-    virtual protected Color currentColor { get; set; }
-    public string[] attributes;
-    protected bool isAlive = false;
+    virtual protected Color LiveColor { get; set; }
+    virtual protected Color DeadColor { get; set; }
+    virtual protected Color CurrentColor { get; set; }
+    protected Neighborhood CellNeighborhood;
+    protected bool IsAliveNextGen = false;
+    public string[] Attributes;
+    protected bool IsAlive = false;
+    public int Column = 0, Row = 0;
 
     public Cell()
     {
+        LiveColor = Color.black;
+        DeadColor = Color.white;
+        CurrentColor = IsAlive ? LiveColor : DeadColor;
+        IsAliveNextGen = IsAlive;
+    }
 
-    }
-    public Cell(bool isAlive, int x, int y)
+    public Cell(int column, int row, bool isAlive)
     {
-        this.isAlive = isAlive;
-        liveColor = Color.black;
-        deadColor = Color.white;
-        if (isAlive)
-        {
-            currentColor = liveColor;
-        }
-        else
-        {
-            currentColor = deadColor;
-        }
+        this.IsAlive = isAlive;
+        LiveColor = Color.black;
+        DeadColor = Color.white;
+        CurrentColor = isAlive ? LiveColor : DeadColor;
+        IsAliveNextGen = IsAlive;
+        Column = column;
+        Row = row;
     }
+
+    public void SetAllColors(Color color)
+    {
+        this.LiveColor = color;
+        this.DeadColor = color;
+        this.CurrentColor = color;
+    }
+
     public bool GetIsAlive()
     {
-        return isAlive;
+        return IsAlive;
     }
 
-    public Color getCurrentColor()
+    public bool GetIsAliveNextGen()
     {
-        return this.currentColor;
+        return IsAliveNextGen;
     }
 
-    public virtual void Live()
+    public Color GetCurrentColor()
     {
-        isAlive = true;
-        currentColor = liveColor;
+        return this.CurrentColor;
+    }
+
+    public virtual void Live(Cell[,] cellGrid)
+    {
+        IsAlive = true;
+        CurrentColor = LiveColor;
     }
 
     public virtual void Die()
     {
-        isAlive = false;
-        currentColor = deadColor;
+        IsAlive = false;
+        CurrentColor = DeadColor;
     }
 
-    public virtual bool IsAliveNextGen(Neighborhood neighborhood)
+    public virtual bool DetermineAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
     {
-        bool isAliveNextGen;
+        LiveBasic(neighborhood);
+        CellNeighborhood = neighborhood;
+
+        return IsAliveNextGen;
+    }
+
+    protected virtual bool LiveBasic(Neighborhood neighborhood)
+    {
         // Apply the rules of the game.
-        if (isAlive && neighborhood.numNeighbors < 2)
+        if (IsAlive && neighborhood.NumNeighbors < 2)
         {
-            isAliveNextGen = false; // Die due to underpopulation
+            IsAliveNextGen = false; // Die due to underpopulation
         }
-        else if (isAlive && (neighborhood.numNeighbors == 2 || neighborhood.numNeighbors == 3))
+        else if (IsAlive && (neighborhood.NumNeighbors == 2 || neighborhood.NumNeighbors == 3))
         {
-            isAliveNextGen = true; // Live on
+            IsAliveNextGen = true; // Live on
         }
-        else if (isAlive && neighborhood.numNeighbors > 3)
+        else if (IsAlive && neighborhood.NumNeighbors > 3)
         {
-            isAliveNextGen = false; // Die due to overpopulation
+            IsAliveNextGen = false; // Die due to overpopulation
         }
-        else if (!isAlive && neighborhood.numNeighbors == 3)
+        else if (!IsAlive && neighborhood.NumNeighbors == 3)
         {
-            isAliveNextGen = true; // Become alive due to reproduction
+            IsAliveNextGen = true; // Become alive due to reproduction
         }
-        else if (!isAlive && neighborhood.numNeighbors != 3)
+        else if (!IsAlive && neighborhood.NumNeighbors != 3)
         {
-            isAliveNextGen = false; // Stays dead
+            IsAliveNextGen = false; // Stays dead
         }
         else
         {
-            isAliveNextGen = isAlive; // Stay the same
+            IsAliveNextGen = IsAlive; // Stay the same
         }
 
-        return isAliveNextGen;
+        return IsAliveNextGen;
     }
 }

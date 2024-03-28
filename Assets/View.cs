@@ -6,18 +6,21 @@ using UnityEngine;
 public class View : MonoBehaviour
 {
     public GameObject Cell_Basic_Prefab;
-    private GameObject[,] displayGrid;
+    private GameObject[,] DisplayGrid;
+    public bool IsRendering = false;
+    private int AttemptsAtLife = 0, Generation = 0, CurrentPopulation = 0;
+    private Cell[,] CellGrid;
 
     public void InitiateDisplayGrid(Cell[,] grid, float vertical, float horizontal)
     {
-        displayGrid = new GameObject[grid.GetLength(0), grid.GetLength(1)];
+        DisplayGrid = new GameObject[grid.GetLength(0), grid.GetLength(1)];
         for (int x = 0; x < grid.GetLength(0); x++)
         {
             for (int y = 0; y < grid.GetLength(1); y++)
             {
-                displayGrid[x, y] = Instantiate(Cell_Basic_Prefab, new Vector3(x, y, 0), Quaternion.identity);
-                displayGrid[x, y].transform.position = new Vector3(x - (horizontal - 0.5f), y - (vertical - 0.5f));
-                displayGrid[x, y].name = "x: " + x + " y: " + y + "isAlive: " + grid[x, y].GetIsAlive();
+                DisplayGrid[x, y] = Instantiate(Cell_Basic_Prefab, new Vector3(x, y, 0), Quaternion.identity);
+                DisplayGrid[x, y].transform.position = new Vector3(x - (horizontal - 0.5f), y - (vertical - 0.5f));
+                DisplayGrid[x, y].name = "x: " + x + " y: " + y;
             }
         }
     }
@@ -33,18 +36,37 @@ public class View : MonoBehaviour
                 + currentPopulation
         );
     }
-    public void RenderWorldState(Cell[,] grid, int attemptsAtLife, int generation, int currentPopulation)
+
+    public void RenderWorldState()
     {
-        for (int x = 0; x < grid.GetLength(0); x++)
+        for (int x = 0; x < CellGrid.GetLength(0); x++)
         {
-            for (int y = 0; y < grid.GetLength(1); y++)
+            for (int y = 0; y < CellGrid.GetLength(1); y++)
             {
-                displayGrid[x, y].GetComponent<Renderer>().material.SetColor("_Color", grid[x, y].getCurrentColor());
+                DisplayGrid[x, y].GetComponent<Renderer>().material.SetColor("_Color", CellGrid[x, y].GetCurrentColor());
                 // Color[] randColors = new[] { Color.black, Color.blue, Color.cyan, Color.red, Color.green, Color.yellow, Color.magenta };
                 // displayGrid[x, y].GetComponent<Renderer>().material.SetColor("_Color", randColors[Random.Range(0, randColors.Length)]);
             }
         }
-        PrintWorldStats(attemptsAtLife, generation, currentPopulation);
+        // PrintWorldStats(attemptsAtLife, generation, currentPopulation);
+    }
+
+    public void RenderWorldState(Cell[,] cellGrid, int attemptsAtLife, int generation, int currentPopulation)
+    {
+        this.AttemptsAtLife = attemptsAtLife;
+        this.Generation = generation;
+        this.CurrentPopulation = currentPopulation;
+        this.CellGrid = cellGrid;
+        for (int x = 0; x < cellGrid.GetLength(0); x++)
+        {
+            for (int y = 0; y < cellGrid.GetLength(1); y++)
+            {
+                DisplayGrid[x, y].GetComponent<Renderer>().material.SetColor("_Color", cellGrid[x, y].GetCurrentColor());
+                // Color[] randColors = new[] { Color.black, Color.blue, Color.cyan, Color.red, Color.green, Color.yellow, Color.magenta };
+                // displayGrid[x, y].GetComponent<Renderer>().material.SetColor("_Color", randColors[Random.Range(0, randColors.Length)]);
+            }
+        }
+        // PrintWorldStats(attemptsAtLife, generation, currentPopulation);
     }
 
     // Start is called before the first frame update
@@ -56,6 +78,9 @@ public class View : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (IsRendering)
+        {
+            RenderWorldState();
+        }
     }
 }

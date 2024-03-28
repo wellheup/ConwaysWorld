@@ -3,207 +3,89 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-
-public struct Neighborhood
-{
-    public int numNeighbors { get; }
-    public int centerX { get; }
-    public int centerY { get; }
-    private Dictionary<string, Cell> neighborhoodDict;
-    public string[] neighborHoodKeys;
-    public Neighborhood(Cell[,] cellGrid, int x, int y)
-    {
-        centerX = x;
-        centerY = y;
-        neighborHoodKeys = new string[] { "northWest", "north", "northEast", "west", "center", "east", "southWest", "south", "southEast" };
-        neighborhoodDict = new Dictionary<string, Cell>();
-        int neighborhoodKeyNumber = 0;
-        numNeighbors = 0;
-        for (int xOffset = -1; xOffset <= 1; xOffset++)
-        {
-            for (int yOffset = -1; yOffset <= 1; yOffset++)
-            {
-                // Wrap around the edges of the grid.
-                int neighborX = (x + xOffset + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
-                int neighborY = (y + yOffset + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
-
-                // Count only live neighbors.
-                if (neighborHoodKeys[neighborhoodKeyNumber] != "center" && cellGrid[neighborX, neighborY].GetIsAlive())
-                {
-                    numNeighbors++;
-                }
-
-                // Add the directional name of cell to list
-                neighborhoodDict.Add(neighborHoodKeys[neighborhoodKeyNumber], cellGrid[neighborX, neighborY]);
-                neighborhoodKeyNumber++;
-            }
-        }
-    }
-}
-
 public class ConwaysWorld : MonoBehaviour
 {
-    private Cell[,] cellGrid;
-    private int[,] currentNeighborsGrid;
-    private Neighborhood[,] neighborhoods;
     public GameObject viewObject_Prefab;
-    private GameObject worldViewObject;
-    private View worldView;
-    public bool lifeGoesOn = false;
-    public int spawnPercent = 10;
-    private int generation = 0,
-        attemptsAtLife = 1,
-        currentPopulation = 0;
-    float vertical,
-        horizontal,
-        columns,
-        rows;
+    private GameObject frontEndObject;
+    private View FrontEnd;
+    private Model BackEnd;
+    private Cell[,] CellGrid;
+
+    public bool LifeGoesOn = false;
+    public bool FToContinue = false;
+    public bool IsRendering = false;
+    public int SpawnPercent = 10;
+    public int Generation = 0, //make these private later
+        AttemptsAtLife = 1,
+        CurrentPopulation = 0;
+    float Vertical,
+        Horizontal,
+        Columns,
+        Rows;
     public float timeBeforeStart = 1.0f,
-        timeBetweenGenerations = 0.5f;
+        TimeBetweenGenerations = 0.5f;
 
     // Start is called before the first frame update
     void Start()
     {
         // Get camera info
-        vertical = Camera.main.orthographicSize;
-        horizontal = vertical * (Screen.width / Screen.height);
-        columns = horizontal * 2f;
-        rows = vertical * 2f;
+        Vertical = Camera.main.orthographicSize;
+        Horizontal = Vertical * (Screen.width / Screen.height);
+        // Columns = Horizontal * 2f;
+        // Rows = Vertical * 2f;
+
+        Columns = 5;
+        Rows = 5;
 
         // Populate the grid backend initially
-        PopulateGrid((int)columns, (int)rows, spawnPercent);
+        BackEnd = new Model((int)Columns, (int)Rows, SpawnPercent);
+        CellGrid = BackEnd.CellGrid;
 
         // Prepare the view
-        worldViewObject = Instantiate(viewObject_Prefab, new Vector3(0, 0, 0), Quaternion.identity);
-        worldView = worldViewObject.GetComponent<View>();
-        worldView.InitiateDisplayGrid(cellGrid, vertical, horizontal);
-        worldView.RenderWorldState(cellGrid, attemptsAtLife, generation, currentPopulation);
+        frontEndObject = Instantiate(viewObject_Prefab, new Vector3(0, 0, 0), Quaternion.identity);
+        FrontEnd = frontEndObject.GetComponent<View>();
+        FrontEnd.InitiateDisplayGrid(CellGrid, Vertical, Horizontal);
+        FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
+        FrontEnd.IsRendering = IsRendering;
 
         // Start the game
-        InvokeRepeating("GridUpdate", timeBeforeStart, timeBetweenGenerations);
-        lifeGoesOn = true;
-    }
-
-    private Cell SpawnCell(int spawnPercent)
-    {
-        int cellType = Random.Range(1, 101);
-        Cell cell;
-        /*if (cellType == 1)
-        {
-            cell = new Cell_Immortal(true);
-        }
-        else */
-        if (cellType > 1 && cellType < spawnPercent)
-        {
-            cell = new Cell_Basic(true);
-        }
-        else
-        {
-            cell = new Cell_Basic(false);
-        }
-        return cell;
-    }
-
-    private void PopulateGrid(int columns, int rows, int spawnPercent)
-    {
-        cellGrid = new Cell[columns, rows];
-        for (int i = 0; i < columns; i++)
-        {
-            for (int j = 0; j < rows; j++)
-            {
-                // TEMP CODE
-                if (i == 3 && j > 3 && j < 7)
-                {
-                    cellGrid[i, j] = new Cell_Basic(true);
-                }
-                else
-                {
-                    cellGrid[i, j] = new Cell_Basic(false);
-                }
-                // END TEMP CODE
-                // cellGrid[i, j] = SpawnCell(spawnPercent);
-            }
-        }
-    }
-
-    private void PopulateGrid()
-    {
-        for (int i = 0; i < cellGrid.GetLength(0); i++)
-        {
-            for (int j = 0; j < cellGrid.GetLength(1); j++)
-            {
-                cellGrid[i, j] = SpawnCell(spawnPercent);
-            }
-        }
-    }
-
-    private void UpdateCurrentNeighborhoodsGrid()
-    {
-        neighborhoods = new Neighborhood[cellGrid.GetLength(0), cellGrid.GetLength(1)];
-        for (int x = 0; x < cellGrid.GetLength(0); x++)
-        {
-            for (int y = 0; y < cellGrid.GetLength(1); y++)
-            {
-                neighborhoods[x, y] = new Neighborhood(cellGrid, x, y);
-            }
-        }
-    }
-
-    private void UpdateCellGridLifeStatuses()
-    {
-        currentPopulation = 0;
-        bool[,] liveNextGen = new bool[cellGrid.GetLength(0), cellGrid.GetLength(1)];
-        for (int x = 0; x < cellGrid.GetLength(0); x++)
-        {
-            for (int y = 0; y < cellGrid.GetLength(1); y++)
-            {
-                liveNextGen[x, y] = cellGrid[x, y].IsAliveNextGen(neighborhoods[x, y]);
-            }
-        }
-        for (int x = 0; x < cellGrid.GetLength(0); x++)
-        {
-            for (int y = 0; y < cellGrid.GetLength(1); y++)
-            {
-                if (liveNextGen[x, y])
-                {
-                    cellGrid[x, y].Live();
-                    currentPopulation++;
-                }
-                else
-                {
-                    cellGrid[x, y].Die();
-                }
-            }
-        }
+        InvokeRepeating("GridUpdate", timeBeforeStart, TimeBetweenGenerations);
+        LifeGoesOn = true;
     }
 
     private void GridUpdate()
     {
-        print("Grid Updating");
-        if (lifeGoesOn)
+        if (LifeGoesOn)
         {
-            worldView.RenderWorldState(cellGrid, attemptsAtLife, generation, currentPopulation);
-            UpdateCurrentNeighborhoodsGrid();
-            UpdateCellGridLifeStatuses();
-            generation++;
+            FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
+            BackEnd.UpdateCurrentNeighborhoodsGrid();
+            CurrentPopulation = BackEnd.UpdateCellGridLifeStatuses();
+            Generation++;
 
-            if (currentPopulation == 0)
+            if (CurrentPopulation == 0)
             {
                 Restart();
+            }
+            if (FToContinue)
+            {
+                LifeGoesOn = false;
             }
         }
     }
 
     private void Restart()
     {
-        lifeGoesOn = false;
-        PopulateGrid();
-        generation = 0;
-        attemptsAtLife++;
-        currentPopulation = 0;
-        worldView.RenderWorldState(cellGrid, attemptsAtLife, generation, currentPopulation);
+        LifeGoesOn = false;
+        IsRendering = false;
+        FrontEnd.IsRendering = false;
+        BackEnd.PopulateGrid();
+        Generation = 0;
+        AttemptsAtLife++;
+        FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
 
-        lifeGoesOn = true;
+        LifeGoesOn = true;
+        IsRendering = true;
+        FrontEnd.IsRendering = IsRendering;
     }
 
     // Update is called once per frame
@@ -214,11 +96,24 @@ public class ConwaysWorld : MonoBehaviour
             print("\nRestarting World\n");
             Restart();
         }
+        if (Input.GetKeyDown("f"))
+        {
+            print("\nContinuing Life\n");
+            LifeGoesOn = !LifeGoesOn;
+        }
+        if (Input.GetKeyDown("t"))
+        {
+            print("\nStart/Stop rendering\n");
+            FrontEnd.IsRendering = !FrontEnd.IsRendering;
+        }
     }
 }
 /*TO DO
-- EXTERNALIZE SOME OF THE COMPONENTS OF CONWAYSWORLD TO MODEL CLASS
 - ADD DISEASE VECTOR AND FIGURE OUT HOW ATTRIBUTES WILL WORK 
+    - rework infection entirel. Use an attribute system and handle special updates like that in a 3rd phase of calculation where attributes are applied, then their affects are applied at the beginning or end of the update
+- add a struct in Model that contains booleans for all types of cells so you can exclude/include when creating a new world and edit in inspector
+- make view update on update instead
+- use rows and columns instead of x, y for everything. It's much less confusing in the long run
 - Add different types of specialzed cells inheriting from Cell
     - Simple
         - disease vector
@@ -239,10 +134,12 @@ public class ConwaysWorld : MonoBehaviour
         - teacher/ elder (random chance to promote adjacent basic_cells to a new type)
         - irradiated (cell cannot live ever again except under certain circumstance)
         - diplomat (explorer but does not expand world, small chance to add new nation to its own, reverts to basic cell when done)
+        - hunter (picks a random live cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
 - add fields for "nations" to distinguish between different cell groups
     - if, at spawn, a grup is an island, then they form a nation (random string)
         -spawns a diplomat if island is larger than x number of cells
 - add a way to change the size of the grid
+- utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
 - enums instead of ints?
 - move Grid into its own class
 - consider moving IsAliveNextGen into a CellLifeCycle method/object that manages all life functions
