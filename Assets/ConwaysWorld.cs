@@ -31,11 +31,11 @@ public class ConwaysWorld : MonoBehaviour
         // Get camera info
         Vertical = Camera.main.orthographicSize;
         Horizontal = Vertical * (Screen.width / Screen.height);
-        // Columns = Horizontal * 2f;
-        // Rows = Vertical * 2f;
+        Columns = Horizontal * 2f;
+        Rows = Vertical * 2f;
 
-        Columns = 5;
-        Rows = 5;
+        // Columns = 5; //TEMP FOR 5 x 5 GRID
+        // Rows = 5; //TEMP FOR 5 x 5 GRID
 
         // Populate the grid backend initially
         BackEnd = new Model((int)Columns, (int)Rows, SpawnPercent);
@@ -57,15 +57,16 @@ public class ConwaysWorld : MonoBehaviour
     {
         if (LifeGoesOn)
         {
-            FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
+            // FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
             BackEnd.UpdateCurrentNeighborhoodsGrid();
-            CurrentPopulation = BackEnd.UpdateCellGridLifeStatuses();
+            CurrentPopulation = BackEnd.UpdateLifeStates();
+            FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
             Generation++;
 
-            if (CurrentPopulation == 0)
-            {
-                Restart();
-            }
+            // if (CurrentPopulation == 0)
+            // {
+            //     Restart();
+            // }
             if (FToContinue)
             {
                 LifeGoesOn = false;
@@ -109,11 +110,9 @@ public class ConwaysWorld : MonoBehaviour
     }
 }
 /*TO DO
-- ADD DISEASE VECTOR AND FIGURE OUT HOW ATTRIBUTES WILL WORK 
-    - rework infection entirel. Use an attribute system and handle special updates like that in a 3rd phase of calculation where attributes are applied, then their affects are applied at the beginning or end of the update
 - add a struct in Model that contains booleans for all types of cells so you can exclude/include when creating a new world and edit in inspector
-- make view update on update instead
-- use rows and columns instead of x, y for everything. It's much less confusing in the long run
+- figure out how to make new celltypes spawn during play and not just at the start
+- consider moving IsAliveNextGen into a CellLifeCycle method/object that manages all life functions
 - Add different types of specialzed cells inheriting from Cell
     - Simple
         - disease vector
@@ -142,5 +141,4 @@ public class ConwaysWorld : MonoBehaviour
 - utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
 - enums instead of ints?
 - move Grid into its own class
-- consider moving IsAliveNextGen into a CellLifeCycle method/object that manages all life functions
 */

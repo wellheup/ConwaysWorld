@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Cell_Diseased : Cell
 {
-    private int countDown = 6;
+    private int countDown = 3;
     public Cell_Diseased(int column, int row, bool isAlive = true)
     {
         this.IsAlive = isAlive;
@@ -12,29 +12,17 @@ public class Cell_Diseased : Cell
         CurrentColor = isAlive ? LiveColor : DeadColor;
         Column = column;
         Row = row;
-    }
-
-    public Cell_Diseased(int column, int row, int countDown, Cell[,] cellGrid, bool isAlive = true, bool isAliveNextGen = true)
-    {
-        this.IsAlive = isAlive;
-        this.IsAliveNextGen = true;
-        LiveColor = Color.green;
-        DeadColor = Color.blue;
-        CurrentColor = isAlive ? LiveColor : DeadColor;
-        Column = column;
-        Row = row;
-        this.countDown = countDown;
-        this.CellNeighborhood = new Neighborhood(cellGrid, column, row);
+        Conditions = new List<string>();
     }
 
     public override void Live(Cell[,] cellGrid)
     {
         IsAlive = true;
         CurrentColor = LiveColor;
-        InfectNeighbors(cellGrid, CellNeighborhood);
+        InfectNeighbors(cellGrid, CellNeighborhood); //ToDo: SEE IF I CAN DO THIS WITHOUT PASSING CELLGRID
     }
 
-    public override bool DetermineAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
+    public override bool SetAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
     {
         countDown--;
         if (countDown > 0)
@@ -45,6 +33,10 @@ public class Cell_Diseased : Cell
             }
             IsAliveNextGen = LiveBasic(neighborhood);
         }
+        else
+        {
+            IsAliveNextGen = false;
+        }
         CellNeighborhood = neighborhood;
 
         return IsAliveNextGen;
@@ -52,23 +44,16 @@ public class Cell_Diseased : Cell
 
     private void InfectNeighbors(Cell[,] cellGrid, Neighborhood neighborhood)
     {
-        // this is getting called, but I can't see any updates happening, it doesn't seem like the new cells are being added to the main grid, else I think they should actually live forever...
+        // mark neighbors as infected
         for (int i = 0; i < neighborhood.NeighborHoodKeys.Length; i++)
         {
-            // if (Random.Range(1, 101) < 15)
-            if (true)
+            if (Random.Range(1, 101) < 15 && neighborhood.NeighborHoodKeys[i] != "center")
             {
-                Cell current = neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]];
-                current.SetAllColors(Color.magenta);
-                // Debug.Break();
+                int nCellCol = neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Column;
+                int nCellRow = neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Row;
+                cellGrid[nCellCol, nCellRow].Conditions.Add("infected");
 
-                if (current.GetIsAlive() && current.GetType() != typeof(Cell_Diseased) && neighborhood.NeighborHoodKeys[i] != "center")
-                {
-                    Debug.Log("infect neighbor " + neighborhood.NeighborHoodKeys[i] + " of " + Column + ", " + Row + " it is " + current.Column + ", " + current.Row + ", " + current.GetType() + " and, IsAlive = " + current.GetIsAlive());
-
-                    // current = new Cell_Diseased(current.Column, current.Row, countDown - 1, true);
-                    cellGrid[current.Column, current.Row] = new Cell_Diseased(current.Column, current.Row, countDown - 1, cellGrid, true, true);
-                }
+                Debug.Log("infect neighbor " + neighborhood.NeighborHoodKeys[i] + " of " + Column + ", " + Row + " it is " + neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Column + ", " + neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Row + ", " + neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].GetType() + " and, IsAlive = " + neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].GetIsAlive());
             }
         }
     }

@@ -46,7 +46,7 @@ public class Model
     public Cell[,] CellGrid;
     private int SpawnPercent = 10;
     private Neighborhood[,] Neighborhoods;
-    public bool UseThreeGroup = true;
+    public bool UseThreeGroup = false;
 
     public Model(int columns, int rows, int spawnPercent)
     {
@@ -55,7 +55,7 @@ public class Model
 
     }
 
-    private Cell SpawnCell(int column, int row, int spawnPercent)
+    private Cell InitializeCell(int column, int row, int spawnPercent)
     {
         if (UseThreeGroup)
         {
@@ -85,6 +85,40 @@ public class Model
         }
     }
 
+    private Cell ReplaceCell(Cell oldCell, int cellType, bool isAlive)
+    {
+        int column = oldCell.Column;
+        int row = oldCell.Row;
+        Cell cell;
+        if (cellType == 1)
+        {
+            cell = new Cell_Immortal(column, row, isAlive);
+        }
+        else if (cellType == 2)
+        {
+            cell = new Cell_Diseased(column, row, isAlive);
+        }
+        else if (cellType == 3)
+        {
+            cell = new Cell_Basic(column, row, isAlive);
+        }
+        else
+        {
+            cell = new Cell_Basic(column, row, isAlive);
+        }
+        CloneCellData(oldCell, cell);
+
+        return cell;
+    }
+
+    // copy any bits of data that need copying but are not initialized 
+    private void CloneCellData(Cell oldCell, Cell newCell)
+    {
+        newCell.Conditions = oldCell.Conditions;
+        newCell.IsAliveNextGen = oldCell.IsAliveNextGen;
+
+    }
+
     public Cell ThreeGroup(int column, int row)
     {
         // TEMP CODE FOR 3 UNIT GROUP
@@ -92,6 +126,7 @@ public class Model
         {
             if (row == 2)
             {
+                // return new Cell_Diseased(column, row, true);
                 return new Cell_Diseased(column, row, true);
             }
             return new Cell_Basic(column, row, true);
@@ -110,7 +145,7 @@ public class Model
         {
             for (int row = 0; row < rows; row++)
             {
-                CellGrid[column, row] = SpawnCell(column, row, spawnPercent);
+                CellGrid[column, row] = InitializeCell(column, row, spawnPercent);
             }
         }
     }
@@ -121,7 +156,7 @@ public class Model
         {
             for (int row = 0; row < CellGrid.GetLength(1); row++)
             {
-                CellGrid[column, row] = SpawnCell(column, row, SpawnPercent);
+                CellGrid[column, row] = InitializeCell(column, row, SpawnPercent);
             }
         }
     }
@@ -138,42 +173,90 @@ public class Model
         }
     }
 
-    public int UpdateCellGridLifeStatuses()
+    public void AssessBreeding()
     {
-        int currentPopulation = 0;
+        // Assess population 
         for (int column = 0; column < CellGrid.GetLength(0); column++)
         {
             for (int row = 0; row < CellGrid.GetLength(1); row++)
             {
-                CellGrid[column, row].DetermineAliveNextGen(CellGrid, Neighborhoods[column, row]);
+                CellGrid[column, row].SetAliveNextGen(CellGrid, Neighborhoods[column, row]);
             }
         }
+    }
+
+    public int UpdatePopulationState()
+    {
+        int currentPopulation = 0;
+        // Update population state
         for (int column = 0; column < CellGrid.GetLength(0); column++)
         {
             for (int row = 0; row < CellGrid.GetLength(1); row++)
             {
-                //if cell is scheduled to be alive next gen and is not alive already
                 if (CellGrid[column, row].GetIsAliveNextGen() && !CellGrid[column, row].GetIsAlive())
                 {
                     //replace the cell with a fresh one, rather than leaving an opening for data to leak into a new cell from previous life (MAY WANT TO KEEP PREV-LIFE DATA LATER)
-                    CellGrid[column, row] = SpawnCell(column, row, SpawnPercent);
+                    // Debug.Log("Cell " + column + ", " + row + " spawn ");
+                    CellGrid[column, row] = ReplaceCell(CellGrid[column, row], 3, true);
                     currentPopulation++;
                 }
-                else if (CellGrid[column, row].GetIsAliveNextGen()) // if cell is already alive, just let it do it's thing
+                else if (CellGrid[column, row].GetIsAliveNextGen())
                 {
+                    // is alive and stays alive
+                    // Debug.Log("Cell " + column + ", " + row + " stay alive ");
                     CellGrid[column, row].Live(CellGrid);
                     currentPopulation++;
                 }
+                else if (!CellGrid[column, row].GetIsAliveNextGen() && CellGrid[column, row].GetIsAlive())
+                {
+                    // Debug.Log("Cell " + column + ", " + row + " die ");
+                    CellGrid[column, row].Die();
+                    // if (CellGrid[column, row].GetType() == typeof(Cell_Immortal))
+                    // {
+                    //     CellGrid[column, row] = new Cell_Basic(column, row, false);
+                    // }
+                }
+                else if (!CellGrid[column, row].GetIsAliveNextGen() && !CellGrid[column, row].GetIsAlive())
+                {
+                    // Debug.Log("Cell " + column + ", " + row + " stay dead ");
+                    // is dead and stays dead
+                }
                 else
                 {
-                    CellGrid[column, row].Die();
-                    if (CellGrid[column, row].GetType() == typeof(Cell_Immortal))
+                    Debug.Log("UpdatePopulationState(), unaccounted logic");
+                }
+            }
+        }
+        return currentPopulation;
+    }
+
+    public void UpdateCellConditions()
+    {
+        for (int column = 0; column < CellGrid.GetLength(0); column++)
+        {
+            for (int row = 0; row < CellGrid.GetLength(1); row++)
+            {
+                // Chain of ifs for different conditions
+                if (CellGrid[column, row].Conditions.Contains("infected"))
+                {
+                    if (CellGrid[column, row].GetIsAlive() && CellGrid[column, row].GetIsAliveNextGen())
                     {
-                        CellGrid[column, row] = new Cell_Basic(column, row, false);
+                        if (CellGrid[column, row].GetType() != typeof(Cell_Diseased))
+                        {
+                            CellGrid[column, row] = ReplaceCell(CellGrid[column, row], 2, true);
+                        }
                     }
                 }
             }
         }
+    }
+
+    public int UpdateLifeStates()
+    {
+        AssessBreeding();
+        int currentPopulation = UpdatePopulationState();
+        UpdateCellConditions();
+
         return currentPopulation;
     }
 
