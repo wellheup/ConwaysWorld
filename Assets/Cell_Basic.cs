@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Cell_Basic : Cell
 {
@@ -11,5 +12,6 @@ public class Cell_Basic : Cell
         IsAliveNextGen = IsAlive;
         Column = column;
         Row = row;
+        Conditions = new List<string>();
     }
 }

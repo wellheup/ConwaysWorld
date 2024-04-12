@@ -61,12 +61,12 @@ public class View : MonoBehaviour
         {
             for (int y = 0; y < cellGrid.GetLength(1); y++)
             {
-                DisplayGrid[x, y].GetComponent<Renderer>().material.SetColor("_Color", cellGrid[x, y].GetCurrentColor());
+                DisplayGrid[x, y].GetComponent<Renderer>().material.SetColor("_Color", CellGrid[x, y].GetCurrentColor());
                 // Color[] randColors = new[] { Color.black, Color.blue, Color.cyan, Color.red, Color.green, Color.yellow, Color.magenta };
                 // displayGrid[x, y].GetComponent<Renderer>().material.SetColor("_Color", randColors[Random.Range(0, randColors.Length)]);
             }
         }
-        // PrintWorldStats(attemptsAtLife, generation, currentPopulation);
+        PrintWorldStats(AttemptsAtLife, Generation, CurrentPopulation);
     }
 
     // Start is called before the first frame update

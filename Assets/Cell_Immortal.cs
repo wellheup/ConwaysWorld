@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Cell_Immortal : Cell
 {
@@ -11,6 +12,7 @@ public class Cell_Immortal : Cell
         IsAliveNextGen = IsAlive;
         Column = column;
         Row = row;
+        Conditions = new List<string>();
     }
 
     public override void Die()
@@ -19,8 +21,9 @@ public class Cell_Immortal : Cell
         CurrentColor = LiveColor;
     }
 
-    public override bool DetermineAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
+    public override bool SetAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
     {
+        CellNeighborhood = neighborhood;
         return IsAlive;
     }
 }

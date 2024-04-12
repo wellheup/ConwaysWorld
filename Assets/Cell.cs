@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Cell
@@ -6,8 +7,8 @@ public abstract class Cell
     virtual protected Color DeadColor { get; set; }
     virtual protected Color CurrentColor { get; set; }
     protected Neighborhood CellNeighborhood;
-    protected bool IsAliveNextGen = false;
-    public string[] Attributes;
+    public bool IsAliveNextGen = false;
+    public List<string> Conditions;
     protected bool IsAlive = false;
     public int Column = 0, Row = 0;
 
@@ -17,6 +18,7 @@ public abstract class Cell
         DeadColor = Color.white;
         CurrentColor = IsAlive ? LiveColor : DeadColor;
         IsAliveNextGen = IsAlive;
+        Conditions = new List<string>();
     }
 
     public Cell(int column, int row, bool isAlive)
@@ -28,8 +30,10 @@ public abstract class Cell
         IsAliveNextGen = IsAlive;
         Column = column;
         Row = row;
+        Conditions = new List<string>();
     }
 
+    // Should only be used for debugging
     public void SetAllColors(Color color)
     {
         this.LiveColor = color;
@@ -64,9 +68,9 @@ public abstract class Cell
         CurrentColor = DeadColor;
     }
 
-    public virtual bool DetermineAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
+    public virtual bool SetAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
     {
-        LiveBasic(neighborhood);
+        IsAliveNextGen = LiveBasic(neighborhood);
         CellNeighborhood = neighborhood;
 
         return IsAliveNextGen;
@@ -90,6 +94,8 @@ public abstract class Cell
         else if (!IsAlive && neighborhood.NumNeighbors == 3)
         {
             IsAliveNextGen = true; // Become alive due to reproduction
+            Debug.Log("Cell " + Column + ", " + Row + " it is " + (IsAlive ? "alive " : "dead ") + "and " + (IsAliveNextGen ? "will " : "will not ") + "live next gen. It has " + neighborhood.NumNeighbors + " neighbors.");
+
         }
         else if (!IsAlive && neighborhood.NumNeighbors != 3)
         {
@@ -99,6 +105,7 @@ public abstract class Cell
         {
             IsAliveNextGen = IsAlive; // Stay the same
         }
+
 
         return IsAliveNextGen;
     }
