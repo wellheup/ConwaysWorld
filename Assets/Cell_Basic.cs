@@ -13,5 +13,7 @@ public class Cell_Basic : Cell
         Column = column;
         Row = row;
         Conditions = new List<string>();
+        // CellType = e_CellType.Cell_Basic;
+        CellType = 1;
     }
 }

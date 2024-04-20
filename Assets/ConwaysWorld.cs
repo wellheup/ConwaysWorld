@@ -63,10 +63,10 @@ public class ConwaysWorld : MonoBehaviour
             FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
             Generation++;
 
-            // if (CurrentPopulation == 0)
-            // {
-            //     Restart();
-            // }
+            if (CurrentPopulation == 0)
+            {
+                Restart();
+            }
             if (FToContinue)
             {
                 LifeGoesOn = false;
@@ -113,13 +113,16 @@ public class ConwaysWorld : MonoBehaviour
 - add a struct in Model that contains booleans for all types of cells so you can exclude/include when creating a new world and edit in inspector
 - figure out how to make new celltypes spawn during play and not just at the start
 - consider moving IsAliveNextGen into a CellLifeCycle method/object that manages all life functions
+- make cells that have been alive for 10+ years have a chance to breed each turn
+    - test if the Breed function is working...
+- add a behavior that causes spontaneous life explosions if there are only immortals left?
+- add namespace?
 - Add different types of specialzed cells inheriting from Cell
     - Simple
-        - disease vector
         - immune
-        - triple spawn (3 in a row, so if they're alone they'll just survive continuously)
+        - triple spawn immaculate birth (3 in a row, so if they're alone they'll just survive continuously)
     - Complex
-        - explorer (picks a random direction to move each turn, expands grid when going over edges)
+        - explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
         - doctor/ vaccine
         - necromancer (revives neighbors the turn after they die)
         - zombie (die if their necromancer dies, do not die from overpopulation)
@@ -134,6 +137,7 @@ public class ConwaysWorld : MonoBehaviour
         - irradiated (cell cannot live ever again except under certain circumstance)
         - diplomat (explorer but does not expand world, small chance to add new nation to its own, reverts to basic cell when done)
         - hunter (picks a random live cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
+        - god? (effects every living cell on the board in some way)
 - add fields for "nations" to distinguish between different cell groups
     - if, at spawn, a grup is an island, then they form a nation (random string)
         -spawns a diplomat if island is larger than x number of cells
