@@ -111,10 +111,7 @@ public class ConwaysWorld : MonoBehaviour
 }
 /*TO DO
 - add a struct in Model that contains booleans for all types of cells so you can exclude/include when creating a new world and edit in inspector
-- figure out how to make new celltypes spawn during play and not just at the start
 - consider moving IsAliveNextGen into a CellLifeCycle method/object that manages all life functions
-- make cells that have been alive for 10+ years have a chance to breed each turn
-    - test if the Breed function is working...
 - add a behavior that causes spontaneous life explosions if there are only immortals left?
 - add namespace?
 - Add different types of specialzed cells inheriting from Cell
