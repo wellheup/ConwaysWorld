@@ -16,25 +16,17 @@ public class Cell_Immortal : Cell
         CellType = 2;
     }
 
-    public override void Die()
-    {
-        if (Age > 15 && CellNeighborhood.NumNeighbors <= 1)
-        {
-            IsAlive = false;
-            CurrentColor = DeadColor;
-            Age = 0;
-        }
-        else
-        {
-            IsAlive = true;
-            CurrentColor = LiveColor;
-        }
-    }
-
     public override bool SetAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
     {
         CellNeighborhood = neighborhood;
 
-        return true;
+        if (Age > 15 && CellNeighborhood.NumNeighbors == 0)
+        {
+            IsAliveNextGen = false;
+            return IsAliveNextGen;
+        }
+        IsAliveNextGen = true;
+
+        return IsAlive;
     }
 }

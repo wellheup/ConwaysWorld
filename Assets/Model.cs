@@ -67,8 +67,7 @@ public class Model
             Cell cell;
             if (cellType == 1)
             {
-                // cell = new Cell_Immortal(column, row, true); TEMPORARY REMOVAL OF IMMORTALS
-                cell = new Cell_Basic(column, row, true);
+                cell = new Cell_Immortal(column, row, true);
             }
             else if (cellType > 1 && cellType <= 2)
             {
