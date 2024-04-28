@@ -112,6 +112,7 @@ public class ConwaysWorld : MonoBehaviour
     - immaculate cells seem to be getting marked as isAliveNextGen, but are not getting brought to life at all... still..
 - remove NeighborHoodsGrid becaus there is no sense keeping track of neighborhoods twice...
 - add a struct in Model that contains booleans for all types of cells so you can exclude/include when creating a new world and edit in inspector
+- CellGrid usage should be removed from Cell type because it should only need access to NeighborHoods i think
 - consider removing the column and row from Cell types
 - add a behavior that causes spontaneous life explosions if there are only immortals left?
 - add namespace?

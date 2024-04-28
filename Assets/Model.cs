@@ -67,38 +67,29 @@ public class Model
         }
         else
         {
-            // int cellType = Random.Range(1, 101); Debug.Log(cellType);
-            // int cellType = Random.Range(1, 10);
+            int cellType = Random.Range(1, 101);
             Cell cell;
             /*if (cellType == 1)
             {
                 cell = new Cell_Immortal(column, row, true);
             }
-            else if (cellType > 1 && cellType <= 2)
+            else */
+            if (cellType == 2)
             {
                 cell = new Cell_Diseased(column, row, true);
             }
-            else 
-                // if (cellType == 1)
-                // {
-                //     cell = new Cell_Basic(column, row, true);
-                // }
-            else */
-            // if (cellType == 2) //immaculate triplets
-            int[] temp = { 1, 7 };
-            if (temp.Contains(column) && temp.Contains(row))
+            else if (cellType > 3 && cellType < spawnPercent)
             {
                 cell = new Cell_Basic(column, row, true);
-                cell.Conditions.Add("immaculate");
+                if (Random.Range(1, 5) == 1)// 1/4 chance disease immunity
+                {
+                    cell.Conditions.Add("immune");
+                }
+                if (Random.Range(1, 101) == 1)
+                {
+                    cell.Conditions.Add("immaculate");
+                }
             }
-            // else if (cellType > 4 && cellType < spawnPercent)
-            // {
-            //     cell = new Cell_Basic(column, row, true);
-            //     if (Random.Range(1, 5) == 0)// 1/4 chance disease immunity
-            //     {
-            //         cell.Conditions.Add("immune");
-            //     }
-            // }
             else
             {
                 cell = new Cell_Basic(column, row, false);

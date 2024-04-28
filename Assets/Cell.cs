@@ -142,14 +142,31 @@ public abstract class Cell
         cells[randNeighbor] = ReplaceCell(cells[randNeighbor], CellType, true);
     }
 
+    private void LiveNoNeighbors(Cell[,] CellGrid, Cell cell)
+    {
+        if (cell.CellNeighborhood.NumNeighbors == 0)
+        {
+            cell.Live(CellGrid);
+        }
+    }
+
     public virtual void Immaculate(Cell[,] CellGrid)
     {
         Conditions.RemoveAll(item => item == "immaculate");
-        this.Live(CellGrid);
-        if (CellNeighborhood.NumNeighbors == 0)
+        LiveNoNeighbors(CellGrid, this);
+        if (IsAlive)
         {
-            CellNeighborhood.NeighborhoodDict["north"].Live(CellGrid);
-            CellNeighborhood.NeighborhoodDict["south"].Live(CellGrid);
+            if (Random.Range(1, 3) == 1)
+            {
+                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["north"]);
+                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["south"]);
+            }
+            else
+            {
+                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["west"]);
+                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["east"]);
+            }
+
         }
 
     }

@@ -59,13 +59,11 @@ public class Cell_Diseased : Cell
         // mark neighbors as infected
         for (int i = 0; i < neighborhood.NeighborHoodKeys.Length; i++)
         {
-            if (Random.Range(1, 101) < 15 && neighborhood.NeighborHoodKeys[i] != "center")
+            if (Random.Range(1, 101) < 50 && neighborhood.NeighborHoodKeys[i] != "center")
             {
                 int nCellCol = neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Column;
                 int nCellRow = neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Row;
                 cellGrid[nCellCol, nCellRow].Conditions.Add("infected");
-
-                // Debug.Log("infect neighbor " + neighborhood.NeighborHoodKeys[i] + " of " + Column + ", " + Row + " it is " + neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Column + ", " + neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Row + ", " + neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].GetType() + " and, IsAlive = " + neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].GetIsAlive());
             }
         }
     }
