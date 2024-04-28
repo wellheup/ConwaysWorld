@@ -9,7 +9,6 @@ public class Cell_Basic : Cell
         LiveColor = Color.black;
         DeadColor = Color.white;
         CurrentColor = isAlive ? LiveColor : DeadColor;
-        IsAliveNextGen = IsAlive;
         Column = column;
         Row = row;
         Conditions = new List<string>();

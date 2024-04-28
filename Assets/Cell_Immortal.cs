@@ -9,24 +9,18 @@ public class Cell_Immortal : Cell
         LiveColor = Color.red;
         DeadColor = Color.white;
         CurrentColor = isAlive ? LiveColor : DeadColor;
-        IsAliveNextGen = IsAlive;
         Column = column;
         Row = row;
         Conditions = new List<string>();
         CellType = 2;
     }
 
-    public override bool SetAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
+    public override bool CalcCellAliveNextGen()
     {
-        CellNeighborhood = neighborhood;
-
         if (Age > 15 && CellNeighborhood.NumNeighbors == 0)
         {
-            IsAliveNextGen = false;
-            return IsAliveNextGen;
+            return false;
         }
-        IsAliveNextGen = true;
-
         return IsAlive;
     }
 }

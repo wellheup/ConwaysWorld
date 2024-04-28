@@ -35,25 +35,19 @@ public class Cell_Diseased : Cell
         Conditions.Remove("infected");
     }
 
-    public override bool SetAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
+    public override bool CalcCellAliveNextGen()
     {
         countDown--;
-        if (countDown > 0)
+        if (countDown <= 0)
         {
-            IsAliveNextGen = LiveBasic(neighborhood);
+            return false;
         }
-        else
-        {
-            IsAliveNextGen = false;
-        }
-        CellNeighborhood = neighborhood;
-
-        return IsAliveNextGen;
+        return LiveBasic();
     }
 
     public static Cell Infect(Cell cell)
     {
-        if (cell.GetIsAlive() && cell.GetIsAliveNextGen() && cell.GetType() != typeof(Cell_Diseased))
+        if (cell.GetIsAlive() && cell.GetType() != typeof(Cell_Diseased))
         {
             return ReplaceCell(cell, 2, true);
         }
