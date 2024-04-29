@@ -3,30 +3,44 @@ using System.Collections.Generic;
 
 public class Cell_Immortal : Cell
 {
+    private int DeathCount = 0;
     public Cell_Immortal(int column, int row, bool isAlive = true)
     {
         this.IsAlive = isAlive;
         LiveColor = Color.red;
         DeadColor = Color.white;
         CurrentColor = isAlive ? LiveColor : DeadColor;
-        IsAliveNextGen = IsAlive;
         Column = column;
         Row = row;
         Conditions = new List<string>();
         CellType = 2;
     }
 
-    public override bool SetAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
+    public override void Live(Cell[,] cellGrid)
     {
-        CellNeighborhood = neighborhood;
-
-        if (Age > 15 && CellNeighborhood.NumNeighbors == 0)
+        IsAlive = true;
+        CurrentColor = LiveColor;
+        Age++;
+        if (Age > MatureAge && !Conditions.Contains("mature"))
         {
-            IsAliveNextGen = false;
-            return IsAliveNextGen;
+            Conditions.Add("mature");
         }
-        IsAliveNextGen = true;
+        if (CellNeighborhood.NumNeighbors == 0)
+        {
+            DeathCount++;
+        }
+        else
+        {
+            DeathCount = 0;
+        }
+    }
 
+    public override bool CalcCellAliveNextGen()
+    {
+        if (DeathCount > 10 && CellNeighborhood.NumNeighbors == 0)
+        {
+            return false;
+        }
         return IsAlive;
     }
 }

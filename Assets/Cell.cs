@@ -3,14 +3,13 @@ using UnityEngine;
 
 public abstract class Cell
 {
-    virtual protected Color LiveColor { get; set; }
-    virtual protected Color DeadColor { get; set; }
-    virtual protected Color CurrentColor { get; set; }
-    protected Neighborhood CellNeighborhood;
-    public bool IsAliveNextGen = false;
+    public Color LiveColor;
+    public Color DeadColor;
+    public Color CurrentColor;
+    public Neighborhood CellNeighborhood;
     public List<string> Conditions;
     protected bool IsAlive = false;
-    public int Column = 0, Row = 0, Age = 0, CellType = 0;
+    public int Column = 0, Row = 0, Age = 0, CellType = 0, MatureAge = 10;
     // public e_CellType CellType = e_CellType.Cell;
 
     public Cell()
@@ -18,7 +17,6 @@ public abstract class Cell
         LiveColor = Color.black;
         DeadColor = Color.white;
         CurrentColor = IsAlive ? LiveColor : DeadColor;
-        IsAliveNextGen = IsAlive;
         Conditions = new List<string>();
     }
 
@@ -28,11 +26,9 @@ public abstract class Cell
         LiveColor = Color.black;
         DeadColor = Color.white;
         CurrentColor = isAlive ? LiveColor : DeadColor;
-        IsAliveNextGen = IsAlive;
         Column = column;
         Row = row;
         Conditions = new List<string>();
-
     }
 
     // Should only be used for debugging
@@ -48,11 +44,6 @@ public abstract class Cell
         return IsAlive;
     }
 
-    public bool GetIsAliveNextGen()
-    {
-        return IsAliveNextGen;
-    }
-
     public Color GetCurrentColor()
     {
         return this.CurrentColor;
@@ -63,7 +54,7 @@ public abstract class Cell
         IsAlive = true;
         CurrentColor = LiveColor;
         Age++;
-        if (Age > 10 && !Conditions.Contains("mature"))
+        if (Age > MatureAge && !Conditions.Contains("mature"))
         {
             Conditions.Add("mature");
         }
@@ -76,44 +67,37 @@ public abstract class Cell
         Age = 0;
     }
 
-    public virtual bool SetAliveNextGen(Cell[,] cellGrid, Neighborhood neighborhood)
+    public virtual bool CalcCellAliveNextGen()
     {
-        IsAliveNextGen = LiveBasic(neighborhood);
-        CellNeighborhood = neighborhood;
-
-        return IsAliveNextGen;
+        return LiveBasic();
     }
 
-    protected virtual bool LiveBasic(Neighborhood neighborhood)
+    protected virtual bool LiveBasic()
     {
-        // Apply the rules of the game.
-        if (IsAlive && neighborhood.NumNeighbors < 2)
+        if (IsAlive && CellNeighborhood.NumNeighbors < 2)
         {
-            IsAliveNextGen = false; // Die due to underpopulation
+            return false; // Die due to underpopulation
         }
-        else if (IsAlive && (neighborhood.NumNeighbors == 2 || neighborhood.NumNeighbors == 3))
+        else if (IsAlive && (CellNeighborhood.NumNeighbors == 2 || CellNeighborhood.NumNeighbors == 3))
         {
-            IsAliveNextGen = true; // Live on
+            return true; // Live on
         }
-        else if (IsAlive && neighborhood.NumNeighbors > 3)
+        else if (IsAlive && CellNeighborhood.NumNeighbors > 3)
         {
-            IsAliveNextGen = false; // Die due to overpopulation
+            return false; // Die due to overpopulation
         }
-        else if (!IsAlive && neighborhood.NumNeighbors == 3)
+        else if (!IsAlive && CellNeighborhood.NumNeighbors == 3)
         {
-            IsAliveNextGen = true; // Become alive due to reproduction
-            // Debug.Log("Cell " + Column + ", " + Row + " it is " + (IsAlive ? "alive " : "dead ") + "and " + (IsAliveNextGen ? "will " : "will not ") + "live next gen. It has " + neighborhood.NumNeighbors + " neighbors.");
-
+            return true; // Become alive due to reproduction
         }
-        else if (!IsAlive && neighborhood.NumNeighbors != 3)
+        else if (!IsAlive && CellNeighborhood.NumNeighbors != 3)
         {
-            IsAliveNextGen = false; // Stays dead
+            return false; // Stays dead
         }
         else
         {
-            IsAliveNextGen = IsAlive; // Stay the same
+            return IsAlive; // Stay the same
         }
-        return IsAliveNextGen;
     }
 
     public static Cell ReplaceCell(Cell oldCell, int cellType, bool isAlive)
@@ -135,24 +119,18 @@ public abstract class Cell
         }
         else
         {
-            cell = new Cell_Basic(column, row, isAlive);
+            cell = new Cell_Basic(column, row, isAlive); //this should not occur...
         }
-        CloneCellData(oldCell, cell);
+        cell.Conditions = oldCell.Conditions;
+        cell.CellNeighborhood = oldCell.CellNeighborhood;
 
         return cell;
     }
 
-    // copy any bits of data that need copying but are not initialized 
-    public static void CloneCellData(Cell oldCell, Cell newCell)
+    public virtual void Breed()
     {
-        newCell.Conditions = oldCell.Conditions;
-        newCell.IsAliveNextGen = oldCell.IsAliveNextGen;
-
-    }
-
-    public virtual void Breed(Neighborhood neighborhood)
-    {
-        CellNeighborhood = neighborhood;
+        Conditions.RemoveAll(item => item == "mature");
+        Age = 0;
         List<Cell> cells = new List<Cell>();
         foreach (KeyValuePair<string, Cell> cell in CellNeighborhood.NeighborhoodDict)
         {
@@ -163,6 +141,37 @@ public abstract class Cell
         }
         int randNeighbor = Random.Range(0, cells.Count);
         cells[randNeighbor] = ReplaceCell(cells[randNeighbor], CellType, true);
+
+    }
+
+    private void LiveNoNeighbors(Cell[,] CellGrid, Cell cell)
+    {
+        if (cell.CellNeighborhood.NumNeighbors == 0)
+        {
+            cell.CellNeighborhood = new Neighborhood(CellGrid, cell.Column, cell.Row);
+            cell.Live(CellGrid);
+        }
+    }
+
+    public virtual void Immaculate(Cell[,] CellGrid)
+    {
+        Conditions.RemoveAll(item => item == "immaculate");
+        LiveNoNeighbors(CellGrid, this);
+        if (IsAlive)
+        {
+            if (Random.Range(1, 3) == 1)
+            {
+                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["north"]);
+                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["south"]);
+            }
+            else
+            {
+                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["west"]);
+                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["east"]);
+            }
+
+        }
+
     }
 }
 

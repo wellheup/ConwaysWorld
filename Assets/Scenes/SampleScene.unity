@@ -339,15 +339,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewObject_Prefab: {fileID: 2737391919638232372, guid: 6334204118963b44d98d1bef134328cb, type: 3}
-  LifeGoesOn: 0
+  LifeGoesOn: 1
   FToContinue: 0
   IsRendering: 0
-  SpawnPercent: 10
+  SpawnPercent: 20
+  MinLifePercent: 5
   Generation: 0
   AttemptsAtLife: 1
   CurrentPopulation: 0
   timeBeforeStart: 1
-  TimeBetweenGenerations: 0.5
+  TimeBetweenGenerations: 0.15
 --- !u!4 &1583144137
 Transform:
   m_ObjectHideFlags: 0

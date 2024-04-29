@@ -66,7 +66,7 @@ public class View : MonoBehaviour
                 // displayGrid[x, y].GetComponent<Renderer>().material.SetColor("_Color", randColors[Random.Range(0, randColors.Length)]);
             }
         }
-        PrintWorldStats(AttemptsAtLife, Generation, CurrentPopulation);
+        // PrintWorldStats(AttemptsAtLife, Generation, CurrentPopulation);
     }
 
     // Start is called before the first frame update

@@ -6,15 +6,14 @@ using UnityEngine;
 public class ConwaysWorld : MonoBehaviour
 {
     public GameObject viewObject_Prefab;
-    private GameObject frontEndObject;
     private View FrontEnd;
-    private Model BackEnd;
-    private Cell[,] CellGrid;
+    public Model BackEnd;
 
     public bool LifeGoesOn = false;
     public bool FToContinue = false;
     public bool IsRendering = false;
     public int SpawnPercent = 10;
+    public int MinLifePercent = 5;
     public int Generation = 0, //make these private later
         AttemptsAtLife = 1,
         CurrentPopulation = 0;
@@ -38,39 +37,33 @@ public class ConwaysWorld : MonoBehaviour
         // Rows = 5; //TEMP FOR 5 x 5 GRID
 
         // Populate the grid backend initially
-        BackEnd = new Model((int)Columns, (int)Rows, SpawnPercent);
-        CellGrid = BackEnd.CellGrid;
+        BackEnd = new Model((int)Columns, (int)Rows, SpawnPercent, MinLifePercent);
 
         // Prepare the view
-        frontEndObject = Instantiate(viewObject_Prefab, new Vector3(0, 0, 0), Quaternion.identity);
-        FrontEnd = frontEndObject.GetComponent<View>();
-        FrontEnd.InitiateDisplayGrid(CellGrid, Vertical, Horizontal);
-        FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
-        FrontEnd.IsRendering = IsRendering;
+        FrontEnd = Instantiate(viewObject_Prefab, new Vector3(0, 0, 0), Quaternion.identity).GetComponent<View>();
+        FrontEnd.InitiateDisplayGrid(BackEnd.CellGrid, Vertical, Horizontal);
+        FrontEnd.IsRendering = true;
+
 
         // Start the game
-        InvokeRepeating("GridUpdate", timeBeforeStart, TimeBetweenGenerations);
-        LifeGoesOn = true;
+        InvokeRepeating("SimulationUpdate", timeBeforeStart, TimeBetweenGenerations);
     }
 
-    private void GridUpdate()
+    private void SimulationUpdate()
     {
         if (LifeGoesOn)
         {
-            // FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
-            BackEnd.UpdateCurrentNeighborhoodsGrid();
-            CurrentPopulation = BackEnd.UpdateLifeStates();
-            FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
-            Generation++;
-
-            if (CurrentPopulation == 0)
-            {
-                Restart();
-            }
             if (FToContinue)
             {
                 LifeGoesOn = false;
             }
+            CurrentPopulation = BackEnd.UpdateCellsGrid();
+            Generation++;
+
+            // if (CurrentPopulation == 0)
+            // {
+            //     Restart();
+            // }
         }
     }
 
@@ -82,7 +75,6 @@ public class ConwaysWorld : MonoBehaviour
         BackEnd.PopulateGrid();
         Generation = 0;
         AttemptsAtLife++;
-        FrontEnd.RenderWorldState(CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
 
         LifeGoesOn = true;
         IsRendering = true;
@@ -99,25 +91,28 @@ public class ConwaysWorld : MonoBehaviour
         }
         if (Input.GetKeyDown("f"))
         {
-            print("\nContinuing Life\n");
-            LifeGoesOn = !LifeGoesOn;
+            // print("\nContinuing Life\n");
+            LifeGoesOn = true;
         }
         if (Input.GetKeyDown("t"))
         {
             print("\nStart/Stop rendering\n");
             FrontEnd.IsRendering = !FrontEnd.IsRendering;
         }
+        if (Input.GetKeyDown("z"))
+        {
+            FrontEnd.IsRendering = true;
+            FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
+            FrontEnd.IsRendering = IsRendering;
+        }
+        FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
     }
 }
 /*TO DO
 - add a struct in Model that contains booleans for all types of cells so you can exclude/include when creating a new world and edit in inspector
-- consider moving IsAliveNextGen into a CellLifeCycle method/object that manages all life functions
-- add a behavior that causes spontaneous life explosions if there are only immortals left?
 - add namespace?
+- right now once regular life gets going, there aren't many opportunities for variations, introduce more variations on cells set to live next gen...
 - Add different types of specialzed cells inheriting from Cell
-    - Simple
-        - immune
-        - triple spawn immaculate birth (3 in a row, so if they're alone they'll just survive continuously)
     - Complex
         - explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
         - doctor/ vaccine
@@ -133,7 +128,7 @@ public class ConwaysWorld : MonoBehaviour
         - teacher/ elder (random chance to promote adjacent basic_cells to a new type)
         - irradiated (cell cannot live ever again except under certain circumstance)
         - diplomat (explorer but does not expand world, small chance to add new nation to its own, reverts to basic cell when done)
-        - hunter (picks a random live cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
+        - hunter (picks a random live (immortal?) cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
         - god? (effects every living cell on the board in some way)
 - add fields for "nations" to distinguish between different cell groups
     - if, at spawn, a grup is an island, then they form a nation (random string)
