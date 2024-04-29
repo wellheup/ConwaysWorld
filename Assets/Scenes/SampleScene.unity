@@ -343,11 +343,12 @@ MonoBehaviour:
   FToContinue: 0
   IsRendering: 0
   SpawnPercent: 20
+  MinLifePercent: 5
   Generation: 0
   AttemptsAtLife: 1
   CurrentPopulation: 0
   timeBeforeStart: 1
-  TimeBetweenGenerations: 0.5
+  TimeBetweenGenerations: 0.15
 --- !u!4 &1583144137
 Transform:
   m_ObjectHideFlags: 0
