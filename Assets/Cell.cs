@@ -9,7 +9,7 @@ public abstract class Cell
     public Neighborhood CellNeighborhood;
     public List<string> Conditions;
     protected bool IsAlive = false;
-    public int Column = 0, Row = 0, Age = 0, CellType = 0;
+    public int Column = 0, Row = 0, Age = 0, CellType = 0, MatureAge = 10;
     // public e_CellType CellType = e_CellType.Cell;
 
     public Cell()
@@ -54,7 +54,7 @@ public abstract class Cell
         IsAlive = true;
         CurrentColor = LiveColor;
         Age++;
-        if (Age > 10 && !Conditions.Contains("mature"))
+        if (Age > MatureAge && !Conditions.Contains("mature"))
         {
             Conditions.Add("mature");
         }
@@ -122,6 +122,7 @@ public abstract class Cell
             cell = new Cell_Basic(column, row, isAlive); //this should not occur...
         }
         cell.Conditions = oldCell.Conditions;
+        cell.CellNeighborhood = oldCell.CellNeighborhood;
 
         return cell;
     }
@@ -140,12 +141,14 @@ public abstract class Cell
         }
         int randNeighbor = Random.Range(0, cells.Count);
         cells[randNeighbor] = ReplaceCell(cells[randNeighbor], CellType, true);
+
     }
 
     private void LiveNoNeighbors(Cell[,] CellGrid, Cell cell)
     {
         if (cell.CellNeighborhood.NumNeighbors == 0)
         {
+            cell.CellNeighborhood = new Neighborhood(CellGrid, cell.Column, cell.Row);
             cell.Live(CellGrid);
         }
     }

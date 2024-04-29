@@ -9,6 +9,7 @@ public struct Neighborhood
     public int NumNeighbors { get; }
     public int CenterColumn { get; }
     public int CenterRow { get; }
+    public Cell Center;
     public Dictionary<string, Cell> NeighborhoodDict;
     public string[] NeighborHoodKeys;
 
@@ -20,6 +21,7 @@ public struct Neighborhood
         NeighborhoodDict = new Dictionary<string, Cell>();
         int neighborhoodKeyNumber = 0;
         NumNeighbors = 0;
+        Center = cellGrid[column, row];
         for (int columnOffset = -1; columnOffset <= 1; columnOffset++)
         {
             for (int rowOffset = -1; rowOffset <= 1; rowOffset++)
@@ -49,12 +51,14 @@ public class Model
     public bool[,] AliveNextGenGrid;
 
     private int SpawnPercent = 10;
+    private int MinLifePercent = 5;
     private int CurrentPopulation;
     public bool UseThreeGroup = false;
 
-    public Model(int columns, int rows, int spawnPercent)
+    public Model(int columns, int rows, int spawnPercent, int minLifePercent)
     {
         SpawnPercent = spawnPercent;
+        MinLifePercent = minLifePercent;
         PopulateGrid((int)columns, (int)rows, spawnPercent);
 
     }
@@ -76,7 +80,14 @@ public class Model
             else */
             if (cellType == 2)
             {
-                cell = new Cell_Diseased(column, row, true);
+                if (Random.Range(1, 6) == 1)// 1/4 chance disease immunity
+                {
+                    cell = new Cell_Plague(column, row, true);
+                }
+                else
+                {
+                    cell = new Cell_Diseased(column, row, true);
+                }
             }
             else if (cellType > 3 && cellType < spawnPercent)
             {
@@ -148,7 +159,7 @@ public class Model
 
     public void AddRandomLife(int percentOfGrid)
     {
-        if (CurrentPopulation > 0 && CurrentPopulation / (CellGrid.GetLength(0) * CellGrid.GetLength(1)) <= 2)
+        if (CurrentPopulation > 0 && CurrentPopulation / (CellGrid.GetLength(0) * CellGrid.GetLength(1)) <= MinLifePercent)
         {
             int numNewLives = CellGrid.GetLength(0) * CellGrid.GetLength(1) * percentOfGrid / 100;
             int counter = 0;
@@ -279,7 +290,7 @@ public class Model
         UpdateCellLives();
         UpdateCellConditions();
         // ObserveCellConditions(); //for debugging
-        AddRandomLife(6);
+        AddRandomLife(SpawnPercent);
 
         return CurrentPopulation;
     }

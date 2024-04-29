@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class Cell_Immortal : Cell
 {
+    private int DeathCount = 0;
     public Cell_Immortal(int column, int row, bool isAlive = true)
     {
         this.IsAlive = isAlive;
@@ -15,9 +16,28 @@ public class Cell_Immortal : Cell
         CellType = 2;
     }
 
+    public override void Live(Cell[,] cellGrid)
+    {
+        IsAlive = true;
+        CurrentColor = LiveColor;
+        Age++;
+        if (Age > MatureAge && !Conditions.Contains("mature"))
+        {
+            Conditions.Add("mature");
+        }
+        if (CellNeighborhood.NumNeighbors == 0)
+        {
+            DeathCount++;
+        }
+        else
+        {
+            DeathCount = 0;
+        }
+    }
+
     public override bool CalcCellAliveNextGen()
     {
-        if (Age > 15 && CellNeighborhood.NumNeighbors == 0)
+        if (DeathCount > 10 && CellNeighborhood.NumNeighbors == 0)
         {
             return false;
         }

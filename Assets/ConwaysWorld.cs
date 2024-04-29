@@ -13,6 +13,7 @@ public class ConwaysWorld : MonoBehaviour
     public bool FToContinue = false;
     public bool IsRendering = false;
     public int SpawnPercent = 10;
+    public int MinLifePercent = 5;
     public int Generation = 0, //make these private later
         AttemptsAtLife = 1,
         CurrentPopulation = 0;
@@ -36,7 +37,7 @@ public class ConwaysWorld : MonoBehaviour
         // Rows = 5; //TEMP FOR 5 x 5 GRID
 
         // Populate the grid backend initially
-        BackEnd = new Model((int)Columns, (int)Rows, SpawnPercent);
+        BackEnd = new Model((int)Columns, (int)Rows, SpawnPercent, MinLifePercent);
 
         // Prepare the view
         FrontEnd = Instantiate(viewObject_Prefab, new Vector3(0, 0, 0), Quaternion.identity).GetComponent<View>();
@@ -108,19 +109,11 @@ public class ConwaysWorld : MonoBehaviour
     }
 }
 /*TO DO
-- test if immaculate triplets work
-    - immaculate cells seem to be getting marked as isAliveNextGen, but are not getting brought to life at all... still..
-- remove NeighborHoodsGrid becaus there is no sense keeping track of neighborhoods twice...
 - add a struct in Model that contains booleans for all types of cells so you can exclude/include when creating a new world and edit in inspector
-- CellGrid usage should be removed from Cell type because it should only need access to NeighborHoods i think
-- consider removing the column and row from Cell types
-- add a behavior that causes spontaneous life explosions if there are only immortals left?
 - add namespace?
+- right now once regular life gets going, there aren't many opportunities for variations, introduce more variations on cells set to live next gen...
 - Add different types of specialzed cells inheriting from Cell
-    - Simple
-        - triple spawn immaculate birth (3 in a row, so if they're alone they'll just survive continuously)
     - Complex
-        - plague (diseased cell spreads disease with 50% infection rate to all touching cells )
         - explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
         - doctor/ vaccine
         - necromancer (revives neighbors the turn after they die)
