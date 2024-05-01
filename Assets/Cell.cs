@@ -100,6 +100,11 @@ public abstract class Cell
         }
     }
 
+    public virtual void SpecialActions(Cell[,] cellGrid)
+    {
+
+    }
+
     public static Cell ReplaceCell(Cell oldCell, int cellType, bool isAlive)
     {
         int column = oldCell.Column;
@@ -125,6 +130,16 @@ public abstract class Cell
         cell.CellNeighborhood = oldCell.CellNeighborhood;
 
         return cell;
+    }
+
+    public void SwapCells(Cell dest, Cell[,] cellGrid)
+    {
+        int oldCol = this.Column, oldRow = this.Row;
+        cellGrid[dest.Column, dest.Row] = this;
+        cellGrid[this.Column, this.Row] = dest;
+
+        this.CellNeighborhood = new Neighborhood(cellGrid, dest.Column, dest.Row);
+        dest.CellNeighborhood = new Neighborhood(cellGrid, oldCol, oldRow);
     }
 
     public virtual void Breed()

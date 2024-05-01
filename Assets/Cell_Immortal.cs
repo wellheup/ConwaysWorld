@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 public class Cell_Immortal : Cell
 {
-    private int DeathCount = 0;
+    private int DeathCounter = 0;
+    private int MaxAloneTime = 10;
     public Cell_Immortal(int column, int row, bool isAlive = true)
     {
         this.IsAlive = isAlive;
@@ -27,17 +28,17 @@ public class Cell_Immortal : Cell
         }
         if (CellNeighborhood.NumNeighbors == 0)
         {
-            DeathCount++;
+            DeathCounter++;
         }
         else
         {
-            DeathCount = 0;
+            DeathCounter = 0;
         }
     }
 
     public override bool CalcCellAliveNextGen()
     {
-        if (DeathCount > 10 && CellNeighborhood.NumNeighbors == 0)
+        if (DeathCounter > MaxAloneTime)
         {
             return false;
         }

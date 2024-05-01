@@ -4,45 +4,7 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public struct Neighborhood
-{
-    public int NumNeighbors { get; }
-    public int CenterColumn { get; }
-    public int CenterRow { get; }
-    public Cell Center;
-    public Dictionary<string, Cell> NeighborhoodDict;
-    public string[] NeighborHoodKeys;
 
-    public Neighborhood(Cell[,] cellGrid, int column, int row)
-    {
-        CenterColumn = column;
-        CenterRow = row;
-        NeighborHoodKeys = new string[] { "southWest", "west", "northWest", "south", "center", "north", "southEast", "east", "northEast" };
-        NeighborhoodDict = new Dictionary<string, Cell>();
-        int neighborhoodKeyNumber = 0;
-        NumNeighbors = 0;
-        Center = cellGrid[column, row];
-        for (int columnOffset = -1; columnOffset <= 1; columnOffset++)
-        {
-            for (int rowOffset = -1; rowOffset <= 1; rowOffset++)
-            {
-                // Wrap around the edges of the grid.
-                int neighborColumn = (column + columnOffset + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
-                int neighborRow = (row + rowOffset + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
-
-                // Count only live neighbors.
-                if (NeighborHoodKeys[neighborhoodKeyNumber] != "center" && cellGrid[neighborColumn, neighborRow].GetIsAlive())
-                {
-                    NumNeighbors++;
-                }
-
-                // Add the directional name of cell to list
-                NeighborhoodDict.Add(NeighborHoodKeys[neighborhoodKeyNumber], cellGrid[neighborColumn, neighborRow]);
-                neighborhoodKeyNumber++;
-            }
-        }
-    }
-}
 
 public class Model
 {
@@ -269,6 +231,17 @@ public class Model
         }
     }
 
+    public void PerformSpecialActions()
+    {
+        for (int column = 0; column < CellGrid.GetLength(0); column++)
+        {
+            for (int row = 0; row < CellGrid.GetLength(1); row++)
+            {
+                CellGrid[column, row].SpecialActions(CellGrid);
+            }
+        }
+    }
+
     public void ObserveCellConditions() //for debugging
     {
         for (int column = 0; column < CellGrid.GetLength(0); column++)
@@ -289,6 +262,7 @@ public class Model
         UpdateAliveNextGenGrid();
         UpdateCellLives();
         UpdateCellConditions();
+        PerformSpecialActions();
         // ObserveCellConditions(); //for debugging
         AddRandomLife(SpawnPercent);
 

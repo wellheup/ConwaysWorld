@@ -108,18 +108,21 @@ public class ConwaysWorld : MonoBehaviour
         FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
     }
 }
-/*TO DO
+/*TODO
+- add class and method descriptions using /// notation (vscode should suggest a template)
 - add a struct in Model that contains booleans for all types of cells so you can exclude/include when creating a new world and edit in inspector
 - add namespace?
+- move more of conditions updates to SpecialActions()
 - right now once regular life gets going, there aren't many opportunities for variations, introduce more variations on cells set to live next gen...
+- Add to Conway's world an event that uses a "find the largest island"  algorithm
 - Add different types of specialzed cells inheriting from Cell
     - Complex
         - explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
+        - voyager (version of the explorer cell which goes farther and specifically targets dead cell areas)
         - doctor/ vaccine
         - necromancer (revives neighbors the turn after they die)
         - zombie (die if their necromancer dies, do not die from overpopulation)
         - warrior (moves in random direction and kills cells it hits)
-        - breeder (can have 1/2 additional neighbors, adds a neighbor every turn if space)
         - mutant/ mutator (has a small chance every turn to upgrade to another cell type)
         - islander (dies if there are more than x number of nearby cells within like 10 cells)
         - bomber (kills all cells in 2 cell radius)

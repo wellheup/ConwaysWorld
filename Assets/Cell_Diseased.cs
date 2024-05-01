@@ -57,12 +57,12 @@ public class Cell_Diseased : Cell
     private void SpreadDisease(Cell[,] cellGrid, Neighborhood neighborhood)
     {
         // mark neighbors as infected
-        for (int i = 0; i < neighborhood.NeighborHoodKeys.Length; i++)
+        for (int i = 0; i < Neighborhood.NeighborHoodKeys.Length; i++)
         {
-            if (Random.Range(1, 101) < TransmissionRate && neighborhood.NeighborHoodKeys[i] != "center")
+            if (Random.Range(1, 101) < TransmissionRate && Neighborhood.NeighborHoodKeys[i] != "center")
             {
-                int nCellCol = neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Column;
-                int nCellRow = neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Row;
+                int nCellCol = neighborhood.NeighborhoodDict[Neighborhood.NeighborHoodKeys[i]].Column;
+                int nCellRow = neighborhood.NeighborhoodDict[Neighborhood.NeighborHoodKeys[i]].Row;
                 cellGrid[nCellCol, nCellRow].Conditions.Add("infected");
             }
         }
@@ -107,12 +107,12 @@ public class Cell_Plague : Cell_Diseased
     private void SpreadDisease(Cell[,] cellGrid, Neighborhood neighborhood)
     {
         // mark neighbors as infected
-        for (int i = 0; i < neighborhood.NeighborHoodKeys.Length; i++)
+        for (int i = 0; i < Neighborhood.NeighborHoodKeys.Length; i++)
         {
-            if (Random.Range(1, 101) < TransmissionRate && neighborhood.NeighborHoodKeys[i] != "center")
+            if (Random.Range(1, 101) < TransmissionRate && Neighborhood.NeighborHoodKeys[i] != "center")
             {
-                int nCellCol = neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Column;
-                int nCellRow = neighborhood.NeighborhoodDict[neighborhood.NeighborHoodKeys[i]].Row;
+                int nCellCol = neighborhood.NeighborhoodDict[Neighborhood.NeighborHoodKeys[i]].Column;
+                int nCellRow = neighborhood.NeighborhoodDict[Neighborhood.NeighborHoodKeys[i]].Row;
                 cellGrid[nCellCol, nCellRow].Conditions.Add("plagued");
             }
         }
