@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ConwaysWorld : MonoBehaviour
@@ -10,9 +7,10 @@ public class ConwaysWorld : MonoBehaviour
     public Model BackEnd;
 
     public bool LifeGoesOn = false;
+    public bool RestartAtZero = false;
     public bool FToContinue = false;
     public bool IsRendering = false;
-    public int SpawnPercent = 10;
+    public int BasePercentLiving = 10;
     public int MinLifePercent = 5;
     public int Generation = 0, //make these private later
         AttemptsAtLife = 1,
@@ -37,13 +35,12 @@ public class ConwaysWorld : MonoBehaviour
         // Rows = 5; //TEMP FOR 5 x 5 GRID
 
         // Populate the grid backend initially
-        BackEnd = new Model((int)Columns, (int)Rows, SpawnPercent, MinLifePercent);
+        BackEnd = new Model((int)Columns, (int)Rows, BasePercentLiving, MinLifePercent);
 
         // Prepare the view
         FrontEnd = Instantiate(viewObject_Prefab, new Vector3(0, 0, 0), Quaternion.identity).GetComponent<View>();
         FrontEnd.InitiateDisplayGrid(BackEnd.CellGrid, Vertical, Horizontal);
-        FrontEnd.IsRendering = true;
-
+        FrontEnd.IsRendering = IsRendering;
 
         // Start the game
         InvokeRepeating("SimulationUpdate", timeBeforeStart, TimeBetweenGenerations);
@@ -60,10 +57,10 @@ public class ConwaysWorld : MonoBehaviour
             CurrentPopulation = BackEnd.UpdateCellsGrid();
             Generation++;
 
-            // if (CurrentPopulation == 0)
-            // {
-            //     Restart();
-            // }
+            if (RestartAtZero && CurrentPopulation == 0)
+            {
+                Restart();
+            }
         }
     }
 
@@ -91,7 +88,6 @@ public class ConwaysWorld : MonoBehaviour
         }
         if (Input.GetKeyDown("f"))
         {
-            // print("\nContinuing Life\n");
             LifeGoesOn = true;
         }
         if (Input.GetKeyDown("t"))
@@ -105,19 +101,18 @@ public class ConwaysWorld : MonoBehaviour
             FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
             FrontEnd.IsRendering = IsRendering;
         }
-        FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
+        if (IsRendering)
+            FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
     }
 }
-/*TODO
+/*TODO:
 - add class and method descriptions using /// notation (vscode should suggest a template)
-- add a struct in Model that contains booleans for all types of cells so you can exclude/include when creating a new world and edit in inspector
 - add namespace?
 - move more of conditions updates to SpecialActions()
 - right now once regular life gets going, there aren't many opportunities for variations, introduce more variations on cells set to live next gen...
 - Add to Conway's world an event that uses a "find the largest island"  algorithm
 - Add different types of specialzed cells inheriting from Cell
     - Complex
-        - explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
         - voyager (version of the explorer cell which goes farther and specifically targets dead cell areas)
         - doctor/ vaccine
         - necromancer (revives neighbors the turn after they die)

@@ -1,5 +1,5 @@
 using UnityEngine;
-using System.Collections.Generic;
+using static CellGenerator;
 /// <summary>
 /// traveler (swaps places with random neighbor each turn)
 /// </summary>
@@ -8,16 +8,18 @@ using System.Collections.Generic;
 /// </remarks>
 public class Cell_Traveler : Cell
 {
-    private int DeathCountDown = 0;
-    private int MaxAloneTime = 10;
-    private string Direction;
+    protected int DeathCountDown = 0;
+    protected int MaxAloneTime = 3;
+    protected string Direction;
+    protected bool SpecialPerformed = false;
 
-    public Cell_Traveler(int column, int row, bool isAlive)
+    public Cell_Traveler(int column, int row, bool isAlive) : base(column, row, isAlive)
     {
         IsAlive = isAlive;
         Column = column;
         Row = row;
         Direction = Neighborhood.NeighborHoodKeys[Random.Range(0, Neighborhood.NeighborHoodKeys.Length)];
+        CellType = E_CellType.Cell_Traveler;
     }
 
     public override void Live(Cell[,] cellGrid)
@@ -33,6 +35,13 @@ public class Cell_Traveler : Cell
         {
             DeathCountDown = 0;
         }
+        SpecialPerformed = false;
+    }
+
+    public override void Die()
+    {
+        base.Die();
+        SpecialPerformed = true;
     }
 
     public override bool CalcCellAliveNextGen()
@@ -41,11 +50,15 @@ public class Cell_Traveler : Cell
         {
             return false;
         }
-        return IsAlive;
+        return true;
     }
 
     public override void SpecialActions(Cell[,] cellGrid)
     {
-        SwapCells(CellNeighborhood.NeighborhoodDict[Direction], cellGrid);
+        if (IsAlive && !SpecialPerformed)
+        {
+            SwapCells(CellNeighborhood.NeighborhoodDict[Direction], cellGrid);
+            SpecialPerformed = true;
+        }
     }
 }

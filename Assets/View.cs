@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class View : MonoBehaviour
@@ -13,6 +10,7 @@ public class View : MonoBehaviour
 
     public void InitiateDisplayGrid(Cell[,] grid, float vertical, float horizontal)
     {
+        int cellNum = 0;
         DisplayGrid = new GameObject[grid.GetLength(0), grid.GetLength(1)];
         for (int x = 0; x < grid.GetLength(0); x++)
         {
@@ -20,7 +18,7 @@ public class View : MonoBehaviour
             {
                 DisplayGrid[x, y] = Instantiate(Cell_Basic_Prefab, new Vector3(x, y, 0), Quaternion.identity);
                 DisplayGrid[x, y].transform.position = new Vector3(x - (horizontal - 0.5f), y - (vertical - 0.5f));
-                DisplayGrid[x, y].name = "x: " + x + " y: " + y;
+                DisplayGrid[x, y].name = cellNum + " (" + x + ", " + y + ")";
             }
         }
     }

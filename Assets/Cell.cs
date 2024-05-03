@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using static CellGenerator;
 
 public abstract class Cell
 {
@@ -9,16 +10,16 @@ public abstract class Cell
     public Neighborhood CellNeighborhood;
     public List<string> Conditions;
     protected bool IsAlive = false;
-    public int Column = 0, Row = 0, Age = 0, CellType = 0, MatureAge = 10;
-    // public e_CellType CellType = e_CellType.Cell;
+    public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
+    protected E_CellType CellType = E_CellType.Cell;
 
-    public Cell()
-    {
-        LiveColor = Color.black;
-        DeadColor = Color.white;
-        CurrentColor = IsAlive ? LiveColor : DeadColor;
-        Conditions = new List<string>();
-    }
+    // public Cell()
+    // {
+    //     LiveColor = Color.black;
+    //     DeadColor = Color.white;
+    //     CurrentColor = IsAlive ? LiveColor : DeadColor;
+    //     Conditions = new List<string>();
+    // }
 
     public Cell(int column, int row, bool isAlive)
     {
@@ -102,29 +103,37 @@ public abstract class Cell
 
     public virtual void SpecialActions(Cell[,] cellGrid)
     {
+        if (IsAlive)
+        {
 
+        }
     }
 
-    public static Cell ReplaceCell(Cell oldCell, int cellType, bool isAlive)
+    public static Cell ReplaceCell(Cell oldCell, E_CellType cellType, bool isAlive)
     {
         int column = oldCell.Column;
         int row = oldCell.Row;
         Cell cell;
-        if (cellType == 1)
+        switch (cellType)
         {
-            cell = new Cell_Immortal(column, row, isAlive);
-        }
-        else if (cellType == 2)
-        {
-            cell = new Cell_Diseased(column, row, isAlive);
-        }
-        else if (cellType == 3)
-        {
-            cell = new Cell_Basic(column, row, isAlive);
-        }
-        else
-        {
-            cell = new Cell_Basic(column, row, isAlive); //this should not occur...
+            case E_CellType.Cell_Basic:
+                cell = new Cell_Basic(column, row, isAlive);
+                break;
+            case E_CellType.Cell_Immortal:
+                cell = new Cell_Immortal(column, row, isAlive);
+                break;
+            case E_CellType.Cell_Diseased:
+                cell = new Cell_Diseased(column, row, isAlive);
+                break;
+            case E_CellType.Cell_Plague:
+                cell = new Cell_Plague(column, row, isAlive);
+                break;
+            case E_CellType.Cell_Traveler:
+                cell = new Cell_Traveler(column, row, isAlive);
+                break;
+            default:
+                cell = new Cell_Basic(column, row, isAlive); //this should not occur...
+                break;
         }
         cell.Conditions = oldCell.Conditions;
         cell.CellNeighborhood = oldCell.CellNeighborhood;
@@ -134,12 +143,19 @@ public abstract class Cell
 
     public void SwapCells(Cell dest, Cell[,] cellGrid)
     {
-        int oldCol = this.Column, oldRow = this.Row;
-        cellGrid[dest.Column, dest.Row] = this;
-        cellGrid[this.Column, this.Row] = dest;
+        int oldCol = Column, oldRow = Row;
 
-        this.CellNeighborhood = new Neighborhood(cellGrid, dest.Column, dest.Row);
-        dest.CellNeighborhood = new Neighborhood(cellGrid, oldCol, oldRow);
+        cellGrid[dest.Column, dest.Row] = this;
+        cellGrid[Column, Row] = dest;
+
+        Column = dest.Column;
+        Row = dest.Row;
+
+        dest.Column = oldCol;
+        dest.Row = oldRow;
+
+        CellNeighborhood = new Neighborhood(cellGrid, Column, Row);
+        dest.CellNeighborhood = new Neighborhood(cellGrid, dest.Column, dest.Row);
     }
 
     public virtual void Breed()
@@ -188,13 +204,4 @@ public abstract class Cell
         }
 
     }
-}
-
-
-public enum E_CellType
-{
-    Cell,
-    Cell_Basic,
-    Cell_Immortal,
-    Cell_Diseased,
 }

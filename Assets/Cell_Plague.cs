@@ -1,14 +1,19 @@
 using UnityEngine;
 using static CellGenerator;
 
-public class Cell_Diseased : Cell
+public class Cell_Plague : Cell_Diseased
 {
-    protected int CountDown = 3, TransmissionRate = 50;
-    public Cell_Diseased(int column, int row, bool isAlive) : base(column, row, isAlive)
+    // plague(diseased cell that spreads disease with higher infection rate than diseased to all touching cells)
+    public Cell_Plague(int column, int row, bool isAlive) : base(column, row, isAlive)
     {
+        this.IsAlive = isAlive;
         LiveColor = Color.green;
         DeadColor = Color.white;
-        CellType = E_CellType.Cell_Diseased;
+        Column = column;
+        Row = row;
+        TransmissionRate = 75;
+        CellType = E_CellType.Cell_Plague;
+
     }
 
     public override void Live(Cell[,] cellGrid)
@@ -21,33 +26,14 @@ public class Cell_Diseased : Cell
         {
             Conditions.Add("mature");
         }
-        CellType = E_CellType.Cell_Diseased;
+        CellType = E_CellType.Cell_Plague;
     }
 
     public override void Die()
     {
         IsAlive = false;
         CurrentColor = DeadColor;
-        Conditions.Remove("infected");
-    }
-
-    public override bool CalcCellAliveNextGen()
-    {
-        CountDown--;
-        if (CountDown <= 0)
-        {
-            return false;
-        }
-        return LiveBasic();
-    }
-
-    public static Cell Infect(Cell cell)
-    {
-        if (cell.GetIsAlive() && cell.GetType() != typeof(Cell_Diseased))
-        {
-            return ReplaceCell(cell, E_CellType.Cell_Diseased, true);
-        }
-        return cell;
+        Conditions.Remove("plagued");
     }
 
     private void SpreadDisease(Cell[,] cellGrid, Neighborhood neighborhood)
@@ -59,7 +45,7 @@ public class Cell_Diseased : Cell
             {
                 int nCellCol = neighborhood.NeighborhoodDict[Neighborhood.NeighborHoodKeys[i]].Column;
                 int nCellRow = neighborhood.NeighborhoodDict[Neighborhood.NeighborHoodKeys[i]].Row;
-                cellGrid[nCellCol, nCellRow].Conditions.Add("infected");
+                cellGrid[nCellCol, nCellRow].Conditions.Add("plagued");
             }
         }
     }

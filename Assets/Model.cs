@@ -1,106 +1,37 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-
-
 
 public class Model
 {
     public Cell[,] CellGrid;
     public Neighborhood[,] NeighborhoodsGrid;
     public bool[,] AliveNextGenGrid;
+    private CellGenerator Generator;
 
-    private int SpawnPercent = 10;
+    private int BasePercentLiving = 10;
     private int MinLifePercent = 5;
     private int CurrentPopulation;
     public bool UseThreeGroup = false;
 
-    public Model(int columns, int rows, int spawnPercent, int minLifePercent)
+    public Model(int columns, int rows, int basePercentLiving, int minLifePercent)
     {
-        SpawnPercent = spawnPercent;
+        BasePercentLiving = basePercentLiving;
         MinLifePercent = minLifePercent;
-        PopulateGrid((int)columns, (int)rows, spawnPercent);
-
+        Generator = new CellGenerator(BasePercentLiving);
+        PopulateGrid((int)columns, (int)rows, basePercentLiving);
     }
 
-    private Cell InitializeCell(int column, int row, int spawnPercent)
-    {
-        if (UseThreeGroup)
-        {
-            return ThreeGroup(column, row);
-        }
-        else
-        {
-            int cellType = Random.Range(1, 101);
-            Cell cell;
-            /*if (cellType == 1)
-            {
-                cell = new Cell_Immortal(column, row, true);
-            }
-            else */
-            if (cellType == 2)
-            {
-                if (Random.Range(1, 6) == 1)// 1/4 chance disease immunity
-                {
-                    cell = new Cell_Plague(column, row, true);
-                }
-                else
-                {
-                    cell = new Cell_Diseased(column, row, true);
-                }
-            }
-            else if (cellType > 3 && cellType < spawnPercent)
-            {
-                cell = new Cell_Basic(column, row, true);
-                if (Random.Range(1, 5) == 1)// 1/4 chance disease immunity
-                {
-                    cell.Conditions.Add("immune");
-                }
-                if (Random.Range(1, 101) == 1)
-                {
-                    cell.Conditions.Add("immaculate");
-                }
-            }
-            else
-            {
-                cell = new Cell_Basic(column, row, false);
-            }
-            return cell;
-        }
-    }
-
-
-    public Cell ThreeGroup(int column, int row)
-    {
-        // TEMP CODE FOR 3 UNIT GROUP
-        if (column == 2 && row >= 1 && row <= 3)
-        {
-            if (row == 2)
-            {
-                // return new Cell_Diseased(column, row, true);
-                return new Cell_Diseased(column, row, true);
-            }
-            return new Cell_Basic(column, row, true);
-        }
-        else
-        {
-            return new Cell_Basic(column, row, false);
-        }
-        // END TEMP CODE
-    }
-
-    public void PopulateGrid(int columns, int rows, int spawnPercent)
+    public void PopulateGrid(int columns, int rows, int basePercentLiving)
     {
         CellGrid = new Cell[columns, rows];
         NeighborhoodsGrid = new Neighborhood[columns, rows];
         AliveNextGenGrid = new bool[columns, rows];
+
         for (int column = 0; column < columns; column++)
         {
             for (int row = 0; row < rows; row++)
             {
-                CellGrid[column, row] = InitializeCell(column, row, spawnPercent);
+                CellGrid[column, row] = Generator.InitializeCell(column, row);
+
             }
         }
     }
@@ -114,7 +45,7 @@ public class Model
         {
             for (int row = 0; row < CellGrid.GetLength(1); row++)
             {
-                CellGrid[column, row] = InitializeCell(column, row, SpawnPercent);
+                CellGrid[column, row] = Generator.InitializeCell(column, row);
             }
         }
     }
@@ -131,7 +62,7 @@ public class Model
                 int randRow = Random.Range(0, CellGrid.GetLength(1));
                 if (!CellGrid[randCol, randRow].GetIsAlive() && !AliveNextGenGrid[randCol, randRow])
                 {
-                    CellGrid[randCol, randRow] = InitializeCell(randCol, randRow, SpawnPercent);
+                    CellGrid[randCol, randRow] = Generator.InitializeCell(randCol, randRow);
                     counter++;
                 }
             }
@@ -264,7 +195,7 @@ public class Model
         UpdateCellConditions();
         PerformSpecialActions();
         // ObserveCellConditions(); //for debugging
-        AddRandomLife(SpawnPercent);
+        AddRandomLife(BasePercentLiving);
 
         return CurrentPopulation;
     }
