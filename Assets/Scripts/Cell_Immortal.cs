@@ -1,48 +1,51 @@
 using UnityEngine;
 using System.Collections.Generic;
-using static CellGenerator;
-
-public class Cell_Immortal : Cell
+using static ConwaysWorld.CellGenerator;
+namespace ConwaysWorld
 {
-    private int DeathCounter = 0;
-    private int MaxAloneTime = 10;
-    public Cell_Immortal(int column, int row, bool isAlive = true) : base(column, row, isAlive)
-    {
-        this.IsAlive = isAlive;
-        LiveColor = Color.red;
-        DeadColor = Color.white;
-        CurrentColor = isAlive ? LiveColor : DeadColor;
-        Column = column;
-        Row = row;
-        Conditions = new List<string>();
-        CellType = E_CellType.Cell_Immortal;
-    }
 
-    public override void Live(Cell[,] cellGrid)
+    public class Cell_Immortal : Cell
     {
-        IsAlive = true;
-        CurrentColor = LiveColor;
-        Age++;
-        if (Age > MatureAge && !Conditions.Contains("mature"))
+        private int DeathCounter = 0;
+        private int MaxAloneTime = 10;
+        public Cell_Immortal(int column, int row, bool isAlive = true) : base(column, row, isAlive)
         {
-            Conditions.Add("mature");
+            this.IsAlive = isAlive;
+            LiveColor = Color.red;
+            DeadColor = Color.white;
+            CurrentColor = isAlive ? LiveColor : DeadColor;
+            Column = column;
+            Row = row;
+            Conditions = new List<string>();
+            CellType = E_CellType.Cell_Immortal;
         }
-        if (CellNeighborhood.NumNeighbors == 0)
-        {
-            DeathCounter++;
-        }
-        else
-        {
-            DeathCounter = 0;
-        }
-    }
 
-    public override bool CalcCellAliveNextGen()
-    {
-        if (DeathCounter > MaxAloneTime)
+        public override void Live(Cell[,] cellGrid)
         {
-            return false;
+            IsAlive = true;
+            CurrentColor = LiveColor;
+            Age++;
+            if (Age > MatureAge && !Conditions.Contains("mature"))
+            {
+                Conditions.Add("mature");
+            }
+            if (CellNeighborhood.NumNeighbors == 0)
+            {
+                DeathCounter++;
+            }
+            else
+            {
+                DeathCounter = 0;
+            }
         }
-        return IsAlive;
+
+        public override bool CalcCellAliveNextGen()
+        {
+            if (DeathCounter > MaxAloneTime)
+            {
+                return false;
+            }
+            return IsAlive;
+        }
     }
 }

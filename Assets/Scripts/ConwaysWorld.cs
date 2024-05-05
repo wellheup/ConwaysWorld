@@ -1,104 +1,107 @@
 using UnityEngine;
 
-public class ConwaysWorld : MonoBehaviour
+namespace ConwaysWorld
 {
-    public GameObject viewObject_Prefab;
-    private View FrontEnd;
-    public Model BackEnd;
-
-    public bool LifeGoesOn = false;
-    public bool RestartAtZero = false;
-    public bool FToContinue = false;
-    public bool IsRendering = false;
-    public int BasePercentLiving = 10;
-    public int MinLifePercent = 5;
-    public int Generation = 0, //make these private later
-        AttemptsAtLife = 1,
-        CurrentPopulation = 0;
-    int Columns,
-        Rows;
-    public float timeBeforeStart = 1.0f,
-        TimeBetweenGenerations = 0.5f;
-
-    // Start is called before the first frame update
-    void Start()
+    public class ConwaysWorld : MonoBehaviour
     {
-        Canvas canvas = FindObjectOfType<Canvas>();
+        public GameObject viewObject_Prefab;
+        private View FrontEnd;
+        public Model BackEnd;
 
-        float canvasWidth = canvas.GetComponent<RectTransform>().rect.width;
-        float canvasHeight = canvas.GetComponent<RectTransform>().rect.height;
-        Columns = (int)canvasWidth / 100;
-        Rows = (int)canvasHeight / 100;
+        public bool LifeGoesOn = false;
+        public bool RestartAtZero = false;
+        public bool FToContinue = false;
+        public bool IsRendering = false;
+        public int BasePercentLiving = 10;
+        public int MinLifePercent = 5;
+        public int Generation = 0, //make these private later
+            AttemptsAtLife = 1,
+            CurrentPopulation = 0;
+        int Columns,
+            Rows;
+        public float timeBeforeStart = 1.0f,
+            TimeBetweenGenerations = 0.5f;
 
-        // Populate the grid backend initially
-        BackEnd = new Model((int)Columns, (int)Rows, BasePercentLiving, MinLifePercent);
-
-        // Prepare the view
-        FrontEnd = viewObject_Prefab.GetComponent<View>();
-        FrontEnd.InitiateDisplayGrid(BackEnd.CellGrid, canvasWidth, canvasHeight);
-        FrontEnd.IsRendering = IsRendering;
-
-        // Start the game
-        InvokeRepeating("SimulationUpdate", timeBeforeStart, TimeBetweenGenerations);
-    }
-
-    private void SimulationUpdate()
-    {
-        if (LifeGoesOn)
+        // Start is called before the first frame update
+        void Start()
         {
-            if (FToContinue)
-            {
-                LifeGoesOn = false;
-            }
-            CurrentPopulation = BackEnd.UpdateCellsGrid();
-            Generation++;
+            Canvas canvas = FindObjectOfType<Canvas>();
 
-            if (RestartAtZero && CurrentPopulation == 0)
+            float canvasWidth = canvas.GetComponent<RectTransform>().rect.width;
+            float canvasHeight = canvas.GetComponent<RectTransform>().rect.height;
+            Columns = (int)canvasWidth / 100;
+            Rows = (int)canvasHeight / 100;
+
+            // Populate the grid backend initially
+            BackEnd = new Model((int)Columns, (int)Rows, BasePercentLiving, MinLifePercent);
+
+            // Prepare the view
+            FrontEnd = viewObject_Prefab.GetComponent<View>();
+            FrontEnd.InitiateDisplayGrid(BackEnd.CellGrid, canvasWidth, canvasHeight);
+            FrontEnd.IsRendering = IsRendering;
+
+            // Start the game
+            InvokeRepeating("SimulationUpdate", timeBeforeStart, TimeBetweenGenerations);
+        }
+
+        private void SimulationUpdate()
+        {
+            if (LifeGoesOn)
             {
-                Restart();
+                if (FToContinue)
+                {
+                    LifeGoesOn = false;
+                }
+                CurrentPopulation = BackEnd.UpdateCellsGrid();
+                Generation++;
+
+                if (RestartAtZero && CurrentPopulation == 0)
+                {
+                    Restart();
+                }
             }
         }
-    }
 
-    private void Restart()
-    {
-        LifeGoesOn = false;
-        IsRendering = false;
-        FrontEnd.IsRendering = false;
-        BackEnd.PopulateGrid();
-        Generation = 0;
-        AttemptsAtLife++;
-
-        LifeGoesOn = true;
-        IsRendering = true;
-        FrontEnd.IsRendering = IsRendering;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        if (Input.GetKeyDown("r"))
+        private void Restart()
         {
-            print("\nRestarting World\n");
-            Restart();
-        }
-        if (Input.GetKeyDown("f"))
-        {
+            LifeGoesOn = false;
+            IsRendering = false;
+            FrontEnd.IsRendering = false;
+            BackEnd.PopulateGrid();
+            Generation = 0;
+            AttemptsAtLife++;
+
             LifeGoesOn = true;
-        }
-        if (Input.GetKeyDown("t"))
-        {
-            print("\nStart/Stop rendering\n");
-            FrontEnd.IsRendering = !FrontEnd.IsRendering;
-        }
-        if (Input.GetKeyDown("z"))
-        {
-            FrontEnd.IsRendering = true;
-            FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
+            IsRendering = true;
             FrontEnd.IsRendering = IsRendering;
         }
-        if (IsRendering)
-            FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
+
+        // Update is called once per frame
+        void Update()
+        {
+            if (Input.GetKeyDown("r"))
+            {
+                print("\nRestarting World\n");
+                Restart();
+            }
+            if (Input.GetKeyDown("f"))
+            {
+                LifeGoesOn = true;
+            }
+            if (Input.GetKeyDown("t"))
+            {
+                print("\nStart/Stop rendering\n");
+                FrontEnd.IsRendering = !FrontEnd.IsRendering;
+            }
+            if (Input.GetKeyDown("z"))
+            {
+                FrontEnd.IsRendering = true;
+                FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
+                FrontEnd.IsRendering = IsRendering;
+            }
+            if (IsRendering)
+                FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
+        }
     }
 }
 /*TODO:

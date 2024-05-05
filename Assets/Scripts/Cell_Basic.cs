@@ -1,12 +1,15 @@
-using static CellGenerator;
-
-public class Cell_Basic : Cell
+using static ConwaysWorld.CellGenerator;
+namespace ConwaysWorld
 {
-    public Cell_Basic(int column, int row, bool isAlive) : base(column, row, isAlive)
+
+    public class Cell_Basic : Cell
     {
-        IsAlive = isAlive;
-        Column = column;
-        Row = row;
-        CellType = E_CellType.Cell_Basic;
+        public Cell_Basic(int column, int row, bool isAlive) : base(column, row, isAlive)
+        {
+            IsAlive = isAlive;
+            Column = column;
+            Row = row;
+            CellType = E_CellType.Cell_Basic;
+        }
     }
 }

@@ -1,207 +1,210 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static CellGenerator;
-
-public abstract class Cell
+using static ConwaysWorld.CellGenerator;
+namespace ConwaysWorld
 {
-    public Color LiveColor;
-    public Color DeadColor;
-    public Color CurrentColor;
-    public Neighborhood CellNeighborhood;
-    public List<string> Conditions;
-    protected bool IsAlive = false;
-    public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
-    protected E_CellType CellType = E_CellType.Cell;
 
-    // public Cell()
-    // {
-    //     LiveColor = Color.black;
-    //     DeadColor = Color.white;
-    //     CurrentColor = IsAlive ? LiveColor : DeadColor;
-    //     Conditions = new List<string>();
-    // }
-
-    public Cell(int column, int row, bool isAlive)
+    public abstract class Cell
     {
-        this.IsAlive = isAlive;
-        LiveColor = Color.black;
-        DeadColor = Color.white;
-        CurrentColor = isAlive ? LiveColor : DeadColor;
-        Column = column;
-        Row = row;
-        Conditions = new List<string>();
-    }
+        public Color LiveColor;
+        public Color DeadColor;
+        public Color CurrentColor;
+        public Neighborhood CellNeighborhood;
+        public List<string> Conditions;
+        protected bool IsAlive = false;
+        public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
+        protected E_CellType CellType = E_CellType.Cell;
 
-    // Should only be used for debugging
-    public void SetAllColors(Color color)
-    {
-        this.LiveColor = color;
-        this.DeadColor = color;
-        this.CurrentColor = color;
-    }
+        // public Cell()
+        // {
+        //     LiveColor = Color.black;
+        //     DeadColor = Color.white;
+        //     CurrentColor = IsAlive ? LiveColor : DeadColor;
+        //     Conditions = new List<string>();
+        // }
 
-    public bool GetIsAlive()
-    {
-        return IsAlive;
-    }
-
-    public Color GetCurrentColor()
-    {
-        return this.CurrentColor;
-    }
-
-    public virtual void Live(Cell[,] cellGrid)
-    {
-        IsAlive = true;
-        CurrentColor = LiveColor;
-        Age++;
-        if (Age > MatureAge && !Conditions.Contains("mature"))
+        public Cell(int column, int row, bool isAlive)
         {
-            Conditions.Add("mature");
+            this.IsAlive = isAlive;
+            LiveColor = Color.black;
+            DeadColor = Color.white;
+            CurrentColor = isAlive ? LiveColor : DeadColor;
+            Column = column;
+            Row = row;
+            Conditions = new List<string>();
         }
-    }
 
-    public virtual void Die()
-    {
-        IsAlive = false;
-        CurrentColor = DeadColor;
-        Age = 0;
-    }
-
-    public virtual bool CalcCellAliveNextGen()
-    {
-        return LiveBasic();
-    }
-
-    protected virtual bool LiveBasic()
-    {
-        if (IsAlive && CellNeighborhood.NumNeighbors < 2)
+        // Should only be used for debugging
+        public void SetAllColors(Color color)
         {
-            return false; // Die due to underpopulation
+            this.LiveColor = color;
+            this.DeadColor = color;
+            this.CurrentColor = color;
         }
-        else if (IsAlive && (CellNeighborhood.NumNeighbors == 2 || CellNeighborhood.NumNeighbors == 3))
+
+        public bool GetIsAlive()
         {
-            return true; // Live on
+            return IsAlive;
         }
-        else if (IsAlive && CellNeighborhood.NumNeighbors > 3)
+
+        public Color GetCurrentColor()
         {
-            return false; // Die due to overpopulation
+            return this.CurrentColor;
         }
-        else if (!IsAlive && CellNeighborhood.NumNeighbors == 3)
+
+        public virtual void Live(Cell[,] cellGrid)
         {
-            return true; // Become alive due to reproduction
-        }
-        else if (!IsAlive && CellNeighborhood.NumNeighbors != 3)
-        {
-            return false; // Stays dead
-        }
-        else
-        {
-            return IsAlive; // Stay the same
-        }
-    }
-
-    public virtual void SpecialActions(Cell[,] cellGrid)
-    {
-        if (IsAlive)
-        {
-
-        }
-    }
-
-    public static Cell ReplaceCell(Cell oldCell, E_CellType cellType, bool isAlive)
-    {
-        int column = oldCell.Column;
-        int row = oldCell.Row;
-        Cell cell;
-        switch (cellType)
-        {
-            case E_CellType.Cell_Basic:
-                cell = new Cell_Basic(column, row, isAlive);
-                break;
-            case E_CellType.Cell_Immortal:
-                cell = new Cell_Immortal(column, row, isAlive);
-                break;
-            case E_CellType.Cell_Diseased:
-                cell = new Cell_Diseased(column, row, isAlive);
-                break;
-            case E_CellType.Cell_Plague:
-                cell = new Cell_Plague(column, row, isAlive);
-                break;
-            case E_CellType.Cell_Traveler:
-                cell = new Cell_Traveler(column, row, isAlive);
-                break;
-            default:
-                cell = new Cell_Basic(column, row, isAlive); //this should not occur...
-                break;
-        }
-        cell.Conditions = oldCell.Conditions;
-        cell.CellNeighborhood = oldCell.CellNeighborhood;
-
-        return cell;
-    }
-
-    public void SwapCells(Cell dest, Cell[,] cellGrid)
-    {
-        int oldCol = Column, oldRow = Row;
-
-        cellGrid[dest.Column, dest.Row] = this;
-        cellGrid[Column, Row] = dest;
-
-        Column = dest.Column;
-        Row = dest.Row;
-
-        dest.Column = oldCol;
-        dest.Row = oldRow;
-
-        CellNeighborhood = new Neighborhood(cellGrid, Column, Row);
-        dest.CellNeighborhood = new Neighborhood(cellGrid, dest.Column, dest.Row);
-    }
-
-    public virtual void Breed()
-    {
-        Conditions.RemoveAll(item => item == "mature");
-        Age = 0;
-        List<Cell> cells = new List<Cell>();
-        foreach (KeyValuePair<string, Cell> cell in CellNeighborhood.NeighborhoodDict)
-        {
-            if (!cell.Value.GetIsAlive())
+            IsAlive = true;
+            CurrentColor = LiveColor;
+            Age++;
+            if (Age > MatureAge && !Conditions.Contains("mature"))
             {
-                cells.Add(cell.Value);
+                Conditions.Add("mature");
             }
         }
-        int randNeighbor = Random.Range(0, cells.Count);
-        cells[randNeighbor] = ReplaceCell(cells[randNeighbor], CellType, true);
 
-    }
-
-    private void LiveNoNeighbors(Cell[,] CellGrid, Cell cell)
-    {
-        if (cell.CellNeighborhood.NumNeighbors == 0)
+        public virtual void Die()
         {
-            cell.CellNeighborhood = new Neighborhood(CellGrid, cell.Column, cell.Row);
-            cell.Live(CellGrid);
+            IsAlive = false;
+            CurrentColor = DeadColor;
+            Age = 0;
         }
-    }
 
-    public virtual void Immaculate(Cell[,] CellGrid)
-    {
-        Conditions.RemoveAll(item => item == "immaculate");
-        LiveNoNeighbors(CellGrid, this);
-        if (IsAlive)
+        public virtual bool CalcCellAliveNextGen()
         {
-            if (Random.Range(1, 3) == 1)
+            return LiveBasic();
+        }
+
+        protected virtual bool LiveBasic()
+        {
+            if (IsAlive && CellNeighborhood.NumNeighbors < 2)
             {
-                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["north"]);
-                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["south"]);
+                return false; // Die due to underpopulation
+            }
+            else if (IsAlive && (CellNeighborhood.NumNeighbors == 2 || CellNeighborhood.NumNeighbors == 3))
+            {
+                return true; // Live on
+            }
+            else if (IsAlive && CellNeighborhood.NumNeighbors > 3)
+            {
+                return false; // Die due to overpopulation
+            }
+            else if (!IsAlive && CellNeighborhood.NumNeighbors == 3)
+            {
+                return true; // Become alive due to reproduction
+            }
+            else if (!IsAlive && CellNeighborhood.NumNeighbors != 3)
+            {
+                return false; // Stays dead
             }
             else
             {
-                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["west"]);
-                LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["east"]);
+                return IsAlive; // Stay the same
             }
+        }
+
+        public virtual void SpecialActions(Cell[,] cellGrid)
+        {
+            if (IsAlive)
+            {
+
+            }
+        }
+
+        public static Cell ReplaceCell(Cell oldCell, E_CellType cellType, bool isAlive)
+        {
+            int column = oldCell.Column;
+            int row = oldCell.Row;
+            Cell cell;
+            switch (cellType)
+            {
+                case E_CellType.Cell_Basic:
+                    cell = new Cell_Basic(column, row, isAlive);
+                    break;
+                case E_CellType.Cell_Immortal:
+                    cell = new Cell_Immortal(column, row, isAlive);
+                    break;
+                case E_CellType.Cell_Diseased:
+                    cell = new Cell_Diseased(column, row, isAlive);
+                    break;
+                case E_CellType.Cell_Plague:
+                    cell = new Cell_Plague(column, row, isAlive);
+                    break;
+                case E_CellType.Cell_Traveler:
+                    cell = new Cell_Traveler(column, row, isAlive);
+                    break;
+                default:
+                    cell = new Cell_Basic(column, row, isAlive); //this should not occur...
+                    break;
+            }
+            cell.Conditions = oldCell.Conditions;
+            cell.CellNeighborhood = oldCell.CellNeighborhood;
+
+            return cell;
+        }
+
+        public void SwapCells(Cell dest, Cell[,] cellGrid)
+        {
+            int oldCol = Column, oldRow = Row;
+
+            cellGrid[dest.Column, dest.Row] = this;
+            cellGrid[Column, Row] = dest;
+
+            Column = dest.Column;
+            Row = dest.Row;
+
+            dest.Column = oldCol;
+            dest.Row = oldRow;
+
+            CellNeighborhood = new Neighborhood(cellGrid, Column, Row);
+            dest.CellNeighborhood = new Neighborhood(cellGrid, dest.Column, dest.Row);
+        }
+
+        public virtual void Breed()
+        {
+            Conditions.RemoveAll(item => item == "mature");
+            Age = 0;
+            List<Cell> cells = new List<Cell>();
+            foreach (KeyValuePair<string, Cell> cell in CellNeighborhood.NeighborhoodDict)
+            {
+                if (!cell.Value.GetIsAlive())
+                {
+                    cells.Add(cell.Value);
+                }
+            }
+            int randNeighbor = Random.Range(0, cells.Count);
+            cells[randNeighbor] = ReplaceCell(cells[randNeighbor], CellType, true);
 
         }
 
+        private void LiveNoNeighbors(Cell[,] CellGrid, Cell cell)
+        {
+            if (cell.CellNeighborhood.NumNeighbors == 0)
+            {
+                cell.CellNeighborhood = new Neighborhood(CellGrid, cell.Column, cell.Row);
+                cell.Live(CellGrid);
+            }
+        }
+
+        public virtual void Immaculate(Cell[,] CellGrid)
+        {
+            Conditions.RemoveAll(item => item == "immaculate");
+            LiveNoNeighbors(CellGrid, this);
+            if (IsAlive)
+            {
+                if (Random.Range(1, 3) == 1)
+                {
+                    LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["north"]);
+                    LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["south"]);
+                }
+                else
+                {
+                    LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["west"]);
+                    LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["east"]);
+                }
+
+            }
+
+        }
     }
 }
