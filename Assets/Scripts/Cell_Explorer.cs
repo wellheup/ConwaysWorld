@@ -15,23 +15,13 @@ public class Cell_Explorer : Cell_Traveler
         CellType = E_CellType.Cell_Traveler;
         MaxAloneTime = 3;
         LiveColor = Color.magenta;
-
     }
 
-    public override void Live(Cell[,] cellGrid)
+    protected bool IsNeighborOverEdge(Cell neighbor)
     {
-        IsAlive = true;
-        CurrentColor = LiveColor;
-        Age++;
-        if (CellNeighborhood.NumNeighbors == 0)
-        {
-            DeathCountDown++;
-        }
-        else
-        {
-            DeathCountDown = 0;
-        }
-        SpecialPerformed = false;
+
+
+        return true;
     }
 
     public override void SpecialActions(Cell[,] cellGrid)

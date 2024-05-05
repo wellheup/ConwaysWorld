@@ -15,9 +15,7 @@ public class ConwaysWorld : MonoBehaviour
     public int Generation = 0, //make these private later
         AttemptsAtLife = 1,
         CurrentPopulation = 0;
-    float Vertical,
-        Horizontal,
-        Columns,
+    int Columns,
         Rows;
     public float timeBeforeStart = 1.0f,
         TimeBetweenGenerations = 0.5f;
@@ -25,21 +23,19 @@ public class ConwaysWorld : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // Get camera info
-        Vertical = Camera.main.orthographicSize;
-        Horizontal = Vertical * (Screen.width / Screen.height);
-        Columns = Horizontal * 2f;
-        Rows = Vertical * 2f;
+        Canvas canvas = FindObjectOfType<Canvas>();
 
-        // Columns = 5; //TEMP FOR 5 x 5 GRID
-        // Rows = 5; //TEMP FOR 5 x 5 GRID
+        float canvasWidth = canvas.GetComponent<RectTransform>().rect.width;
+        float canvasHeight = canvas.GetComponent<RectTransform>().rect.height;
+        Columns = (int)canvasWidth / 100;
+        Rows = (int)canvasHeight / 100;
 
         // Populate the grid backend initially
         BackEnd = new Model((int)Columns, (int)Rows, BasePercentLiving, MinLifePercent);
 
         // Prepare the view
-        FrontEnd = Instantiate(viewObject_Prefab, new Vector3(0, 0, 0), Quaternion.identity).GetComponent<View>();
-        FrontEnd.InitiateDisplayGrid(BackEnd.CellGrid, Vertical, Horizontal);
+        FrontEnd = viewObject_Prefab.GetComponent<View>();
+        FrontEnd.InitiateDisplayGrid(BackEnd.CellGrid, canvasWidth, canvasHeight);
         FrontEnd.IsRendering = IsRendering;
 
         // Start the game

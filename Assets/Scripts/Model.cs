@@ -17,7 +17,7 @@ public class Model
         BasePercentLiving = basePercentLiving;
         MinLifePercent = minLifePercent;
         Generator = new CellGenerator(BasePercentLiving);
-        PopulateGrid((int)columns, (int)rows, basePercentLiving);
+        PopulateGrid(columns, rows, basePercentLiving);
     }
 
     public void PopulateGrid(int columns, int rows, int basePercentLiving)
