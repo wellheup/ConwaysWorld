@@ -54,6 +54,8 @@ namespace ConwaysWorld
                 }
                 CurrentPopulation = BackEnd.UpdateCellsGrid();
                 Generation++;
+                if (IsRendering)
+                    FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
 
                 if (RestartAtZero && CurrentPopulation == 0)
                 {
@@ -84,29 +86,30 @@ namespace ConwaysWorld
                 print("\nRestarting World\n");
                 Restart();
             }
-            if (Input.GetKeyDown("f"))
+            if (Input.GetKeyDown("f")) //stop u
             {
                 LifeGoesOn = true;
             }
-            if (Input.GetKeyDown("t"))
+            if (Input.GetKeyDown("t")) //stop rendering
             {
                 print("\nStart/Stop rendering\n");
                 FrontEnd.IsRendering = !FrontEnd.IsRendering;
             }
-            if (Input.GetKeyDown("z"))
+            if (Input.GetKeyDown("z")) //force render
             {
                 FrontEnd.IsRendering = true;
                 FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
                 FrontEnd.IsRendering = IsRendering;
             }
-            if (IsRendering)
-                FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
         }
     }
 }
 /*TODO:
+- for some reason the tiles don't resize upon expansion...
+- remember to balance explorer max alone time
+- make sure Explorer cells can expand the grid without losing track of any cells 
 - add class and method descriptions using /// notation (vscode should suggest a template)
-- add namespace?
+- add a Cell_Grid type to contain all grid-based functions
 - move more of conditions updates to SpecialActions()
 - right now once regular life gets going, there aren't many opportunities for variations, introduce more variations on cells set to live next gen...
 - Add to Conway's world an event that uses a "find the largest island"  algorithm

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 namespace ConwaysWorld
 {
 
-    public struct Neighborhood
+    public struct Cell_Neighborhood
     {
         public int NumNeighbors { get; }
         public int CenterColumn { get; }
@@ -11,7 +11,7 @@ namespace ConwaysWorld
         public Dictionary<string, Cell> NeighborhoodDict;
         public static string[] NeighborHoodKeys = new string[] { "southWest", "west", "northWest", "south", "center", "north", "southEast", "east", "northEast" };
 
-        public Neighborhood(Cell[,] cellGrid, int column, int row)
+        public Cell_Neighborhood(Cell[,] cellGrid, int column, int row)
         {
             CenterColumn = column;
             CenterRow = row;

@@ -1,5 +1,5 @@
 using UnityEngine;
-using static ConwaysWorld.CellGenerator;
+using static ConwaysWorld.Cell_Generator;
 namespace ConwaysWorld
 {
 
@@ -52,15 +52,15 @@ namespace ConwaysWorld
             return cell;
         }
 
-        private void SpreadDisease(Cell[,] cellGrid, Neighborhood neighborhood)
+        private void SpreadDisease(Cell[,] cellGrid, Cell_Neighborhood neighborhood)
         {
             // mark neighbors as infected
-            for (int i = 0; i < Neighborhood.NeighborHoodKeys.Length; i++)
+            for (int i = 0; i < Cell_Neighborhood.NeighborHoodKeys.Length; i++)
             {
-                if (Random.Range(1, 101) < TransmissionRate && Neighborhood.NeighborHoodKeys[i] != "center")
+                if (Random.Range(1, 101) < TransmissionRate && Cell_Neighborhood.NeighborHoodKeys[i] != "center")
                 {
-                    int nCellCol = neighborhood.NeighborhoodDict[Neighborhood.NeighborHoodKeys[i]].Column;
-                    int nCellRow = neighborhood.NeighborhoodDict[Neighborhood.NeighborHoodKeys[i]].Row;
+                    int nCellCol = neighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Column;
+                    int nCellRow = neighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Row;
                     cellGrid[nCellCol, nCellRow].Conditions.Add("infected");
                 }
             }

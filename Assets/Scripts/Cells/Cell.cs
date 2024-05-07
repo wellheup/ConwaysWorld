@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
-using static ConwaysWorld.CellGenerator;
+using static ConwaysWorld.Cell_Generator;
 namespace ConwaysWorld
 {
 
@@ -9,7 +9,7 @@ namespace ConwaysWorld
         public Color LiveColor;
         public Color DeadColor;
         public Color CurrentColor;
-        public Neighborhood CellNeighborhood;
+        public Cell_Neighborhood CellNeighborhood;
         public List<string> Conditions;
         protected bool IsAlive = false;
         public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
@@ -156,8 +156,8 @@ namespace ConwaysWorld
             dest.Column = oldCol;
             dest.Row = oldRow;
 
-            CellNeighborhood = new Neighborhood(cellGrid, Column, Row);
-            dest.CellNeighborhood = new Neighborhood(cellGrid, dest.Column, dest.Row);
+            CellNeighborhood = new Cell_Neighborhood(cellGrid, Column, Row);
+            dest.CellNeighborhood = new Cell_Neighborhood(cellGrid, dest.Column, dest.Row);
         }
 
         public virtual void Breed()
@@ -181,7 +181,7 @@ namespace ConwaysWorld
         {
             if (cell.CellNeighborhood.NumNeighbors == 0)
             {
-                cell.CellNeighborhood = new Neighborhood(CellGrid, cell.Column, cell.Row);
+                cell.CellNeighborhood = new Cell_Neighborhood(CellGrid, cell.Column, cell.Row);
                 cell.Live(CellGrid);
             }
         }
@@ -204,6 +204,9 @@ namespace ConwaysWorld
                 }
 
             }
+        }
+        public void ExpandCellGrid(Cell[,] CellGrid)
+        {
 
         }
     }

@@ -1,5 +1,5 @@
 using UnityEngine;
-using static ConwaysWorld.CellGenerator;
+using static ConwaysWorld.Cell_Generator;
 namespace ConwaysWorld
 {
 
@@ -21,7 +21,7 @@ namespace ConwaysWorld
             IsAlive = isAlive;
             Column = column;
             Row = row;
-            Direction = Neighborhood.NeighborHoodKeys[Random.Range(0, Neighborhood.NeighborHoodKeys.Length)];
+            Direction = ChooseTravelDirection();
             CellType = E_CellType.Cell_Traveler;
         }
 
@@ -45,6 +45,16 @@ namespace ConwaysWorld
         {
             base.Die();
             SpecialPerformed = true;
+        }
+
+        protected string ChooseTravelDirection()
+        {
+            string direction = "center";
+            while (direction == "center")
+            {
+                direction = Cell_Neighborhood.NeighborHoodKeys[Random.Range(0, Cell_Neighborhood.NeighborHoodKeys.Length)];
+            }
+            return direction;
         }
 
         public override bool CalcCellAliveNextGen()

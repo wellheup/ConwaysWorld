@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace ConwaysWorld
 {
-    public class CellGenerator
+    public class Cell_Generator
     {
         public enum E_CellType
         {
@@ -24,7 +24,7 @@ namespace ConwaysWorld
         private List<CellSpawnFrequency> _spawnFrequencies;
         private float BasePercentLiving;
 
-        public CellGenerator(int basePercentLiving)
+        public Cell_Generator(int basePercentLiving)
         {
             BasePercentLiving = basePercentLiving;
             _spawnFrequencies = new List<CellSpawnFrequency>();
@@ -72,6 +72,7 @@ namespace ConwaysWorld
         public Cell InitializeCell(int column, int row)
         {
             Cell cell;
+            float _rollForVariant = Random.value;
             switch (GetRandomCellType())
             {
                 case E_CellType.Cell_Basic:
@@ -85,14 +86,17 @@ namespace ConwaysWorld
                     cell = new Cell_Immortal(column, row, true);
                     break;
                 case E_CellType.Cell_Diseased:
-                    float value = Random.value;
-                    if (value > 1 / 6)
+                    if (_rollForVariant > 1 / 6)
                         cell = new Cell_Diseased(column, row, true);
                     else
                         cell = new Cell_Plague(column, row, true);
                     break;
                 case E_CellType.Cell_Traveler:
-                    cell = new Cell_Traveler(column, row, true);
+                    // if (_rollForVariant > 1 / 6)
+                    if (false)
+                        cell = new Cell_Traveler(column, row, true);
+                    else
+                        cell = new Cell_Explorer(column, row, true);
                     break;
                 default: //this is case E_CellType.Cell_Dead
                     cell = new Cell_Basic(column, row, false);

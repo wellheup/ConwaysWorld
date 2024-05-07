@@ -4,32 +4,34 @@ namespace ConwaysWorld
     public class Model
     {
         public Cell[,] CellGrid;
-        public Neighborhood[,] NeighborhoodsGrid;
+        public Cell_Neighborhood[,] NeighborhoodsGrid;
         public bool[,] AliveNextGenGrid;
-        private CellGenerator Generator;
+        private Cell_Generator Generator;
 
-        private int BasePercentLiving = 10;
-        private int MinLifePercent = 5;
-        private int CurrentPopulation;
+        private int BasePercentLiving = 10, MinLifePercent = 5, CurrentPopulation, Columns, Rows;
         public bool UseThreeGroup = false;
 
         public Model(int columns, int rows, int basePercentLiving, int minLifePercent)
         {
+            Columns = columns;
+            Rows = rows;
             BasePercentLiving = basePercentLiving;
             MinLifePercent = minLifePercent;
-            Generator = new CellGenerator(BasePercentLiving);
-            PopulateGrid(columns, rows, basePercentLiving);
+            Generator = new Cell_Generator(BasePercentLiving);
+            PopulateGrid(Columns, Rows, basePercentLiving);
         }
 
         public void PopulateGrid(int columns, int rows, int basePercentLiving)
         {
-            CellGrid = new Cell[columns, rows];
-            NeighborhoodsGrid = new Neighborhood[columns, rows];
-            AliveNextGenGrid = new bool[columns, rows];
+            Columns = columns;
+            Rows = rows;
+            CellGrid = new Cell[Columns, Rows];
+            NeighborhoodsGrid = new Cell_Neighborhood[Columns, Rows];
+            AliveNextGenGrid = new bool[Columns, Rows];
 
-            for (int column = 0; column < columns; column++)
+            for (int column = 0; column < Columns; column++)
             {
-                for (int row = 0; row < rows; row++)
+                for (int row = 0; row < Rows; row++)
                 {
                     CellGrid[column, row] = Generator.InitializeCell(column, row);
 
@@ -39,16 +41,44 @@ namespace ConwaysWorld
 
         public void PopulateGrid()
         {
-            CellGrid = new Cell[CellGrid.GetLength(0), CellGrid.GetLength(1)];
-            NeighborhoodsGrid = new Neighborhood[CellGrid.GetLength(0), CellGrid.GetLength(1)];
-            AliveNextGenGrid = new bool[CellGrid.GetLength(0), CellGrid.GetLength(1)];
-            for (int column = 0; column < CellGrid.GetLength(0); column++)
+            CellGrid = new Cell[Columns, Rows];
+            NeighborhoodsGrid = new Cell_Neighborhood[Columns, Rows];
+            AliveNextGenGrid = new bool[Columns, Rows];
+            for (int column = 0; column < Columns; column++)
             {
-                for (int row = 0; row < CellGrid.GetLength(1); row++)
+                for (int row = 0; row < Rows; row++)
                 {
                     CellGrid[column, row] = Generator.InitializeCell(column, row);
                 }
             }
+        }
+
+        private void ResizeCellGrid()
+        {
+            Cell[,] tempGrid = CellGrid;
+            CellGrid = new Cell[Columns + 2, Rows + 2];
+            for (int column = 0; column < Columns + 2; column++)
+            {
+                for (int row = 0; row < Rows + 2; row++)
+                {
+                    if (column == 0 || column == Columns + 1 || row == 0 || row == Rows + 1)
+                    {
+                        CellGrid[column, row] = new Cell_Basic(column, row, false);
+                    }
+                    else
+                    {
+                        Debug.Log(column + ", " + row);
+                        CellGrid[column, row] = tempGrid[column - 1, row - 1];
+                        CellGrid[column, row].Column = column;
+                        CellGrid[column, row].Row = row;
+                    }
+                }
+            }
+
+            Columns += 2;
+            Rows += 2;
+            UpdateNeighborhoodsGrid();
+            UpdateAliveNextGenGrid();
         }
 
         public void AddRandomLife(int percentOfGrid)
@@ -72,11 +102,12 @@ namespace ConwaysWorld
 
         public void UpdateNeighborhoodsGrid()
         {
-            for (int column = 0; column < CellGrid.GetLength(0); column++)
+            NeighborhoodsGrid = new Cell_Neighborhood[Columns, Rows];
+            for (int column = 0; column < Columns; column++)
             {
-                for (int row = 0; row < CellGrid.GetLength(1); row++)
+                for (int row = 0; row < Rows; row++)
                 {
-                    NeighborhoodsGrid[column, row] = new Neighborhood(CellGrid, column, row);
+                    NeighborhoodsGrid[column, row] = new Cell_Neighborhood(CellGrid, column, row);
                     CellGrid[column, row].CellNeighborhood = NeighborhoodsGrid[column, row];
                 }
             }
@@ -84,10 +115,10 @@ namespace ConwaysWorld
 
         public void UpdateAliveNextGenGrid()
         {
-            // Assess population 
-            for (int column = 0; column < CellGrid.GetLength(0); column++)
+            AliveNextGenGrid = new bool[Columns, Rows];
+            for (int column = 0; column < Columns; column++)
             {
-                for (int row = 0; row < CellGrid.GetLength(1); row++)
+                for (int row = 0; row < Rows; row++)
                 {
                     AliveNextGenGrid[column, row] = CellGrid[column, row].CalcCellAliveNextGen();
                 }
@@ -98,9 +129,9 @@ namespace ConwaysWorld
         {
             CurrentPopulation = 0;
             // Update population state
-            for (int column = 0; column < CellGrid.GetLength(0); column++)
+            for (int column = 0; column < Columns; column++)
             {
-                for (int row = 0; row < CellGrid.GetLength(1); row++)
+                for (int row = 0; row < Rows; row++)
                 {
                     if (CellGrid[column, row].GetIsAlive())
                     {
@@ -138,9 +169,10 @@ namespace ConwaysWorld
 
         public void UpdateCellConditions()
         {
-            for (int column = 0; column < CellGrid.GetLength(0); column++)
+            bool _resize = false;
+            for (int column = 0; column < Columns; column++)
             {
-                for (int row = 0; row < CellGrid.GetLength(1); row++)
+                for (int row = 0; row < Rows; row++)
                 {
                     // Chain of ifs for different conditions
                     // if (CellGrid[column, row].Conditions.Contains("immune"))//manage immune, not sure if it works...
@@ -159,11 +191,19 @@ namespace ConwaysWorld
                     {
                         CellGrid[column, row].Immaculate(CellGrid);
                     }
+                    if (CellGrid[column, row].Conditions.Contains("exploring"))//manage immune, not sure if it works...
+                    {
+                        _resize = true;
+                    }
                 }
+            }
+            if (_resize)
+            {
+                ResizeCellGrid();
             }
         }
 
-        public void PerformSpecialActions()
+        public void UpdateSpecialActions()
         {
             for (int column = 0; column < CellGrid.GetLength(0); column++)
             {
@@ -194,7 +234,7 @@ namespace ConwaysWorld
             UpdateAliveNextGenGrid();
             UpdateCellLives();
             UpdateCellConditions();
-            PerformSpecialActions();
+            UpdateSpecialActions();
             // ObserveCellConditions(); //for debugging
             AddRandomLife(BasePercentLiving);
 
