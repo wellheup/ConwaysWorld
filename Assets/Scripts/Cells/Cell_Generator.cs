@@ -108,10 +108,12 @@ namespace ConwaysWorld
                         cell = new Cell_Plague(column, row, true);
                     break;
                 case E_CellType.Cell_Traveler:
-                    if (_rollForVariant > .4)
-                        cell = new Cell_Traveler(column, row, true);
-                    else
+                    if (_rollForVariant > .8)
+                        cell = new Cell_Voyager(column, row, true);
+                    else if (_rollForVariant > .5)
                         cell = new Cell_Explorer(column, row, true);
+                    else
+                        cell = new Cell_Traveler(column, row, true);
                     break;
                 default: //this is case E_CellType.Cell_Dead
                     cell = new Cell_Basic(column, row, false);

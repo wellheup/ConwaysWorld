@@ -108,6 +108,7 @@ namespace ConwaysWorld
 /*TODO:
 - add class and method descriptions using /// notation (vscode should suggest a template)
 - add a Cell_Grid type to contain all grid-based functions
+- optimize grid traversal so that only changed cells are touched and we don't loop through the whole thing
 - move more of conditions updates to SpecialActions()
 - right now once regular life gets going, there aren't many opportunities for variations, introduce more variations on cells set to live next gen...
 - Add to Conway's world an event that uses a "find the largest island"  algorithm
