@@ -67,7 +67,6 @@ namespace ConwaysWorld
                     }
                     else
                     {
-                        Debug.Log(column + ", " + row);
                         CellGrid[column, row] = tempGrid[column - 1, row - 1];
                         CellGrid[column, row].Column = column;
                         CellGrid[column, row].Row = row;

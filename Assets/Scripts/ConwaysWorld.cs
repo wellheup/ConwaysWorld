@@ -5,6 +5,7 @@ namespace ConwaysWorld
     public class ConwaysWorld : MonoBehaviour
     {
         public GameObject viewObject_Prefab;
+        [SerializeField] private BaseTile _baseTilePrefab;
         private View FrontEnd;
         public Model BackEnd;
 
@@ -29,11 +30,11 @@ namespace ConwaysWorld
 
             float canvasWidth = canvas.GetComponent<RectTransform>().rect.width;
             float canvasHeight = canvas.GetComponent<RectTransform>().rect.height;
-            Columns = (int)canvasWidth / 100;
-            Rows = (int)canvasHeight / 100;
+            Columns = (int)canvasWidth / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
+            Rows = (int)canvasHeight / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
 
             // Populate the grid backend initially
-            BackEnd = new Model((int)Columns, (int)Rows, BasePercentLiving, MinLifePercent);
+            BackEnd = new Model(Columns, Rows, BasePercentLiving, MinLifePercent);
 
             // Prepare the view
             FrontEnd = viewObject_Prefab.GetComponent<View>();
@@ -105,9 +106,6 @@ namespace ConwaysWorld
     }
 }
 /*TODO:
-- for some reason the tiles don't resize upon expansion...
-- remember to balance explorer max alone time
-- make sure Explorer cells can expand the grid without losing track of any cells 
 - add class and method descriptions using /// notation (vscode should suggest a template)
 - add a Cell_Grid type to contain all grid-based functions
 - move more of conditions updates to SpecialActions()
@@ -133,8 +131,7 @@ namespace ConwaysWorld
 - add fields for "nations" to distinguish between different cell groups
     - if, at spawn, a grup is an island, then they form a nation (random string)
         -spawns a diplomat if island is larger than x number of cells
-- add a way to change the size of the grid
+- add a way to change the size of the starting grid
 - utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
-- enums instead of ints?
 - move Grid into its own class
 */

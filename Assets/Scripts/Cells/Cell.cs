@@ -13,20 +13,12 @@ namespace ConwaysWorld
         public List<string> Conditions;
         protected bool IsAlive = false;
         public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
-        protected E_CellType CellType = E_CellType.Cell;
-
-        // public Cell()
-        // {
-        //     LiveColor = Color.black;
-        //     DeadColor = Color.white;
-        //     CurrentColor = IsAlive ? LiveColor : DeadColor;
-        //     Conditions = new List<string>();
-        // }
+        public E_CellType CellType = E_CellType.Cell;
 
         public Cell(int column, int row, bool isAlive)
         {
             this.IsAlive = isAlive;
-            LiveColor = Color.black;
+            LiveColor = Cell_Colors.Cell;
             DeadColor = Color.white;
             CurrentColor = isAlive ? LiveColor : DeadColor;
             Column = column;

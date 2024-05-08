@@ -8,7 +8,7 @@ namespace ConwaysWorld
         protected int CountDown = 3, TransmissionRate = 50;
         public Cell_Diseased(int column, int row, bool isAlive) : base(column, row, isAlive)
         {
-            LiveColor = Color.green;
+            LiveColor = Cell_Colors.Cell_Diseased;
             DeadColor = Color.white;
             CellType = E_CellType.Cell_Diseased;
         }

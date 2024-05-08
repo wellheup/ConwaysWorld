@@ -548,6 +548,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   viewObject_Prefab: {fileID: 668518591}
+  _baseTilePrefab: {fileID: 4530487581707663245, guid: 86020e297e6045043a7792282839f62f, type: 3}
   LifeGoesOn: 1
   RestartAtZero: 1
   FToContinue: 0

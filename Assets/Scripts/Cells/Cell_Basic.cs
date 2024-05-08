@@ -10,6 +10,7 @@ namespace ConwaysWorld
             Column = column;
             Row = row;
             CellType = E_CellType.Cell_Basic;
+            LiveColor = Cell_Colors.Cell_Basic;
         }
     }
 }

@@ -11,12 +11,9 @@ namespace ConwaysWorld
     {
         public Cell_Explorer(int column, int row, bool isAlive) : base(column, row, isAlive)
         {
-            // IsAlive = isAlive;
-            // Column = column;
-            // Row = row;
-            CellType = E_CellType.Cell_Traveler;
+            CellType = E_CellType.Cell_Explorer;
             MaxAloneTime = 4;
-            LiveColor = Color.magenta;
+            LiveColor = Cell_Colors.Cell_Explorer;
         }
 
         public override void Live(Cell[,] cellGrid)

@@ -9,7 +9,7 @@ namespace ConwaysWorld
         public Cell_Plague(int column, int row, bool isAlive) : base(column, row, isAlive)
         {
             this.IsAlive = isAlive;
-            LiveColor = Color.green;
+            LiveColor = Cell_Colors.Cell_Plague;
             DeadColor = Color.white;
             Column = column;
             Row = row;

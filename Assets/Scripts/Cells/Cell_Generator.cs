@@ -12,6 +12,22 @@ namespace ConwaysWorld
             Cell_Diseased,
             Cell_Plague,
             Cell_Traveler,
+            Cell_Explorer,
+            Cell_Voyager,
+            Cell_Doctor,
+            Cell_Necromancer,
+            Cell_Zombie,
+            Cell_Warrior,
+            Cell_Mutant,
+            Cell_Islander,
+            Cell_Bomber,
+            Cell_Savior,
+            Cell_Conqueror,
+            Cell_Teacher,
+            Cell_Irradiated,
+            Cell_Diplomat,
+            Cell_Hunter,
+            Cell_God,
             Cell_Dead,
         }
 
@@ -92,8 +108,7 @@ namespace ConwaysWorld
                         cell = new Cell_Plague(column, row, true);
                     break;
                 case E_CellType.Cell_Traveler:
-                    // if (_rollForVariant > 1 / 6)
-                    if (false)
+                    if (_rollForVariant > .5)
                         cell = new Cell_Traveler(column, row, true);
                     else
                         cell = new Cell_Explorer(column, row, true);

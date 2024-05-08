@@ -23,6 +23,7 @@ namespace ConwaysWorld
             Row = row;
             Direction = ChooseTravelDirection();
             CellType = E_CellType.Cell_Traveler;
+            LiveColor = Cell_Colors.Cell_Traveler;
         }
 
         public override void Live(Cell[,] cellGrid)

@@ -11,7 +11,7 @@ namespace ConwaysWorld
         public Cell_Immortal(int column, int row, bool isAlive = true) : base(column, row, isAlive)
         {
             this.IsAlive = isAlive;
-            LiveColor = Color.red;
+            LiveColor = Cell_Colors.Cell_Immortal;
             DeadColor = Color.white;
             CurrentColor = isAlive ? LiveColor : DeadColor;
             Column = column;
