@@ -108,7 +108,7 @@ namespace ConwaysWorld
                         cell = new Cell_Plague(column, row, true);
                     break;
                 case E_CellType.Cell_Traveler:
-                    if (_rollForVariant > .5)
+                    if (_rollForVariant > .4)
                         cell = new Cell_Traveler(column, row, true);
                     else
                         cell = new Cell_Explorer(column, row, true);

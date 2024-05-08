@@ -5,8 +5,8 @@ namespace ConwaysWorld
     {
         public Cell[,] CellGrid;
         public Cell_Neighborhood[,] NeighborhoodsGrid;
-        public bool[,] AliveNextGenGrid;
         private Cell_Generator Generator;
+        public bool[,] AliveNextGenGrid;
 
         private int BasePercentLiving = 10, MinLifePercent = 5, CurrentPopulation, Columns, Rows;
         public bool UseThreeGroup = false;
