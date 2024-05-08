@@ -1,0 +1,58 @@
+
+using System;
+using UnityEngine;
+using static ConwaysWorld.Cell_Generator;
+/// <summary>
+/// explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
+/// </summary>
+namespace ConwaysWorld
+{
+    public class Cell_Explorer : Cell_Traveler
+    {
+        public Cell_Explorer(int column, int row, bool isAlive) : base(column, row, isAlive)
+        {
+            CellType = E_CellType.Cell_Explorer;
+            MaxAloneTime = 4;
+            LiveColor = Cell_Colors.Cell_Explorer;
+        }
+
+        public override void Live(Cell[,] cellGrid)
+        {
+            IsAlive = true;
+            CurrentColor = LiveColor;
+            Age++;
+            if (CellNeighborhood.NumNeighbors == 0)
+            {
+                DeathCountDown++;
+            }
+            else
+            {
+                DeathCountDown = 0;
+            }
+            SpecialPerformed = false;
+            if (IsNeighborOverEdge(CellNeighborhood.NeighborhoodDict[Direction]))
+            {
+                Conditions.Add("exploring");
+            }
+        }
+
+        protected bool IsNeighborOverEdge(Cell neighbor)
+        {
+            if (Math.Abs(Column - neighbor.Column) > 1 || Math.Abs(Row - neighbor.Row) > 1)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public override void SpecialActions(Cell[,] cellGrid)
+        {
+            if (IsAlive && !SpecialPerformed)
+            {
+                Conditions.RemoveAll(item => item == "exploring");
+                SwapCells(CellNeighborhood.NeighborhoodDict[Direction], cellGrid);
+                SpecialPerformed = true;
+            }
+        }
+    }
+}

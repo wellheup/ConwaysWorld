@@ -1,0 +1,245 @@
+using UnityEngine;
+namespace ConwaysWorld
+{
+    public class Model
+    {
+        public Cell[,] CellGrid;
+        public Cell_Neighborhood[,] NeighborhoodsGrid;
+        private Cell_Generator Generator;
+        public bool[,] AliveNextGenGrid;
+
+        private int BasePercentLiving = 10, MinLifePercent = 5, CurrentPopulation, Columns, Rows;
+        public bool UseThreeGroup = false;
+
+        public Model(int columns, int rows, int basePercentLiving, int minLifePercent)
+        {
+            Columns = columns;
+            Rows = rows;
+            BasePercentLiving = basePercentLiving;
+            MinLifePercent = minLifePercent;
+            Generator = new Cell_Generator(BasePercentLiving);
+            PopulateGrid(Columns, Rows, basePercentLiving);
+        }
+
+        public void PopulateGrid(int columns, int rows, int basePercentLiving)
+        {
+            Columns = columns;
+            Rows = rows;
+            CellGrid = new Cell[Columns, Rows];
+            NeighborhoodsGrid = new Cell_Neighborhood[Columns, Rows];
+            AliveNextGenGrid = new bool[Columns, Rows];
+
+            for (int column = 0; column < Columns; column++)
+            {
+                for (int row = 0; row < Rows; row++)
+                {
+                    CellGrid[column, row] = Generator.InitializeCell(column, row);
+
+                }
+            }
+        }
+
+        public void PopulateGrid()
+        {
+            CellGrid = new Cell[Columns, Rows];
+            NeighborhoodsGrid = new Cell_Neighborhood[Columns, Rows];
+            AliveNextGenGrid = new bool[Columns, Rows];
+            for (int column = 0; column < Columns; column++)
+            {
+                for (int row = 0; row < Rows; row++)
+                {
+                    CellGrid[column, row] = Generator.InitializeCell(column, row);
+                }
+            }
+        }
+
+        private void ResizeCellGrid()
+        {
+            Cell[,] tempGrid = CellGrid;
+            CellGrid = new Cell[Columns + 2, Rows + 2];
+            for (int column = 0; column < Columns + 2; column++)
+            {
+                for (int row = 0; row < Rows + 2; row++)
+                {
+                    if (column == 0 || column == Columns + 1 || row == 0 || row == Rows + 1)
+                    {
+                        CellGrid[column, row] = new Cell_Basic(column, row, false);
+                    }
+                    else
+                    {
+                        CellGrid[column, row] = tempGrid[column - 1, row - 1];
+                        CellGrid[column, row].Column = column;
+                        CellGrid[column, row].Row = row;
+                    }
+                }
+            }
+
+            Columns += 2;
+            Rows += 2;
+            UpdateNeighborhoodsGrid();
+            UpdateAliveNextGenGrid();
+        }
+
+        public void AddRandomLife(int percentOfGrid)
+        {
+            if (CurrentPopulation > 0 && CurrentPopulation / (CellGrid.GetLength(0) * CellGrid.GetLength(1)) <= MinLifePercent)
+            {
+                int numNewLives = CellGrid.GetLength(0) * CellGrid.GetLength(1) * percentOfGrid / 100;
+                int counter = 0;
+                while (counter < numNewLives)
+                {
+                    int randCol = Random.Range(0, CellGrid.GetLength(0));
+                    int randRow = Random.Range(0, CellGrid.GetLength(1));
+                    if (!CellGrid[randCol, randRow].GetIsAlive() && !AliveNextGenGrid[randCol, randRow])
+                    {
+                        CellGrid[randCol, randRow] = Generator.InitializeCell(randCol, randRow);
+                        counter++;
+                    }
+                }
+            }
+        }
+
+        public void UpdateNeighborhoodsGrid()
+        {
+            NeighborhoodsGrid = new Cell_Neighborhood[Columns, Rows];
+            for (int column = 0; column < Columns; column++)
+            {
+                for (int row = 0; row < Rows; row++)
+                {
+                    NeighborhoodsGrid[column, row] = new Cell_Neighborhood(CellGrid, column, row);
+                    CellGrid[column, row].CellNeighborhood = NeighborhoodsGrid[column, row];
+                }
+            }
+        }
+
+        public void UpdateAliveNextGenGrid()
+        {
+            AliveNextGenGrid = new bool[Columns, Rows];
+            for (int column = 0; column < Columns; column++)
+            {
+                for (int row = 0; row < Rows; row++)
+                {
+                    AliveNextGenGrid[column, row] = CellGrid[column, row].CalcCellAliveNextGen();
+                }
+            }
+        }
+
+        public int UpdateCellLives()
+        {
+            CurrentPopulation = 0;
+            // Update population state
+            for (int column = 0; column < Columns; column++)
+            {
+                for (int row = 0; row < Rows; row++)
+                {
+                    if (CellGrid[column, row].GetIsAlive())
+                    {
+                        if (AliveNextGenGrid[column, row])
+                        {
+                            // is alive and stays alive
+                            // Debug.Log("Cell " + column + ", " + row + " stay alive ");
+                            CellGrid[column, row].Live(CellGrid);
+                        }
+                        else
+                        {
+                            // Debug.Log("Cell " + column + ", " + row + " die ");
+                            CellGrid[column, row].Die();
+                        }
+                        CurrentPopulation++;
+                    }
+                    else
+                    {
+                        if (AliveNextGenGrid[column, row])
+                        {
+                            //replace the cell with a fresh one, rather than leaving an opening for data to leak into a new cell from previous life (MAY WANT TO KEEP PREV-LIFE DATA LATER)
+                            //treats the cell as a newborn rather than a revived cell
+                            CellGrid[column, row].Live(CellGrid);
+                        }
+                        else
+                        {
+                            // Debug.Log("Cell " + column + ", " + row + " stay dead ");
+                            // is dead and stays dead
+                        }
+                    }
+                }
+            }
+            return CurrentPopulation;
+        }
+
+        public void UpdateCellConditions()
+        {
+            bool _resize = false;
+            for (int column = 0; column < Columns; column++)
+            {
+                for (int row = 0; row < Rows; row++)
+                {
+                    // Chain of ifs for different conditions
+                    // if (CellGrid[column, row].Conditions.Contains("immune"))//manage immune, not sure if it works...
+                    // {
+                    //     CellGrid[column, row].Conditions.RemoveAll(item => item == "immune");
+                    // }
+                    if (CellGrid[column, row].Conditions.Contains("infected")) //manage infected
+                    {
+                        CellGrid[column, row] = Cell_Diseased.Infect(CellGrid[column, row]);
+                    }
+                    if (CellGrid[column, row].Conditions.Contains("mature")) //manage mature
+                    {
+                        CellGrid[column, row].Breed();
+                    }
+                    if (CellGrid[column, row].Conditions.Contains("immaculate"))//manage immaculate birth
+                    {
+                        CellGrid[column, row].Immaculate(CellGrid);
+                    }
+                    if (CellGrid[column, row].Conditions.Contains("exploring"))//manage immune, not sure if it works...
+                    {
+                        _resize = true;
+                    }
+                }
+            }
+            if (_resize)
+            {
+                ResizeCellGrid();
+            }
+        }
+
+        public void UpdateSpecialActions()
+        {
+            for (int column = 0; column < CellGrid.GetLength(0); column++)
+            {
+                for (int row = 0; row < CellGrid.GetLength(1); row++)
+                {
+                    CellGrid[column, row].SpecialActions(CellGrid);
+                }
+            }
+        }
+
+        public void ObserveCellConditions() //for debugging
+        {
+            for (int column = 0; column < CellGrid.GetLength(0); column++)
+            {
+                for (int row = 0; row < CellGrid.GetLength(1); row++)
+                {
+                    if (CellGrid[column, row].CurrentColor != Color.white)
+                    {
+                        Debug.Log("Column: " + CellGrid[column, row].Column + ", Row: " + CellGrid[column, row].Row + " IsAlive: " + CellGrid[column, row].GetIsAlive());
+                    }
+                }
+            }
+        }
+
+        public int UpdateCellsGrid()
+        {
+            UpdateNeighborhoodsGrid();
+            UpdateAliveNextGenGrid();
+            UpdateCellLives();
+            UpdateCellConditions();
+            UpdateSpecialActions();
+            // ObserveCellConditions(); //for debugging
+            AddRandomLife(BasePercentLiving);
+
+            return CurrentPopulation;
+        }
+
+    }
+}
+
