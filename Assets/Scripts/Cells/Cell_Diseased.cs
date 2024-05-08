@@ -1,16 +1,19 @@
 using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
+using System.Collections.Generic;
+
 namespace ConwaysWorld
 {
-
     public class Cell_Diseased : Cell
     {
         protected int CountDown = 3, TransmissionRate = 50;
-        public Cell_Diseased(int column, int row, bool isAlive) : base(column, row, isAlive)
+        public Cell_Diseased(int column, int row, bool isAlive)// : base(column, row, isAlive)
         {
             LiveColor = Cell_Colors.Cell_Diseased;
             DeadColor = Color.white;
+            CurrentColor = isAlive ? LiveColor : DeadColor;
             CellType = E_CellType.Cell_Diseased;
+            Conditions = new List<string>();
         }
 
         public override void Live(Cell[,] cellGrid)

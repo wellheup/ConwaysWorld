@@ -4,7 +4,7 @@ namespace ConwaysWorld
     public static class Cell_Colors
     {
         //public static Color Green => new(0f, 1f, 0f, 1f); // format example, this is green in Unity Defaults
-        public static Color Cell => Color.clear;
+        // public static Color Cell => Color.clear;
         public static Color Cell_Basic => new(0.2f, 0.7f, 0.4f, 1f);
         public static Color Cell_Immortal => new(0.6f, 0.1f, 0.8f, 1f);
         public static Color Cell_Diseased => new(0.4f, 0.5f, 0.2f, 1f);

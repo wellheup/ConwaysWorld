@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 namespace ConwaysWorld
 {
@@ -178,6 +179,8 @@ namespace ConwaysWorld
                     // {
                     //     CellGrid[column, row].Conditions.RemoveAll(item => item == "immune");
                     // }
+                    if (CellGrid[column, row].Conditions != null)
+                        Debug.Log("bleh");
                     if (CellGrid[column, row].Conditions.Contains("infected")) //manage infected
                     {
                         CellGrid[column, row] = Cell_Diseased.Infect(CellGrid[column, row]);

@@ -8,7 +8,7 @@ namespace ConwaysWorld
     {
         private int DeathCounter = 0;
         private int MaxAloneTime = 10;
-        public Cell_Immortal(int column, int row, bool isAlive = true) : base(column, row, isAlive)
+        public Cell_Immortal(int column, int row, bool isAlive = true)// : base(column, row, isAlive)
         {
             this.IsAlive = isAlive;
             LiveColor = Cell_Colors.Cell_Immortal;

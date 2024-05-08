@@ -1,8 +1,9 @@
 using UnityEngine;
+using System.Collections.Generic;
 using static ConwaysWorld.Cell_Generator;
+
 namespace ConwaysWorld
 {
-
     public class Cell_Plague : Cell_Diseased
     {
         // plague(diseased cell that spreads disease with higher infection rate than diseased to all touching cells)
@@ -11,11 +12,12 @@ namespace ConwaysWorld
             this.IsAlive = isAlive;
             LiveColor = Cell_Colors.Cell_Plague;
             DeadColor = Color.white;
+            CurrentColor = isAlive ? LiveColor : DeadColor;
             Column = column;
             Row = row;
             TransmissionRate = 75;
             CellType = E_CellType.Cell_Plague;
-
+            Conditions = new List<string>();
         }
 
         public override void Live(Cell[,] cellGrid)

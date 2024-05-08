@@ -1,6 +1,7 @@
 
 using System;
 using UnityEngine;
+using System.Collections.Generic;
 using static ConwaysWorld.Cell_Generator;
 /// <summary>
 /// explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
@@ -14,6 +15,9 @@ namespace ConwaysWorld
             CellType = E_CellType.Cell_Explorer;
             MaxAloneTime = 4;
             LiveColor = Cell_Colors.Cell_Explorer;
+            DeadColor = Color.white;
+            CurrentColor = isAlive ? LiveColor : DeadColor;
+            Conditions = new List<string>();
         }
 
         public override void Live(Cell[,] cellGrid)

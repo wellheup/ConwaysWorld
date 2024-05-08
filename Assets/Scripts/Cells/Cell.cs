@@ -15,16 +15,15 @@ namespace ConwaysWorld
         public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
         public E_CellType CellType = E_CellType.Cell;
 
-        public Cell(int column, int row, bool isAlive)
-        {
-            this.IsAlive = isAlive;
-            LiveColor = Cell_Colors.Cell;
-            DeadColor = Color.white;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
-            Column = column;
-            Row = row;
-            Conditions = new List<string>();
-        }
+        // public Cell(int column, int row, bool isAlive)
+        // {
+        //     this.IsAlive = isAlive;
+        //     DeadColor = Color.white;
+        //     CurrentColor = isAlive ? LiveColor : DeadColor;
+        //     Column = column;
+        //     Row = row;
+        //     Conditions = new List<string>();
+        // }
 
         // Should only be used for debugging
         public void SetAllColors(Color color)
@@ -196,10 +195,6 @@ namespace ConwaysWorld
                 }
 
             }
-        }
-        public void ExpandCellGrid(Cell[,] CellGrid)
-        {
-
         }
     }
 }

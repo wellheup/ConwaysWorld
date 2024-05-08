@@ -1,8 +1,9 @@
 using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
+using System.Collections.Generic;
+
 namespace ConwaysWorld
 {
-
     /// <summary>
     /// traveler (swaps places with random neighbor each turn)
     /// </summary>
@@ -16,7 +17,7 @@ namespace ConwaysWorld
         protected string Direction;
         protected bool SpecialPerformed = false;
 
-        public Cell_Traveler(int column, int row, bool isAlive) : base(column, row, isAlive)
+        public Cell_Traveler(int column, int row, bool isAlive)// : base(column, row, isAlive)
         {
             IsAlive = isAlive;
             Column = column;
@@ -24,6 +25,9 @@ namespace ConwaysWorld
             Direction = ChooseTravelDirection();
             CellType = E_CellType.Cell_Traveler;
             LiveColor = Cell_Colors.Cell_Traveler;
+            DeadColor = Color.white;
+            CurrentColor = isAlive ? LiveColor : DeadColor;
+            Conditions = new List<string>();
         }
 
         public override void Live(Cell[,] cellGrid)
