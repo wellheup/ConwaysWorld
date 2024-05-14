@@ -1,16 +1,24 @@
 using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
+using System.Collections.Generic;
+
 namespace ConwaysWorld
 {
-
     public class Cell_Diseased : Cell
     {
         protected int CountDown = 3, TransmissionRate = 50;
-        public Cell_Diseased(int column, int row, bool isAlive) : base(column, row, isAlive)
+        public string Disease;
+        public Cell_Diseased(int column, int row, bool isAlive)
         {
+            IsAlive = isAlive;
+            Column = column;
+            Row = row;
             LiveColor = Cell_Colors.Cell_Diseased;
-            DeadColor = Color.white;
+            DeadColor = Cell_Colors.Cell_Dead;
+            CurrentColor = isAlive ? LiveColor : DeadColor;
             CellType = E_CellType.Cell_Diseased;
+            Conditions = new List<string>();
+            Disease = RandomCondition('d');
         }
 
         public override void Live(Cell[,] cellGrid)
@@ -18,7 +26,7 @@ namespace ConwaysWorld
             IsAlive = true;
             CurrentColor = LiveColor;
             Age++;
-            SpreadDisease(cellGrid, CellNeighborhood);
+            SpreadDisease(cellGrid);
             if (Age > MatureAge && !Conditions.Contains("mature"))
             {
                 Conditions.Add("mature");
@@ -30,7 +38,7 @@ namespace ConwaysWorld
         {
             IsAlive = false;
             CurrentColor = DeadColor;
-            Conditions.Remove("infected");
+            Conditions.Remove(Disease);
         }
 
         public override bool CalcCellAliveNextGen()
@@ -43,25 +51,27 @@ namespace ConwaysWorld
             return LiveBasic();
         }
 
-        public static Cell Infect(Cell cell)
+        public static Cell Infect(Cell cell, string disease)
         {
             if (cell.GetIsAlive() && cell.GetType() != typeof(Cell_Diseased))
             {
-                return ReplaceCell(cell, E_CellType.Cell_Diseased, true);
+                Cell temp = ReplaceCell(cell, E_CellType.Cell_Diseased, true);
+                temp.Conditions.Add(disease);
+                return temp;
             }
             return cell;
         }
 
-        private void SpreadDisease(Cell[,] cellGrid, Cell_Neighborhood neighborhood)
+        private void SpreadDisease(Cell[,] cellGrid)
         {
             // mark neighbors as infected
             for (int i = 0; i < Cell_Neighborhood.NeighborHoodKeys.Length; i++)
             {
                 if (Random.Range(1, 101) < TransmissionRate && Cell_Neighborhood.NeighborHoodKeys[i] != "center")
                 {
-                    int nCellCol = neighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Column;
-                    int nCellRow = neighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Row;
-                    cellGrid[nCellCol, nCellRow].Conditions.Add("infected");
+                    int nCellCol = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Column;
+                    int nCellRow = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Row;
+                    cellGrid[nCellCol, nCellRow].Conditions.Add(Disease);
                 }
             }
         }

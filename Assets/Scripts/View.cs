@@ -94,6 +94,7 @@ namespace ConwaysWorld
             Generation = generation;
             CurrentPopulation = currentPopulation;
             _cellGrid = cellGrid;
+            int cellNum = 0;
 
             if (_cellGrid.GetLength(0) > _displayGrid.GetLength(0))
             {
@@ -104,6 +105,8 @@ namespace ConwaysWorld
                 for (int y = 0; y < cellGrid.GetLength(1); y++)
                 {
                     _displayGrid[x, y].Image.color = _cellGrid[x, y].GetCurrentColor();
+                    string lifeStatus = _cellGrid[x, y].GetIsAlive() == true ? "Alive" : "Dead";
+                    _displayGrid[x, y].name = cellNum++ + " (" + x + ", " + y + ")" + " " + lifeStatus + " " + _cellGrid[x, y].CellType.ToString();
                 }
             }
             // PrintWorldStats(AttemptsAtLife, Generation, CurrentPopulation);

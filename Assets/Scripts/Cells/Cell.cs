@@ -15,16 +15,15 @@ namespace ConwaysWorld
         public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
         public E_CellType CellType = E_CellType.Cell;
 
-        public Cell(int column, int row, bool isAlive)
-        {
-            this.IsAlive = isAlive;
-            LiveColor = Cell_Colors.Cell;
-            DeadColor = Color.white;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
-            Column = column;
-            Row = row;
-            Conditions = new List<string>();
-        }
+        // public Cell(int column, int row, bool isAlive)
+        // {
+        //     this.IsAlive = isAlive;
+        //     DeadColor = Cell_Colors.Cell_Dead;
+        //     CurrentColor = isAlive ? LiveColor : DeadColor;
+        //     Column = column;
+        //     Row = row;
+        //     Conditions = new List<string>();
+        // }
 
         // Should only be used for debugging
         public void SetAllColors(Color color)
@@ -125,6 +124,9 @@ namespace ConwaysWorld
                 case E_CellType.Cell_Traveler:
                     cell = new Cell_Traveler(column, row, isAlive);
                     break;
+                case E_CellType.Cell_Doctor:
+                    cell = new Cell_Doctor(column, row, isAlive);
+                    break;
                 default:
                     cell = new Cell_Basic(column, row, isAlive); //this should not occur...
                     break;
@@ -197,9 +199,18 @@ namespace ConwaysWorld
 
             }
         }
-        public void ExpandCellGrid(Cell[,] CellGrid)
-        {
 
+        public static string RandomCondition(char prefix)
+        {
+            var chars = "0123456789";
+            var stringChars = new char[8];
+
+            for (int i = 0; i < stringChars.Length; i++)
+            {
+                stringChars[i] = chars[Random.Range(1, chars.Length)];
+            }
+
+            return prefix + "_" + new string(stringChars);
         }
     }
 }
