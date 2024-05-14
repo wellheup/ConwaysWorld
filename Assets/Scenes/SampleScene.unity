@@ -559,7 +559,7 @@ MonoBehaviour:
   AttemptsAtLife: 1
   CurrentPopulation: 0
   timeBeforeStart: 1
-  TimeBetweenGenerations: 0.5
+  TimeBetweenGenerations: 1
 --- !u!1 &1727495055
 GameObject:
   m_ObjectHideFlags: 0

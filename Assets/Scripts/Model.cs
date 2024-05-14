@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 namespace ConwaysWorld
@@ -6,8 +7,9 @@ namespace ConwaysWorld
     {
         public Cell[,] CellGrid;
         public Cell_Neighborhood[,] NeighborhoodsGrid;
-        private Cell_Generator Generator;
         public bool[,] AliveNextGenGrid;
+
+        private Cell_Generator Generator;
 
         private int BasePercentLiving = 10, MinLifePercent = 5, CurrentPopulation, Columns, Rows;
         public bool UseThreeGroup = false;
@@ -179,11 +181,21 @@ namespace ConwaysWorld
                     // {
                     //     CellGrid[column, row].Conditions.RemoveAll(item => item == "immune");
                     // }
-                    if (CellGrid[column, row].Conditions != null)
-                        Debug.Log("bleh");
-                    if (CellGrid[column, row].Conditions.Contains("infected")) //manage infected
+                    if (CellGrid[column, row].CellType != Cell_Generator.E_CellType.Cell_Doctor)
                     {
-                        CellGrid[column, row] = Cell_Diseased.Infect(CellGrid[column, row]);
+                        List<string> conditions = CellGrid[column, row].Conditions;
+                        for (int i = 0; i < conditions.Count; i++)
+                        {
+
+                            if (conditions[i].Contains("d_"))
+                            {//manage infected
+                                CellGrid[column, row] = Cell_Diseased.Infect(CellGrid[column, row], conditions[i]);
+                            }
+                            else if (conditions[i].Contains("p_"))
+                            {//manage plague
+                                CellGrid[column, row] = Cell_Plague.Infect(CellGrid[column, row], conditions[i]);
+                            }
+                        }
                     }
                     if (CellGrid[column, row].Conditions.Contains("mature")) //manage mature
                     {
@@ -193,7 +205,7 @@ namespace ConwaysWorld
                     {
                         CellGrid[column, row].Immaculate(CellGrid);
                     }
-                    if (CellGrid[column, row].Conditions.Contains("exploring"))//manage immune, not sure if it works...
+                    if (CellGrid[column, row].Conditions.Contains("exploring"))//manage grid expansion
                     {
                         _resize = true;
                     }
@@ -222,7 +234,7 @@ namespace ConwaysWorld
             {
                 for (int row = 0; row < CellGrid.GetLength(1); row++)
                 {
-                    if (CellGrid[column, row].CurrentColor != Color.white)
+                    if (CellGrid[column, row].CurrentColor != Cell_Colors.Cell_Dead)
                     {
                         Debug.Log("Column: " + CellGrid[column, row].Column + ", Row: " + CellGrid[column, row].Row + " IsAlive: " + CellGrid[column, row].GetIsAlive());
                     }

@@ -9,15 +9,11 @@ namespace ConwaysWorld
         // plague(diseased cell that spreads disease with higher infection rate than diseased to all touching cells)
         public Cell_Plague(int column, int row, bool isAlive) : base(column, row, isAlive)
         {
-            this.IsAlive = isAlive;
             LiveColor = Cell_Colors.Cell_Plague;
-            DeadColor = Color.white;
             CurrentColor = isAlive ? LiveColor : DeadColor;
-            Column = column;
-            Row = row;
             TransmissionRate = 75;
             CellType = E_CellType.Cell_Plague;
-            Conditions = new List<string>();
+            Disease = RandomCondition('p');
         }
 
         public override void Live(Cell[,] cellGrid)
@@ -25,7 +21,7 @@ namespace ConwaysWorld
             IsAlive = true;
             CurrentColor = LiveColor;
             Age++;
-            SpreadDisease(cellGrid, CellNeighborhood);
+            SpreadDisease(cellGrid);
             if (Age > MatureAge && !Conditions.Contains("mature"))
             {
                 Conditions.Add("mature");
@@ -37,19 +33,30 @@ namespace ConwaysWorld
         {
             IsAlive = false;
             CurrentColor = DeadColor;
-            Conditions.Remove("plagued");
+            Conditions.Remove(Disease);
         }
 
-        private void SpreadDisease(Cell[,] cellGrid, Cell_Neighborhood neighborhood)
+        private static new Cell Infect(Cell cell, string disease)
+        {
+            if (cell.GetIsAlive() && cell.GetType() != typeof(Cell_Plague))
+            {
+                Cell temp = ReplaceCell(cell, E_CellType.Cell_Plague, true);
+                temp.Conditions.Add(disease);
+                return temp;
+            }
+            return cell;
+        }
+
+        private void SpreadDisease(Cell[,] cellGrid)
         {
             // mark neighbors as infected
             for (int i = 0; i < Cell_Neighborhood.NeighborHoodKeys.Length; i++)
             {
                 if (Random.Range(1, 101) < TransmissionRate && Cell_Neighborhood.NeighborHoodKeys[i] != "center")
                 {
-                    int nCellCol = neighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Column;
-                    int nCellRow = neighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Row;
-                    cellGrid[nCellCol, nCellRow].Conditions.Add("plagued");
+                    int nCellCol = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Column;
+                    int nCellRow = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Row;
+                    cellGrid[nCellCol, nCellRow].Conditions.Add(Disease);
                 }
             }
         }

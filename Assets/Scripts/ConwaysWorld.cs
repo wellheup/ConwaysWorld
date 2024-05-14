@@ -106,18 +106,17 @@ namespace ConwaysWorld
     }
 }
 /*TODO:
-- clear cells are slipping into spawn somehow...
-    - am I not setting color when creating cells somewhere? maybe when they live for the first time?
 - add class and method descriptions using /// notation (vscode should suggest a template)
 - add a Cell_Grid type to contain all grid-based functions
 - optimize grid traversal so that only changed cells are touched and we don't loop through the whole thing
-- move more of conditions updates to SpecialActions()
+    - instead of iterating over the whole grid, we can iterate over just live cells, or maybe iterate over just neighborhoods if necessary
+        -every time a cell lives add it to active cells, and every time it dies, remove it
+- move more of conditions updates to SpecialActions()?
 - right now once regular life gets going, there aren't many opportunities for variations, introduce more variations on cells set to live next gen...
 - Add to Conway's world an event that uses a "find the largest island"  algorithm
 - Add different types of specialzed cells inheriting from Cell
     - Complex
         - voyager (version of the explorer cell which goes farther and specifically targets the nearest other nation)
-        - doctor/ vaccine
         - necromancer (revives neighbors the turn after they die)
         - zombie (die if their necromancer dies, do not die from overpopulation)
         - warrior (moves in random direction and kills cells it hits)

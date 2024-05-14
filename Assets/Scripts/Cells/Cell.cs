@@ -18,7 +18,7 @@ namespace ConwaysWorld
         // public Cell(int column, int row, bool isAlive)
         // {
         //     this.IsAlive = isAlive;
-        //     DeadColor = Color.white;
+        //     DeadColor = Cell_Colors.Cell_Dead;
         //     CurrentColor = isAlive ? LiveColor : DeadColor;
         //     Column = column;
         //     Row = row;
@@ -124,6 +124,9 @@ namespace ConwaysWorld
                 case E_CellType.Cell_Traveler:
                     cell = new Cell_Traveler(column, row, isAlive);
                     break;
+                case E_CellType.Cell_Doctor:
+                    cell = new Cell_Doctor(column, row, isAlive);
+                    break;
                 default:
                     cell = new Cell_Basic(column, row, isAlive); //this should not occur...
                     break;
@@ -195,6 +198,19 @@ namespace ConwaysWorld
                 }
 
             }
+        }
+
+        public static string RandomCondition(char prefix)
+        {
+            var chars = "0123456789";
+            var stringChars = new char[8];
+
+            for (int i = 0; i < stringChars.Length; i++)
+            {
+                stringChars[i] = chars[Random.Range(1, chars.Length)];
+            }
+
+            return prefix + "_" + new string(stringChars);
         }
     }
 }

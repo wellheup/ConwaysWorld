@@ -25,7 +25,7 @@ namespace ConwaysWorld
             Direction = ChooseTravelDirection();
             CellType = E_CellType.Cell_Traveler;
             LiveColor = Cell_Colors.Cell_Traveler;
-            DeadColor = Color.white;
+            DeadColor = Cell_Colors.Cell_Dead;
             CurrentColor = isAlive ? LiveColor : DeadColor;
             Conditions = new List<string>();
         }

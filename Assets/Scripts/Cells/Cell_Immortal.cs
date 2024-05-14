@@ -7,12 +7,12 @@ namespace ConwaysWorld
     public class Cell_Immortal : Cell
     {
         private int DeathCounter = 0;
-        private int MaxAloneTime = 10;
+        private int MaxAloneTime = 8;
         public Cell_Immortal(int column, int row, bool isAlive = true)// : base(column, row, isAlive)
         {
             this.IsAlive = isAlive;
             LiveColor = Cell_Colors.Cell_Immortal;
-            DeadColor = Color.white;
+            DeadColor = Cell_Colors.Cell_Dead;
             CurrentColor = isAlive ? LiveColor : DeadColor;
             Column = column;
             Row = row;

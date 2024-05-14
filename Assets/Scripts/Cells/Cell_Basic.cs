@@ -13,7 +13,7 @@ namespace ConwaysWorld
             Row = row;
             CellType = E_CellType.Cell_Basic;
             LiveColor = Cell_Colors.Cell_Basic;
-            DeadColor = Color.white;
+            DeadColor = Cell_Colors.Cell_Dead;
             CurrentColor = isAlive ? LiveColor : DeadColor;
             Conditions = new List<string>();
         }

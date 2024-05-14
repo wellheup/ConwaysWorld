@@ -15,7 +15,7 @@ namespace ConwaysWorld
             CellType = E_CellType.Cell_Explorer;
             MaxAloneTime = 4;
             LiveColor = Cell_Colors.Cell_Explorer;
-            DeadColor = Color.white;
+            DeadColor = Cell_Colors.Cell_Dead;
             CurrentColor = isAlive ? LiveColor : DeadColor;
             Conditions = new List<string>();
         }
