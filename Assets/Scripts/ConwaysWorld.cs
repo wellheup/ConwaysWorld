@@ -13,13 +13,14 @@ namespace ConwaysWorld
         public bool RestartAtZero = false;
         public bool FToContinue = false;
         public bool IsRendering = false;
-        public int BasePercentLiving = 10;
-        public int MinLifePercent = 5;
-        public int Generation = 0, //make these private later
+        public int BasePercentLiving = 10,
+            MinLifePercent = 5,
+            Generation = 0, //make these private later
             AttemptsAtLife = 1,
-            CurrentPopulation = 0;
-        int Columns,
-            Rows;
+            CurrentPopulation = 0,
+            Columns,
+            Rows,
+            GridLimit;
         public float timeBeforeStart = 1.0f,
             TimeBetweenGenerations = 0.5f;
 
@@ -34,7 +35,7 @@ namespace ConwaysWorld
             Rows = (int)canvasHeight / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
 
             // Populate the grid backend initially
-            BackEnd = new Model(Columns, Rows, BasePercentLiving, MinLifePercent);
+            BackEnd = new Model(Columns, Rows, BasePercentLiving, MinLifePercent, GridLimit);
 
             // Prepare the view
             FrontEnd = viewObject_Prefab.GetComponent<View>();
@@ -113,7 +114,7 @@ namespace ConwaysWorld
         -every time a cell lives add it to active cells, and every time it dies, remove it
 - move more of conditions updates to SpecialActions()?
 - right now once regular life gets going, there aren't many opportunities for variations, introduce more variations on cells set to live next gen...
-- Add to Conway's world an event that uses a "find the largest island"  algorithm
+- Add to Conway's world an event that uses a "find the largest island" algorithm
 - Add different types of specialzed cells inheriting from Cell
     - Complex
         - voyager (version of the explorer cell which goes farther and specifically targets the nearest other nation)

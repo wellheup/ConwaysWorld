@@ -11,15 +11,16 @@ namespace ConwaysWorld
 
         private Cell_Generator Generator;
 
-        private int BasePercentLiving = 10, MinLifePercent = 5, CurrentPopulation, Columns, Rows;
+        private int BasePercentLiving = 10, MinLifePercent = 5, CurrentPopulation, Columns, Rows, GridLimit;
         public bool UseThreeGroup = false;
 
-        public Model(int columns, int rows, int basePercentLiving, int minLifePercent)
+        public Model(int columns, int rows, int basePercentLiving, int minLifePercent, int gridLimit)
         {
             Columns = columns;
             Rows = rows;
             BasePercentLiving = basePercentLiving;
             MinLifePercent = minLifePercent;
+            GridLimit = gridLimit;
             Generator = new Cell_Generator(BasePercentLiving);
             PopulateGrid(Columns, Rows, basePercentLiving);
         }
@@ -211,9 +212,25 @@ namespace ConwaysWorld
                     }
                 }
             }
-            if (_resize)
+            if (_resize && !IsMaxGrid())
             {
                 ResizeCellGrid();
+            }
+        }
+
+        private bool IsMaxGrid()
+        {
+            if (GridLimit == 0)
+            {
+                return false;
+            }
+            else if (CellGrid.GetLength(0) > GridLimit || CellGrid.GetLength(1) > GridLimit)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
