@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 namespace ConwaysWorld
@@ -11,7 +12,12 @@ namespace ConwaysWorld
 
         private Cell_Generator Generator;
 
-        private int BasePercentLiving = 10, MinLifePercent = 5, CurrentPopulation, Columns, Rows, GridLimit;
+        private int BasePercentLiving = 10,
+            MinLifePercent = 5,
+            CurrentPopulation,
+            Columns,
+            Rows,
+            GridLimit;
         public bool UseThreeGroup = false;
 
         public Model(int columns, int rows, int basePercentLiving, int minLifePercent, int gridLimit)
@@ -22,28 +28,22 @@ namespace ConwaysWorld
             MinLifePercent = minLifePercent;
             GridLimit = gridLimit;
             Generator = new Cell_Generator(BasePercentLiving);
-            PopulateGrid(Columns, Rows, basePercentLiving);
+            PopulateGrid(Columns, Rows);
         }
 
-        public void PopulateGrid(int columns, int rows, int basePercentLiving)
+        public void PopulateGrid(int columns, int rows)
         {
             Columns = columns;
             Rows = rows;
-            CellGrid = new Cell[Columns, Rows];
-            NeighborhoodsGrid = new Cell_Neighborhood[Columns, Rows];
-            AliveNextGenGrid = new bool[Columns, Rows];
-
-            for (int column = 0; column < Columns; column++)
-            {
-                for (int row = 0; row < Rows; row++)
-                {
-                    CellGrid[column, row] = Generator.InitializeCell(column, row);
-
-                }
-            }
+            InitializeGrid();
         }
 
         public void PopulateGrid()
+        {
+            InitializeGrid();
+        }
+
+        private void InitializeGrid()
         {
             CellGrid = new Cell[Columns, Rows];
             NeighborhoodsGrid = new Cell_Neighborhood[Columns, Rows];
@@ -103,6 +103,15 @@ namespace ConwaysWorld
             }
         }
 
+        // public static bool IsGridResized<T>(T[,] grid, int columns, int rows)
+        // {
+        //     if (grid.GetLength(0) > columns || grid.GetLength(1) > rows)
+        //     {
+        //         return true;
+        //     }
+        //     return false;
+        // }
+
         public void UpdateNeighborhoodsGrid()
         {
             NeighborhoodsGrid = new Cell_Neighborhood[Columns, Rows];
@@ -143,13 +152,13 @@ namespace ConwaysWorld
                             // is alive and stays alive
                             // Debug.Log("Cell " + column + ", " + row + " stay alive ");
                             CellGrid[column, row].Live(CellGrid);
+                            CurrentPopulation++;
                         }
                         else
                         {
                             // Debug.Log("Cell " + column + ", " + row + " die ");
                             CellGrid[column, row].Die();
                         }
-                        CurrentPopulation++;
                     }
                     else
                     {
@@ -158,6 +167,7 @@ namespace ConwaysWorld
                             //replace the cell with a fresh one, rather than leaving an opening for data to leak into a new cell from previous life (MAY WANT TO KEEP PREV-LIFE DATA LATER)
                             //treats the cell as a newborn rather than a revived cell
                             CellGrid[column, row].Live(CellGrid);
+                            CurrentPopulation++;
                         }
                         else
                         {
@@ -187,7 +197,6 @@ namespace ConwaysWorld
                         List<string> conditions = CellGrid[column, row].Conditions;
                         for (int i = 0; i < conditions.Count; i++)
                         {
-
                             if (conditions[i].Contains("d_"))
                             {//manage infected
                                 CellGrid[column, row] = Cell_Diseased.Infect(CellGrid[column, row], conditions[i]);

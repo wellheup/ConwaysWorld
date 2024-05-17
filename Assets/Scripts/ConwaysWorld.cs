@@ -18,8 +18,8 @@ namespace ConwaysWorld
             Generation = 0, //make these private later
             AttemptsAtLife = 1,
             CurrentPopulation = 0,
-            Columns,
-            Rows,
+            Columns = 0,
+            Rows = 0,
             GridLimit;
         public float timeBeforeStart = 1.0f,
             TimeBetweenGenerations = 0.5f;
@@ -31,8 +31,8 @@ namespace ConwaysWorld
 
             float canvasWidth = canvas.GetComponent<RectTransform>().rect.width;
             float canvasHeight = canvas.GetComponent<RectTransform>().rect.height;
-            Columns = (int)canvasWidth / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
-            Rows = (int)canvasHeight / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
+            Columns = Columns >= 0 ? Columns : (int)canvasWidth / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
+            Rows = Rows >= 0 ? Rows : (int)canvasHeight / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
 
             // Populate the grid backend initially
             BackEnd = new Model(Columns, Rows, BasePercentLiving, MinLifePercent, GridLimit);
@@ -111,7 +111,8 @@ namespace ConwaysWorld
 - add a Cell_Grid type to contain all grid-based functions
 - optimize grid traversal so that only changed cells are touched and we don't loop through the whole thing
     - instead of iterating over the whole grid, we can iterate over just live cells, or maybe iterate over just neighborhoods if necessary
-        -every time a cell lives add it to active cells, and every time it dies, remove it
+        -every time a cell lives add it to ActiveCells, and every time it dies, remove it
+        TODO: add clauses to all Udate() methods to deal with ActiveCells and/or resized grid
 - move more of conditions updates to SpecialActions()?
 - right now once regular life gets going, there aren't many opportunities for variations, introduce more variations on cells set to live next gen...
 - Add to Conway's world an event that uses a "find the largest island" algorithm
@@ -136,5 +137,5 @@ namespace ConwaysWorld
         -spawns a diplomat if island is larger than x number of cells
 - add a way to change the size of the starting grid
 - utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
-- move Grid into its own class
+- reset grid size after world ending events
 */

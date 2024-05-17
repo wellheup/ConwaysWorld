@@ -9,7 +9,7 @@ namespace ConwaysWorld
         public int CenterRow { get; }
         public Cell Center;
         public Dictionary<string, Cell> NeighborhoodDict;
-        public static string[] NeighborHoodKeys = new string[] { "southWest", "west", "northWest", "south", "center", "north", "southEast", "east", "northEast" };
+        public static string[] NeighborHoodKeys = new string[] { "southWest", "west", "northWest", "south", "north", "southEast", "east", "northEast", "center" };
 
         public Cell_Neighborhood(Cell[,] cellGrid, int column, int row)
         {
