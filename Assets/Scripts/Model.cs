@@ -152,13 +152,13 @@ namespace ConwaysWorld
                             // is alive and stays alive
                             // Debug.Log("Cell " + column + ", " + row + " stay alive ");
                             CellGrid[column, row].Live(CellGrid);
-                            CurrentPopulation++;
                         }
                         else
                         {
                             // Debug.Log("Cell " + column + ", " + row + " die ");
                             CellGrid[column, row].Die();
                         }
+                        CurrentPopulation++; //was cell alive this update (not will it be alive next update)
                     }
                     else
                     {
@@ -167,7 +167,6 @@ namespace ConwaysWorld
                             //replace the cell with a fresh one, rather than leaving an opening for data to leak into a new cell from previous life (MAY WANT TO KEEP PREV-LIFE DATA LATER)
                             //treats the cell as a newborn rather than a revived cell
                             CellGrid[column, row].Live(CellGrid);
-                            CurrentPopulation++;
                         }
                         else
                         {
