@@ -9,6 +9,7 @@ namespace ConwaysWorld
         public Cell[,] CellGrid;
         public Cell_Neighborhood[,] NeighborhoodsGrid;
         public bool[,] AliveNextGenGrid;
+        public Dictionary<string, Cell_Nation> Nations;
 
         private Cell_Generator Generator;
 
@@ -28,6 +29,7 @@ namespace ConwaysWorld
             MinLifePercent = minLifePercent;
             GridLimit = gridLimit;
             Generator = new Cell_Generator(BasePercentLiving);
+            Nations = new Dictionary<string, Cell_Nation>();
             PopulateGrid(Columns, Rows);
         }
 
@@ -53,6 +55,7 @@ namespace ConwaysWorld
                 for (int row = 0; row < Rows; row++)
                 {
                     CellGrid[column, row] = Generator.InitializeCell(column, row);
+                    CellGrid[column, row].ChooseNation();
                 }
             }
         }
@@ -187,10 +190,11 @@ namespace ConwaysWorld
                 for (int row = 0; row < Rows; row++)
                 {
                     // Chain of ifs for different conditions
-                    // if (CellGrid[column, row].Conditions.Contains("immune"))//manage immune, not sure if it works...
-                    // {
-                    //     CellGrid[column, row].Conditions.RemoveAll(item => item == "immune");
-                    // }
+                    if (CellGrid[column, row].Conditions.Contains("immune"))//manage immune, not sure if it works...
+                    {
+                        CellGrid[column, row].Conditions.RemoveAll(item => item.Contains("d_"));
+                        CellGrid[column, row].Conditions.RemoveAll(item => item.Contains("p_"));
+                    }
                     if (CellGrid[column, row].CellType != Cell_Generator.E_CellType.Cell_Doctor)
                     {
                         List<string> conditions = CellGrid[column, row].Conditions;
@@ -217,6 +221,10 @@ namespace ConwaysWorld
                     if (CellGrid[column, row].Conditions.Contains("exploring"))//manage grid expansion
                     {
                         _resize = true;
+                    }
+                    if (CellGrid[column, row].GetIsAlive() && Nations.Count > 0 && !Nations.ContainsKey(CellGrid[column, row].Nationality))
+                    {
+                        Nations.Add(CellGrid[column, row].Nationality, new Cell_Nation(CellGrid[column, row]));
                     }
                 }
             }
@@ -253,6 +261,18 @@ namespace ConwaysWorld
             }
         }
 
+        public void UpdateNations()
+        {
+            foreach (Cell_Nation nation in Nations.Values)
+            {
+                nation.Census();
+                if (nation.Diplomats.Count == 0)
+                {
+                    nation.ElectDiplomat(CellGrid);
+                }
+            }
+        }
+
         public void ObserveCellConditions() //for debugging
         {
             for (int column = 0; column < CellGrid.GetLength(0); column++)
@@ -276,6 +296,7 @@ namespace ConwaysWorld
             UpdateSpecialActions();
             // ObserveCellConditions(); //for debugging
             AddRandomLife(BasePercentLiving);
+            UpdateNations();
 
             return CurrentPopulation;
         }

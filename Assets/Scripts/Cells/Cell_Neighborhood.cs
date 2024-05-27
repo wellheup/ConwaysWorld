@@ -9,14 +9,24 @@ namespace ConwaysWorld
         public int CenterRow { get; }
         public Cell Center;
         public Dictionary<string, Cell> NeighborhoodDict;
-        public static string[] NeighborHoodKeys = new string[] { "southWest", "west", "northWest", "south", "north", "southEast", "east", "northEast", "center" };
+        public static string[] NeighborHoodKeys = new string[] {
+            "southWest",
+            "west",
+            "northWest",
+            "south",
+            "north",
+            "southEast",
+            "east",
+            "northEast",
+            "center"
+        }; //used to traverse dictionary in center-last order
 
         public Cell_Neighborhood(Cell[,] cellGrid, int column, int row)
         {
             CenterColumn = column;
             CenterRow = row;
             NeighborhoodDict = new Dictionary<string, Cell>();
-            int neighborhoodKeyNumber = 0;
+            int neighborhoodKeyIndex = 0;
             NumNeighbors = 0;
             Center = cellGrid[column, row];
             for (int columnOffset = -1; columnOffset <= 1; columnOffset++)
@@ -27,15 +37,16 @@ namespace ConwaysWorld
                     int neighborColumn = (column + columnOffset + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
                     int neighborRow = (row + rowOffset + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
 
-                    // Count only live neighbors.
-                    if (NeighborHoodKeys[neighborhoodKeyNumber] != "center" && cellGrid[neighborColumn, neighborRow].GetIsAlive())
+                    if (columnOffset == 0 && rowOffset == 0)
                     {
-                        NumNeighbors++;
+                        NeighborhoodDict.Add("center", cellGrid[neighborColumn, neighborRow]);
                     }
-
-                    // Add the directional name of cell to list
-                    NeighborhoodDict.Add(NeighborHoodKeys[neighborhoodKeyNumber], cellGrid[neighborColumn, neighborRow]);
-                    neighborhoodKeyNumber++;
+                    else
+                    {
+                        if (cellGrid[neighborColumn, neighborRow].GetIsAlive())
+                            NumNeighbors++;
+                        NeighborhoodDict.Add(NeighborHoodKeys[neighborhoodKeyIndex++], cellGrid[neighborColumn, neighborRow]);
+                    }
                 }
             }
         }

@@ -14,16 +14,7 @@ namespace ConwaysWorld
         protected bool IsAlive = false;
         public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
         public E_CellType CellType = E_CellType.Cell;
-
-        // public Cell(int column, int row, bool isAlive)
-        // {
-        //     this.IsAlive = isAlive;
-        //     DeadColor = Cell_Colors.Cell_Dead;
-        //     CurrentColor = isAlive ? LiveColor : DeadColor;
-        //     Column = column;
-        //     Row = row;
-        //     Conditions = new List<string>();
-        // }
+        public string Nationality;
 
         // Should only be used for debugging
         public void SetAllColors(Color color)
@@ -52,6 +43,7 @@ namespace ConwaysWorld
             {
                 Conditions.Add("mature");
             }
+            ChooseNation();
         }
 
         public virtual void Die()
@@ -59,6 +51,7 @@ namespace ConwaysWorld
             IsAlive = false;
             CurrentColor = DeadColor;
             Age = 0;
+            Nationality = null;
         }
 
         public virtual bool CalcCellAliveNextGen()
@@ -127,6 +120,9 @@ namespace ConwaysWorld
                 case E_CellType.Cell_Doctor:
                     cell = new Cell_Doctor(column, row, isAlive);
                     break;
+                case E_CellType.Cell_Diplomat:
+                    cell = new Cell_Diplomat(column, row, isAlive);
+                    break;
                 default:
                     cell = new Cell_Basic(column, row, isAlive); //this should not occur...
                     break;
@@ -137,20 +133,20 @@ namespace ConwaysWorld
             return cell;
         }
 
-        public void SwapCells(Cell dest, Cell[,] cellGrid)
+        public static void SwapCells(Cell originCell, Cell dest, Cell[,] cellGrid)
         {
-            int oldCol = Column, oldRow = Row;
+            int oldCol = originCell.Column, oldRow = originCell.Row;
 
-            cellGrid[dest.Column, dest.Row] = this;
-            cellGrid[Column, Row] = dest;
+            cellGrid[dest.Column, dest.Row] = originCell;
+            cellGrid[originCell.Column, originCell.Row] = dest;
 
-            Column = dest.Column;
-            Row = dest.Row;
+            originCell.Column = dest.Column;
+            originCell.Row = dest.Row;
 
             dest.Column = oldCol;
             dest.Row = oldRow;
 
-            CellNeighborhood = new Cell_Neighborhood(cellGrid, Column, Row);
+            originCell.CellNeighborhood = new Cell_Neighborhood(cellGrid, originCell.Column, originCell.Row);
             dest.CellNeighborhood = new Cell_Neighborhood(cellGrid, dest.Column, dest.Row);
         }
 
@@ -161,14 +157,13 @@ namespace ConwaysWorld
             List<Cell> cells = new List<Cell>();
             foreach (KeyValuePair<string, Cell> cell in CellNeighborhood.NeighborhoodDict)
             {
-                if (!cell.Value.GetIsAlive())
+                if (cell.Value.GetIsAlive() == false)
                 {
                     cells.Add(cell.Value);
                 }
             }
             int randNeighbor = Random.Range(0, cells.Count);
             cells[randNeighbor] = ReplaceCell(cells[randNeighbor], CellType, true);
-
         }
 
         private void LiveNoNeighbors(Cell[,] CellGrid, Cell cell)
@@ -196,7 +191,6 @@ namespace ConwaysWorld
                     LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["west"]);
                     LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["east"]);
                 }
-
             }
         }
 
@@ -211,6 +205,36 @@ namespace ConwaysWorld
             }
 
             return prefix + "_" + new string(stringChars);
+        }
+
+        public void ChooseNation() // this method should always be called in Live() because cellNeighborhood should be defined first if possible
+        {
+            if (Nationality != null)
+            {
+                return;
+            }
+            if (CellNeighborhood.NumNeighbors == 0)
+            {
+                Nationality = RandomCondition('n');
+                return;
+            }
+
+            List<string> neighborNations = new();
+            foreach (Cell neighbor in CellNeighborhood.NeighborhoodDict.Values)
+            {
+                if (neighbor.Nationality != null)
+                {
+                    neighborNations.Add(neighbor.Nationality);
+                }
+            }
+            if (neighborNations.Count > 0)
+            {
+                Nationality = neighborNations[Random.Range(0, neighborNations.Count)];
+            }
+            else
+            {
+                Nationality = RandomCondition('n');
+            }
         }
     }
 }

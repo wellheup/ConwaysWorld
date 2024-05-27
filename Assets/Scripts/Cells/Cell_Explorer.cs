@@ -10,6 +10,7 @@ namespace ConwaysWorld
 {
     public class Cell_Explorer : Cell_Traveler
     {
+        bool HasExplored = false;
         public Cell_Explorer(int column, int row, bool isAlive) : base(column, row, isAlive)
         {
             CellType = E_CellType.Cell_Explorer;
@@ -34,10 +35,11 @@ namespace ConwaysWorld
                 DeathCountDown = 0;
             }
             SpecialPerformed = false;
-            if (IsNeighborOverEdge(CellNeighborhood.NeighborhoodDict[Direction]))
+            if (!HasExplored && IsNeighborOverEdge(CellNeighborhood.NeighborhoodDict[Direction]))
             {
                 Conditions.Add("exploring");
             }
+            ChooseNation();
         }
 
         protected bool IsNeighborOverEdge(Cell neighbor)
@@ -54,7 +56,7 @@ namespace ConwaysWorld
             if (IsAlive && !SpecialPerformed)
             {
                 Conditions.RemoveAll(item => item == "exploring");
-                SwapCells(CellNeighborhood.NeighborhoodDict[Direction], cellGrid);
+                SwapCells(this, CellNeighborhood.NeighborhoodDict[Direction], cellGrid);
                 SpecialPerformed = true;
             }
         }

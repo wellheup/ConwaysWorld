@@ -37,6 +37,7 @@ namespace ConwaysWorld
             {
                 DeathCounter = 0;
             }
+            ChooseNation();
         }
 
         public override bool CalcCellAliveNextGen()
