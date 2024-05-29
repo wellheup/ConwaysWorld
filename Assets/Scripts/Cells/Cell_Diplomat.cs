@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using static ConwaysWorld.Cell_Generator;
 /// <summary>
-/// explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
+/// diplomat (when a nation is large enough, it spawns and attempts to spread its nation to the nearest other nation)
 /// </summary>
 namespace ConwaysWorld
 {

@@ -132,7 +132,6 @@ namespace ConwaysWorld
         - teacher/ elder (random chance to promote adjacent basic_cells to a new type)
         - irradiated (cell cannot live ever again except under certain circumstance)
         - spy (similar to diplomat, but instead of moving directly toward target, must move through living neighbors)
-        TODO:- diplomat (explorer but does not expand world, small chance to add new nation to its own, reverts to basic cell when done)
         - hunter (picks a random live (immortal?) cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
         - god? (effects every living cell on the board in some way)
         - natural disasters? opportunity for largest island?
