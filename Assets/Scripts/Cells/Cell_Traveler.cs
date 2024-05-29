@@ -44,15 +44,17 @@ namespace ConwaysWorld
                 DeathCountDown = 0;
             }
             SpecialPerformed = false;
+            ChooseNation();
         }
 
         public override void Die()
         {
             base.Die();
             SpecialPerformed = true;
+            Nationality = null;
         }
 
-        protected string ChooseTravelDirection()
+        protected virtual string ChooseTravelDirection()
         {
             string direction = "center";
             while (direction == "center")
@@ -75,7 +77,8 @@ namespace ConwaysWorld
         {
             if (IsAlive && !SpecialPerformed)
             {
-                SwapCells(CellNeighborhood.NeighborhoodDict[Direction], cellGrid);
+                SwapCells(this, CellNeighborhood.NeighborhoodDict[Direction], cellGrid);
+
                 SpecialPerformed = true;
             }
         }

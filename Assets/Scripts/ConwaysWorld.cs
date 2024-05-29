@@ -31,8 +31,11 @@ namespace ConwaysWorld
 
             float canvasWidth = canvas.GetComponent<RectTransform>().rect.width;
             float canvasHeight = canvas.GetComponent<RectTransform>().rect.height;
-            Columns = Columns >= 0 ? Columns : (int)canvasWidth / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
-            Rows = Rows >= 0 ? Rows : (int)canvasHeight / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
+            // Columns = Columns >= 0 ? Columns : (int)canvasWidth / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
+            // Rows = Rows >= 0 ? Rows : (int)canvasHeight / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
+
+            Columns = (int)canvasWidth / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
+            Rows = (int)canvasHeight / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
 
             // Populate the grid backend initially
             BackEnd = new Model(Columns, Rows, BasePercentLiving, MinLifePercent, GridLimit);
@@ -43,7 +46,7 @@ namespace ConwaysWorld
             FrontEnd.IsRendering = IsRendering;
 
             // Start the game
-            InvokeRepeating("SimulationUpdate", timeBeforeStart, TimeBetweenGenerations);
+            InvokeRepeating(nameof(SimulationUpdate), timeBeforeStart, TimeBetweenGenerations);
         }
 
         private void SimulationUpdate()
@@ -109,19 +112,18 @@ namespace ConwaysWorld
 /*TODO:
 - add class and method descriptions using /// notation (vscode should suggest a template)
 - add a Cell_Grid type to contain all grid-based functions
-- optimize grid traversal so that only changed cells are touched and we don't loop through the whole thing
-    - instead of iterating over the whole grid, we can iterate over just live cells, or maybe iterate over just neighborhoods if necessary
-        -every time a cell lives add it to ActiveCells, and every time it dies, remove it
-        TODO: add clauses to all Udate() methods to deal with ActiveCells and/or resized grid
 - move more of conditions updates to SpecialActions()?
-- right now once regular life gets going, there aren't many opportunities for variations, introduce more variations on cells set to live next gen...
 - Add to Conway's world an event that uses a "find the largest island" algorithm
 - Add different types of specialzed cells inheriting from Cell
     - Complex
+        - king (each turn, it assesses the number of cells in its nation and converts them to its kingdom. If 2 kingdoms touch, do something special, but start by doing nothing)
+            - use island finding algorithm?
+            - if cell has 3 neighbors of same nation promote to king?
         - voyager (version of the explorer cell which goes farther and specifically targets the nearest other nation)
+            - once it reaches that nation as a neighbor, it adds that nationality to its conditions and seeks a new one not on its list
         - necromancer (revives neighbors the turn after they die)
         - zombie (die if their necromancer dies, do not die from overpopulation)
-        - warrior (moves in random direction and kills cells it hits)
+        - warrior (moves in random direction and kills cells it hits from other nations)
         - mutant/ mutator (has a small chance every turn to upgrade to another cell type)
         - islander (dies if there are more than x number of nearby cells within like 10 cells)
         - bomber (kills all cells in 2 cell radius)
@@ -129,13 +131,12 @@ namespace ConwaysWorld
         - conqueror (moves in a direction until it leave its nation, when hitting another nation, random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts)
         - teacher/ elder (random chance to promote adjacent basic_cells to a new type)
         - irradiated (cell cannot live ever again except under certain circumstance)
-        - diplomat (explorer but does not expand world, small chance to add new nation to its own, reverts to basic cell when done)
+        - spy (similar to diplomat, but instead of moving directly toward target, must move through living neighbors)
         - hunter (picks a random live (immortal?) cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
         - god? (effects every living cell on the board in some way)
-- add fields for "nations" to distinguish between different cell groups
-    - if, at spawn, a grup is an island, then they form a nation (random string)
-        -spawns a diplomat if island is larger than x number of cells
-- add a way to change the size of the starting grid
+        - natural disasters? opportunity for largest island?
+- add an increased chance to spawn doctors near diseases
+- make minimum allowable grid size 5x5
 - utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
 - reset grid size after world ending events
 */

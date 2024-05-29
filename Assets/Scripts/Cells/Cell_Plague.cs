@@ -27,6 +27,7 @@ namespace ConwaysWorld
                 Conditions.Add("mature");
             }
             CellType = E_CellType.Cell_Plague;
+            ChooseNation();
         }
 
         public override void Die()
@@ -34,6 +35,7 @@ namespace ConwaysWorld
             IsAlive = false;
             CurrentColor = DeadColor;
             Conditions.Remove(Disease);
+            Nationality = null;
         }
 
         private static new Cell Infect(Cell cell, string disease)
