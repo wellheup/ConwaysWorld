@@ -28,6 +28,7 @@ namespace ConwaysWorld
             Cell_Diplomat,
             Cell_Hunter,
             Cell_God,
+            Cell_King,
             Cell_Dead,
         }
 

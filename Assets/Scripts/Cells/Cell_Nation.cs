@@ -17,7 +17,29 @@ namespace ConwaysWorld
         public Cell King = null;
         public List<Cell> Citizens;
         public List<Cell> Diplomats;
-        // public GameObject Flag;
+        public List<Color> Nation_Colors { get; set; } = new()
+        {
+            new(0.14f, 0.17f, 0.46f, 1.00f),
+            new(0.11f, 0.17f, 0.72f, 1.00f),
+            new(0.00f, 0.10f, 0.96f, 1.00f),
+            new(0.28f, 0.24f, 0.08f, 1.00f),
+            new(0.64f, 0.52f, 0.09f, 1.00f),
+            new(0.96f, 0.75f, 0.00f, 1.00f),
+            new(0.28f, 0.08f, 0.09f, 1.00f),
+            new(0.64f, 0.09f, 0.11f, 1.00f),
+            new(0.96f, 0.00f, 0.02f, 1.00f),
+            new(0.09f, 0.28f, 0.14f, 1.00f),
+            new(0.09f, 0.64f, 0.24f, 1.00f),
+            new(0.00f, 0.96f, 0.26f, 1.00f),
+            new(0.38f, 0.50f, 0.11f, 1.00f),
+            new(0.68f, 1.00f, 0.00f, 1.00f),
+            new(0.50f, 0.28f, 0.11f, 1.00f),
+            new(1.00f, 0.44f, 0.00f, 1.00f),
+            new(0.16f, 0.61f, 0.68f, 1.00f),
+            new(0.00f, 0.86f, 1.00f, 1.00f),
+            new(0.40f, 0.11f, 0.50f, 1.00f),
+            new(0.74f, 0.00f, 1.00f, 1.00f)
+        };
 
         public Cell_Nation(Cell citizenZero)
         {

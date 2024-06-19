@@ -266,6 +266,7 @@ namespace ConwaysWorld
             foreach (Cell_Nation nation in Nations.Values)
             {
                 nation.Census();
+                Debug.Log(nation.Name + " has " + nation.Citizens.Count() + " citizens.");
                 if (nation.Diplomats.Count == 0)
                 {
                     nation.ElectDiplomat(CellGrid);
