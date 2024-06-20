@@ -1,5 +1,10 @@
 using UnityEngine;
-using UnityEngine.UIElements;
+using System.Collections.Generic;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using static ConwaysWorld.Cell_Generator;
+using System;
+
 namespace ConwaysWorld
 {
 
@@ -13,6 +18,8 @@ namespace ConwaysWorld
 
         [SerializeField] private BaseTile _baseTilePrefab;
         [SerializeField] private Transform _gridContainer;
+        private Dictionary<E_CellType, Sprite> _cellSprites;
+
 
         public void InitiateDisplayGrid(Cell[,] cellGrid, float canvasWidth, float canvasHeight)
         {
@@ -20,6 +27,24 @@ namespace ConwaysWorld
             _canvasHeight = canvasHeight;
             _cellGrid = cellGrid;
             _baseTileSize = _baseTilePrefab.Image.rectTransform.sizeDelta.y;
+            _cellSprites = new();
+
+            foreach (E_CellType i in Enum.GetValues(typeof(E_CellType)))
+            {
+                _cellSprites.Add(i, null);
+                Addressables.LoadAssetAsync<Sprite>($"Assets/Sprites/{(i == E_CellType.Cell ? E_CellType.Cell_Basic : i)}.jpg").Completed +=
+                    (spriteAsyncOpHandle) =>
+                    {
+                        if (spriteAsyncOpHandle.Status == AsyncOperationStatus.Succeeded)
+                        {
+                            _cellSprites[i] = spriteAsyncOpHandle.Result;
+                        }
+                        else
+                        {
+                            Debug.Log($"Failed to load {i}.jpg in View");
+                        }
+                    };
+            }
 
             FillDisplayGrid(false);
         }
@@ -104,7 +129,8 @@ namespace ConwaysWorld
             {
                 for (int y = 0; y < cellGrid.GetLength(1); y++)
                 {
-                    _displayGrid[x, y].Image.color = _cellGrid[x, y].GetCurrentColor();
+                    _displayGrid[x, y].Image.color = _cellGrid[x, y].GetIsAlive() && _cellGrid[x, y].Nationality != -1 ? Cell_Nation.Nation_Colors[_cellGrid[x, y].Nationality] : Color.white;
+                    _displayGrid[x, y].Image.sprite = _cellGrid[x, y].GetIsAlive() && _cellSprites[_cellGrid[x, y].CellType] ? _cellSprites[_cellGrid[x, y].CellType] : _cellSprites[E_CellType.Cell_Dead];
                     string lifeStatus = _cellGrid[x, y].GetIsAlive() == true ? "Alive" : "Dead";
                     _displayGrid[x, y].name = cellNum++ + " (" + x + ", " + y + ")" + " " + lifeStatus + " " + _cellGrid[x, y].CellType.ToString();
                 }

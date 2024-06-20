@@ -110,50 +110,51 @@ namespace ConwaysWorld
     }
 }
 /*TODO:
-- right now it seems like I"m not actually making nations...
-    - make nations draw from the 20 colors available
-    - make nations outline visually
-    - change nations from using a name to just using an index 0-19 and the matching color
-    - Cells don't need to contain their visualization information
-        - move nation colors to View    
-        - move cell colors to View
+- TODO: right now it seems like I"m not actually making nations...
+    - TODO: right now all cells except for immaculate births are the same nation
+    - TODO: change nations from using a name to just using an index 0-x and the matching color
+    - TODO: Cells don't need to contain their visualization information
+        - TODO: move nation colors to View    
+        - TODO: move cell colors to View
 
-- add class and method descriptions using /// notation (vscode should suggest a template)
-- add a Cell_Grid type to contain all grid-based functions
-- move more of conditions updates to SpecialActions()?
-- Add to Conway's world an event that uses a "find the largest island" algorithm
-- add visualization for nations
-    - reduce nations to a pool of like 25
-- Add different types of specialized cells inheriting from Cell
-    - king (each turn, it assesses the number of cells in its nation and converts them to its kingdom. If 2 kingdoms touch, create a warfront, but start by doing nothing)
-        - use island finding algorithm?
-        - if cell has 3 neighbors of same nation promote to king?
-    - voyager (version of the explorer cell which goes farther and specifically targets the nearest other nation)
-        - once it reaches that nation as a neighbor, it adds that nationality to its conditions and seeks a new one not on its list
-    - necromancer (revives neighbors the turn after they die)
-    - zombie (die if their necromancer dies, do not die from overpopulation)
-    - warrior (moves in a random direction and kills cells from other nations, zombies, and diseased cells, 2 warrior cells flip a coin for the victor)
-    - mutant/ mutator (has a small chance every turn to randomly alter surrounding cells to another cell type)
-    - islander (dies if there are more than x number of nearby cells within like 10 cells, moves til finding empty space if it's crowded)
-    - bomber (kills all cells in 2 cell radius)
-    - savior (moves in a direction, cells follow it)
-    - conqueror (moves in a direction until it leave its nation, when hitting another nation, random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts)
-    - teacher/ elder (random chance to promote adjacent basic_cells to a new type)
-    - irradiated (cell cannot live ever again except under certain circumstance)
-    - spy (similar to diplomat, but instead of moving directly toward target, must move through living neighbors)
-    - hunter (picks a random live (immortal?) cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
-    - god? (effects every living cell on the board in some way)
-    - natural disasters? opportunity for largest island?
-- add an increased chance to spawn doctors near diseases
-- make minimum allowable grid size 5x5
-- utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
-- reset grid size after world ending events
-- make each update frame fade between the 2 more smoothly
+- TODO: add class and method descriptions using /// notation (vscode should suggest a template)
+- TODO: add a Cell_Grid type to contain all grid-based functions
+- TODO: move more of conditions updates to SpecialActions()?
+- TODO: Add to Conway's world an event that uses a "find the largest island" algorithm
+- TODO: add visualization for nations
+    - TODO: reduce nations to a pool of like 25
+- TODO: Add different types of specialized cells inheriting from Cell
+    - TODO: king (each turn, it assesses the number of cells in its nation and converts them to its kingdom. If 2 kingdoms touch, create a warfront, but start by doing nothing)
+        - TODO: use island finding algorithm?
+        - TODO: if cell has 3 neighbors of same nation promote to king?
+    - TODO: voyager (version of the explorer cell which goes farther and specifically targets the nearest other nation)
+        - TODO: once it reaches that nation as a neighbor, it adds that nationality to its conditions and seeks a new one not on its list
+    - TODO: necromancer (revives neighbors the turn after they die)
+    - TODO: zombie (die if their necromancer dies, do not die from overpopulation)
+    - TODO: warrior (moves in a random direction and kills cells from other nations, zombies, and diseased cells, 2 warrior cells flip a coin for the victor)
+    - TODO: mutant/ mutator (has a small chance every turn to randomly alter surrounding cells to another cell type)
+    - TODO: islander (dies if there are more than x number of nearby cells within like 10 cells, moves til finding empty space if it's crowded)
+    - TODO: bomber (kills all cells in 2 cell radius)
+    - TODO: savior (moves in a direction, cells follow it)
+    - TODO: conqueror (moves in a direction until it leave its nation, when hitting another nation, random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts)
+    - TODO: teacher/ elder (random chance to promote adjacent basic_cells to a new type)
+    - TODO: irradiated (cell cannot live ever again except under certain circumstance)
+    - TODO: spy (similar to diplomat, but instead of moving directly toward target, must move through living neighbors)
+    - TODO: hunter (picks a random live (immortal?) cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
+    - TODO: god? (effects every living cell on the board in some way)
+    - TODO: natural disasters? opportunity for largest island?
+- TODO: add an increased chance to spawn doctors near diseases
+- TODO: make minimum allowable grid size 5x5
+- TODO: utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
+- TODO: reset grid size after world ending events
+- TODO: make each update frame fade between the 2 more smoothly
 
 Visuals
 - add an outline to cells from nations
 - add symbols for each type of cell
     - generated some placeholder ones with https://deepai.org/machine-learning-model/logo-generator
+    - replace individual JPGS 
+    - TODO: change sprites to sprite atlas
     Cell descriptions:
         Cell_Basic -- lives and dies
         Cell_Immortal -tree- lives forever unless it gets too lonely

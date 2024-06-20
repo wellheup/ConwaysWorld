@@ -19,9 +19,6 @@ namespace ConwaysWorld
             Column = column;
             Row = row;
             CellType = E_CellType.Cell_Doctor;
-            LiveColor = Cell_Colors.Cell_Doctor;
-            DeadColor = Cell_Colors.Cell_Dead;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
             Conditions = new List<string>();
             Vaccines = new List<string>();
         }

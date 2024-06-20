@@ -6,38 +6,21 @@ namespace ConwaysWorld
 
     public abstract class Cell
     {
-        public Color LiveColor;
-        public Color DeadColor;
-        public Color CurrentColor;
         public Cell_Neighborhood CellNeighborhood;
         public List<string> Conditions;
         protected bool IsAlive = false;
         public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
         public E_CellType CellType = E_CellType.Cell;
-        public string Nationality;
-
-        // Should only be used for debugging
-        public void SetAllColors(Color color)
-        {
-            this.LiveColor = color;
-            this.DeadColor = color;
-            this.CurrentColor = color;
-        }
+        public int Nationality;
 
         public bool GetIsAlive()
         {
             return IsAlive;
         }
 
-        public Color GetCurrentColor()
-        {
-            return this.CurrentColor;
-        }
-
         public virtual void Live(Cell[,] cellGrid)
         {
             IsAlive = true;
-            CurrentColor = LiveColor;
             Age++;
             if (Age > MatureAge && !Conditions.Contains("mature"))
             {
@@ -49,9 +32,8 @@ namespace ConwaysWorld
         public virtual void Die()
         {
             IsAlive = false;
-            CurrentColor = DeadColor;
             Age = 0;
-            Nationality = null;
+            Nationality = -1;
         }
 
         public virtual bool CalcCellAliveNextGen()
@@ -209,20 +191,20 @@ namespace ConwaysWorld
 
         public void ChooseNation() // this method should always be called in Live() because cellNeighborhood should be defined first if possible
         {
-            if (Nationality != null)
+            if (Nationality != -1)
             {
                 return;
             }
             if (CellNeighborhood.NumNeighbors == 0)
             {
-                Nationality = RandomCondition('n');
+                Nationality = Random.Range(0, Cell_Nation.Nation_Colors.Count);
                 return;
             }
 
-            List<string> neighborNations = new();
+            List<int> neighborNations = new();
             foreach (Cell neighbor in CellNeighborhood.NeighborhoodDict.Values)
             {
-                if (neighbor.Nationality != null)
+                if (neighbor.Nationality != -1)
                 {
                     neighborNations.Add(neighbor.Nationality);
                 }
@@ -233,7 +215,7 @@ namespace ConwaysWorld
             }
             else
             {
-                Nationality = RandomCondition('n');
+                Nationality = Random.Range(0, Cell_Nation.Nation_Colors.Count);
             }
         }
     }

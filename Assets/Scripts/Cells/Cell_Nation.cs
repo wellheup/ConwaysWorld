@@ -13,11 +13,11 @@ namespace ConwaysWorld
     /// </remarks>
     public class Cell_Nation
     {
-        public string Name;
+        public int NationNum;
         public Cell King = null;
         public List<Cell> Citizens;
         public List<Cell> Diplomats;
-        public List<Color> Nation_Colors { get; set; } = new()
+        public static List<Color> Nation_Colors { get; set; } = new()
         {
             new(0.14f, 0.17f, 0.46f, 1.00f),
             new(0.11f, 0.17f, 0.72f, 1.00f),
@@ -43,7 +43,7 @@ namespace ConwaysWorld
 
         public Cell_Nation(Cell citizenZero)
         {
-            Name = citizenZero.Nationality;
+            NationNum = citizenZero.Nationality;
             Diplomats = new();
             Citizens = new List<Cell> { citizenZero };
         }
@@ -58,7 +58,7 @@ namespace ConwaysWorld
             List<Cell> temp = new();
             foreach (Cell _ in Citizens)
             {
-                if (_.GetIsAlive() && _.Nationality == Name)
+                if (_.GetIsAlive() && _.Nationality == NationNum)
                 {
                     temp.Add(_);
                 }
@@ -84,7 +84,7 @@ namespace ConwaysWorld
                 }
 
                 cellGrid[newDiplomat.Column, newDiplomat.Row] = Cell.ReplaceCell(newDiplomat, Cell_Generator.E_CellType.Cell_Diplomat, true);
-                newDiplomat.Nationality = Name;
+                newDiplomat.Nationality = NationNum;
 
                 Diplomats.Add(newDiplomat);
             }

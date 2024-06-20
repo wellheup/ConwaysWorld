@@ -21,9 +21,6 @@ namespace ConwaysWorld
             Column = column;
             Row = row;
             CellType = E_CellType.Cell_Hunter;
-            LiveColor = Cell_Colors.Cell_Hunter;
-            DeadColor = Cell_Colors.Cell_Dead;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
             Conditions = new List<string>();
             PreyTypes = new() { E_CellType.Cell_Immortal, E_CellType.Cell_Zombie, E_CellType.Cell_King };
             CurrentPrey = null;
@@ -32,7 +29,6 @@ namespace ConwaysWorld
         public override void Live(Cell[,] cellGrid)
         {
             IsAlive = true;
-            CurrentColor = LiveColor;
             Age++;
             if (CellNeighborhood.NumNeighbors == 0)
             {
@@ -50,7 +46,7 @@ namespace ConwaysWorld
         {
             base.Die();
             SpecialPerformed = true;
-            Nationality = null;
+            Nationality = -1;
         }
 
         public override bool CalcCellAliveNextGen()

@@ -15,16 +15,12 @@ namespace ConwaysWorld
         {
             CellType = E_CellType.Cell_Explorer;
             MaxAloneTime = 4;
-            LiveColor = Cell_Colors.Cell_Explorer;
-            DeadColor = Cell_Colors.Cell_Dead;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
             Conditions = new List<string>();
         }
 
         public override void Live(Cell[,] cellGrid)
         {
             IsAlive = true;
-            CurrentColor = LiveColor;
             Age++;
             if (CellNeighborhood.NumNeighbors == 0)
             {

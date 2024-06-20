@@ -13,9 +13,6 @@ namespace ConwaysWorld
             IsAlive = isAlive;
             Column = column;
             Row = row;
-            LiveColor = Cell_Colors.Cell_Diseased;
-            DeadColor = Cell_Colors.Cell_Dead;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
             CellType = E_CellType.Cell_Diseased;
             Conditions = new List<string>();
             Disease = RandomCondition('d');
@@ -24,7 +21,6 @@ namespace ConwaysWorld
         public override void Live(Cell[,] cellGrid)
         {
             IsAlive = true;
-            CurrentColor = LiveColor;
             Age++;
             SpreadDisease(cellGrid);
             if (Age > MatureAge && !Conditions.Contains("mature"))
@@ -38,9 +34,8 @@ namespace ConwaysWorld
         public override void Die()
         {
             IsAlive = false;
-            CurrentColor = DeadColor;
             Conditions.Remove(Disease);
-            Nationality = null;
+            Nationality = -1;
         }
 
         public override bool CalcCellAliveNextGen()
