@@ -29,6 +29,7 @@ namespace ConwaysWorld
                 DeathCountDown = 0;
             }
             SpecialPerformed = false;
+            ChooseNation();
         }
 
         private Cell FindNearestOther(Cell[,] cellGrid)

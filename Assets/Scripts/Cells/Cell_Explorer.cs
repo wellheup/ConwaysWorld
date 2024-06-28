@@ -16,6 +16,7 @@ namespace ConwaysWorld
             CellType = E_CellType.Cell_Explorer;
             MaxAloneTime = 4;
             Conditions = new List<string>();
+            ChooseNation();
         }
 
         public override void Live(Cell[,] cellGrid)
@@ -35,7 +36,6 @@ namespace ConwaysWorld
             {
                 Conditions.Add("exploring");
             }
-            ChooseNation();
         }
 
         protected bool IsNeighborOverEdge(Cell neighbor)

@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using System;
+
 namespace ConwaysWorld
 {
     public class Model
@@ -30,6 +32,10 @@ namespace ConwaysWorld
             GridLimit = gridLimit;
             Generator = new Cell_Generator(BasePercentLiving);
             Nations = new Dictionary<int, Cell_Nation>();
+            for (int i = 0; i < Cell_Nation.Nation_Colors.Count; i++)
+            {
+                Nations.Add(i, new Cell_Nation(i));
+            }
             PopulateGrid(Columns, Rows);
         }
 
@@ -55,7 +61,6 @@ namespace ConwaysWorld
                 for (int row = 0; row < Rows; row++)
                 {
                     CellGrid[column, row] = Generator.InitializeCell(column, row);
-                    CellGrid[column, row].ChooseNation();
                 }
             }
         }
@@ -95,8 +100,8 @@ namespace ConwaysWorld
                 int counter = 0;
                 while (counter < numNewLives)
                 {
-                    int randCol = Random.Range(0, CellGrid.GetLength(0));
-                    int randRow = Random.Range(0, CellGrid.GetLength(1));
+                    int randCol = UnityEngine.Random.Range(0, CellGrid.GetLength(0));
+                    int randRow = UnityEngine.Random.Range(0, CellGrid.GetLength(1));
                     if (!CellGrid[randCol, randRow].GetIsAlive() && !AliveNextGenGrid[randCol, randRow])
                     {
                         CellGrid[randCol, randRow] = Generator.InitializeCell(randCol, randRow);
@@ -222,9 +227,9 @@ namespace ConwaysWorld
                     {
                         _resize = true;
                     }
-                    if (CellGrid[column, row].GetIsAlive() && Nations.Count > 0 && !Nations.ContainsKey(CellGrid[column, row].Nationality))
+                    if (CellGrid[column, row].Age > 2 && CellGrid[column, row].Nationality == -1)//manage grid expansion
                     {
-                        Nations.Add(CellGrid[column, row].Nationality, new Cell_Nation(CellGrid[column, row]));
+                        Debug.Log(/*$"cell [{column}, {row}], */$"{CellGrid[column, row].CellType}, lived without choosing nation");
                     }
                 }
             }
@@ -266,7 +271,7 @@ namespace ConwaysWorld
             foreach (Cell_Nation nation in Nations.Values)
             {
                 nation.Census();
-                Debug.Log(nation.NationNum + " has " + nation.Citizens.Count() + " citizens.");
+                // Debug.Log(nation.NationNum + " has " + nation.Citizens.Count() + " citizens.");
                 if (nation.Diplomats.Count == 0)
                 {
                     nation.ElectDiplomat(CellGrid);

@@ -20,7 +20,7 @@ namespace ConwaysWorld
             CurrentPopulation = 0,
             Columns = 0,
             Rows = 0,
-            GridLimit;
+            GridLimit = 20;
         public float timeBeforeStart = 1.0f,
             TimeBetweenGenerations = 0.5f;
 
@@ -100,22 +100,14 @@ namespace ConwaysWorld
                 print("\nStart/Stop rendering\n");
                 FrontEnd.IsRendering = !FrontEnd.IsRendering;
             }
-            if (Input.GetKeyDown("z")) //force render
-            {
-                FrontEnd.IsRendering = true;
-                FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
-                FrontEnd.IsRendering = IsRendering;
-            }
         }
     }
 }
 /*TODO:
-- TODO: right now it seems like I"m not actually making nations...
-    - TODO: right now all cells except for immaculate births are the same nation
-    - TODO: change nations from using a name to just using an index 0-x and the matching color
-    - TODO: Cells don't need to contain their visualization information
-        - TODO: move nation colors to View    
+    - TODO: move nation colors to View    
         - TODO: move cell colors to View
+    - TODO: seems to be no nation 0 members
+- TODO: grid size limits don't seem to work...
 
 - TODO: add class and method descriptions using /// notation (vscode should suggest a template)
 - TODO: add a Cell_Grid type to contain all grid-based functions

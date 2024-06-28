@@ -41,11 +41,11 @@ namespace ConwaysWorld
             new(0.74f, 0.00f, 1.00f, 1.00f)
         };
 
-        public Cell_Nation(Cell citizenZero)
+        public Cell_Nation(int nationNum)
         {
-            NationNum = citizenZero.Nationality;
             Diplomats = new();
-            Citizens = new List<Cell> { citizenZero };
+            Citizens = new();
+            NationNum = nationNum;
         }
 
         public void SetKing(Cell king)
@@ -56,11 +56,18 @@ namespace ConwaysWorld
         public void Census()
         {
             List<Cell> temp = new();
-            foreach (Cell _ in Citizens)
+            for (int i = 0; i < Citizens.Count; i++)
             {
-                if (_.GetIsAlive() && _.Nationality == NationNum)
+                if (Citizens[i] != null)
                 {
-                    temp.Add(_);
+                    if (Citizens[i].GetIsAlive() && Citizens[i].Nationality == NationNum)
+                    {
+                        temp.Add(Citizens[i]);
+                    }
+                    else
+                    {
+                        Citizens[i].Nationality = -1;
+                    }
                 }
             }
             Citizens = temp;
@@ -72,8 +79,9 @@ namespace ConwaysWorld
 
         public void ElectDiplomat(Cell[,] cellGrid)
         {
-            if (Diplomats.Count < .1f * Citizens.Count)
+            if (Diplomats.Count < .1f * Citizens.Count && Citizens.Count >= 5)
             {
+                // Debug.Log($"Nation {NationNum} elects diplomat with {Citizens.Count} citizens");
                 Cell newDiplomat = King;
                 int maxTries = 5, attempt = 0;
                 //select a cell whom is not a diplomat already

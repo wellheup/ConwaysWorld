@@ -26,8 +26,8 @@ namespace ConwaysWorld
         public override void Live(Cell[,] cellGrid)
         {
             base.Live(cellGrid);
-            ChooseNation();
             SpecialPerformed = false;
+            ChooseNation();
         }
 
         public override bool CalcCellAliveNextGen()

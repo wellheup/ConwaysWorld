@@ -21,6 +21,7 @@ namespace ConwaysWorld
         {
             IsAlive = true;
             Age++;
+            ChooseNation();
             if (Age > MatureAge && !Conditions.Contains("mature"))
             {
                 Conditions.Add("mature");
@@ -33,7 +34,6 @@ namespace ConwaysWorld
             {
                 DeathCounter = 0;
             }
-            ChooseNation();
         }
 
         public override bool CalcCellAliveNextGen()

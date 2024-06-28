@@ -11,7 +11,10 @@ namespace ConwaysWorld
         protected bool IsAlive = false;
         public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
         public E_CellType CellType = E_CellType.Cell;
-        public int Nationality;
+        public int Nationality = -1;
+        public int MinLivingNeighbors = 2;
+        public int MaxLivingNeighbors = 4;
+
 
         public bool GetIsAlive()
         {
@@ -43,23 +46,23 @@ namespace ConwaysWorld
 
         protected virtual bool LiveBasic()
         {
-            if (IsAlive && CellNeighborhood.NumNeighbors < 2)
+            if (IsAlive && CellNeighborhood.NumNeighbors < MinLivingNeighbors)
             {
                 return false; // Die due to underpopulation
             }
-            else if (IsAlive && (CellNeighborhood.NumNeighbors == 2 || CellNeighborhood.NumNeighbors == 3))
+            else if (IsAlive && CellNeighborhood.NumNeighbors >= MinLivingNeighbors && CellNeighborhood.NumNeighbors <= MaxLivingNeighbors)
             {
                 return true; // Live on
             }
-            else if (IsAlive && CellNeighborhood.NumNeighbors > 3)
+            else if (IsAlive && CellNeighborhood.NumNeighbors > MaxLivingNeighbors)
             {
                 return false; // Die due to overpopulation
             }
-            else if (!IsAlive && CellNeighborhood.NumNeighbors == 3)
+            else if (!IsAlive && CellNeighborhood.NumNeighbors == MaxLivingNeighbors)
             {
                 return true; // Become alive due to reproduction
             }
-            else if (!IsAlive && CellNeighborhood.NumNeighbors != 3)
+            else if (!IsAlive && CellNeighborhood.NumNeighbors != MaxLivingNeighbors)
             {
                 return false; // Stays dead
             }
@@ -111,6 +114,8 @@ namespace ConwaysWorld
             }
             cell.Conditions = oldCell.Conditions;
             cell.CellNeighborhood = oldCell.CellNeighborhood;
+            if (oldCell.Nationality == -1) cell.ChooseNation();
+            else cell.Nationality = oldCell.Nationality;
 
             return cell;
         }
@@ -191,31 +196,25 @@ namespace ConwaysWorld
 
         public void ChooseNation() // this method should always be called in Live() because cellNeighborhood should be defined first if possible
         {
-            if (Nationality != -1)
+            if (Nationality < 0 || Nationality >= Cell_Nation.Nation_Colors.Count)
             {
-                return;
-            }
-            if (CellNeighborhood.NumNeighbors == 0)
-            {
-                Nationality = Random.Range(0, Cell_Nation.Nation_Colors.Count);
-                return;
-            }
-
-            List<int> neighborNations = new();
-            foreach (Cell neighbor in CellNeighborhood.NeighborhoodDict.Values)
-            {
-                if (neighbor.Nationality != -1)
+                if (CellNeighborhood != null && CellNeighborhood.NumNeighbors > 0)
                 {
-                    neighborNations.Add(neighbor.Nationality);
+                    List<int> neighborNations = new();
+                    foreach (Cell neighbor in CellNeighborhood.NeighborhoodDict.Values)
+                    {
+                        if (neighbor.GetIsAlive() && (neighbor.Nationality < 0 || neighbor.Nationality < Cell_Nation.Nation_Colors.Count))
+                        {
+                            neighborNations.Add(neighbor.Nationality);
+                        }
+                    }
+                    int rand = Random.Range(0, neighborNations.Count + 1);
+                    Nationality = rand == neighborNations.Count ? Random.Range(0, Cell_Nation.Nation_Colors.Count) : neighborNations[rand];
                 }
-            }
-            if (neighborNations.Count > 0)
-            {
-                Nationality = neighborNations[Random.Range(0, neighborNations.Count)];
-            }
-            else
-            {
-                Nationality = Random.Range(0, Cell_Nation.Nation_Colors.Count);
+                else
+                {
+                    Nationality = Random.Range(0, Cell_Nation.Nation_Colors.Count);
+                }
             }
         }
     }
