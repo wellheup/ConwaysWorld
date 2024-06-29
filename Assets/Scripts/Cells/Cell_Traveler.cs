@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace ConwaysWorld
 {
     /// <summary>
-    /// traveler (swaps places with random neighbor each turn)
+    /// traveler (swaps places with UnityEngine.Random neighbor each turn)
     /// </summary>
     /// <remarks>
     /// 
@@ -24,16 +24,12 @@ namespace ConwaysWorld
             Row = row;
             Direction = ChooseTravelDirection();
             CellType = E_CellType.Cell_Traveler;
-            LiveColor = Cell_Colors.Cell_Traveler;
-            DeadColor = Cell_Colors.Cell_Dead;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
             Conditions = new List<string>();
         }
 
         public override void Live(Cell[,] cellGrid)
         {
             IsAlive = true;
-            CurrentColor = LiveColor;
             Age++;
             if (CellNeighborhood.NumNeighbors == 0)
             {
@@ -51,7 +47,7 @@ namespace ConwaysWorld
         {
             base.Die();
             SpecialPerformed = true;
-            Nationality = null;
+            Nationality = -1;
         }
 
         protected virtual string ChooseTravelDirection()
@@ -59,7 +55,7 @@ namespace ConwaysWorld
             string direction = "center";
             while (direction == "center")
             {
-                direction = Cell_Neighborhood.NeighborHoodKeys[Random.Range(0, Cell_Neighborhood.NeighborHoodKeys.Length)];
+                direction = Cell_Neighborhood.NeighborHoodKeys[UnityEngine.Random.Range(0, Cell_Neighborhood.NeighborHoodKeys.Length)];
             }
             return direction;
         }

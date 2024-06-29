@@ -1,5 +1,11 @@
 using UnityEngine;
-using UnityEngine.UIElements;
+using System.Collections.Generic;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using static ConwaysWorld.Cell_Generator;
+using System;
+using UnityEngine.Assertions;
+
 namespace ConwaysWorld
 {
 
@@ -13,6 +19,8 @@ namespace ConwaysWorld
 
         [SerializeField] private BaseTile _baseTilePrefab;
         [SerializeField] private Transform _gridContainer;
+        private Dictionary<E_CellType, Sprite> _cellSprites;
+
 
         public void InitiateDisplayGrid(Cell[,] cellGrid, float canvasWidth, float canvasHeight)
         {
@@ -20,6 +28,37 @@ namespace ConwaysWorld
             _canvasHeight = canvasHeight;
             _cellGrid = cellGrid;
             _baseTileSize = _baseTilePrefab.Image.rectTransform.sizeDelta.y;
+            _cellSprites = new();
+
+            foreach (E_CellType i in Enum.GetValues(typeof(E_CellType)))
+            {
+                _cellSprites.Add(i, null);
+                Addressables.LoadAssetAsync<Sprite>($"Assets/Sprites/{(i == E_CellType.Cell ? E_CellType.Cell_Basic : i)}.jpg").Completed +=
+                    (spriteAsyncOpHandle) =>
+                    {
+                        if (spriteAsyncOpHandle.Status == AsyncOperationStatus.Succeeded)
+                        {
+                            _cellSprites[i] = spriteAsyncOpHandle.Result;
+                        }
+                        else
+                        {
+                            Debug.Log($"Failed to load {i}.jpg in View");
+                        }
+                    };
+            }
+            // revert dead sprite to basic color to mitigate busy visuals...
+            Addressables.LoadAssetAsync<Sprite>($"Assets/Sprites/BlankBaseTileSprite.png").Completed +=
+                    (spriteAsyncOpHandle) =>
+                    {
+                        if (spriteAsyncOpHandle.Status == AsyncOperationStatus.Succeeded)
+                        {
+                            _cellSprites[E_CellType.Cell_Dead] = spriteAsyncOpHandle.Result;
+                        }
+                        else
+                        {
+                            Debug.Log($"Failed to load BlankBaseTileSprite.png in View");
+                        }
+                    };
 
             FillDisplayGrid(false);
         }
@@ -88,6 +127,48 @@ namespace ConwaysWorld
             FillDisplayGrid(true);
         }
 
+        public void UpdateCellBorders(Cell cell, int x, int y)
+        {
+            string[] NESW_Nations = new string[] { "north", "east", "south", "west" };
+            if (cell.GetIsAlive() && cell.Nationality != -1)
+            {
+                for (int i = 0; i < NESW_Nations.Length; i++)
+                {
+                    try
+                    {
+                        if (cell.Nationality == cell.CellNeighborhood.NeighborhoodDict[NESW_Nations[i]].Nationality)
+                        {
+                            _displayGrid[x, y].Borders[i].color = Color.clear;
+                        }
+                        else
+                        {
+                            _displayGrid[x, y].Borders[i].color = Cell_Nation.Nation_Colors[cell.Nationality];
+                        }
+                    }
+                    catch
+                    {
+                        _displayGrid[x, y].Borders[i].color = Cell_Nation.Nation_Colors[cell.Nationality];
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < NESW_Nations.Length; i++)
+                {
+                    _displayGrid[x, y].Borders[i].color = Color.clear;
+                }
+            }
+            // try
+            // {
+            //     Assert.IsTrue(cell.GetIsAlive() && cell.Nationality == -1);
+            // }
+            // catch (Exception e)
+            // {
+            //     Debug.Log($"{_displayGrid[x, y].name} has no nation after spawn for some reason");
+            //     // throw e;
+            // }
+        }
+
         public void RenderWorldState(Cell[,] cellGrid, int attemptsAtLife, int generation, int currentPopulation)
         {
             AttemptsAtLife = attemptsAtLife;
@@ -104,9 +185,23 @@ namespace ConwaysWorld
             {
                 for (int y = 0; y < cellGrid.GetLength(1); y++)
                 {
-                    _displayGrid[x, y].Image.color = _cellGrid[x, y].GetCurrentColor();
-                    string lifeStatus = _cellGrid[x, y].GetIsAlive() == true ? "Alive" : "Dead";
-                    _displayGrid[x, y].name = cellNum++ + " (" + x + ", " + y + ")" + " " + lifeStatus + " " + _cellGrid[x, y].CellType.ToString();
+                    string lifeStatus = "???";
+                    _displayGrid[x, y].name = $"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} [{_cellGrid[x, y].Nationality}]";
+                    UpdateCellBorders(_cellGrid[x, y], x, y);
+                    if (_cellGrid[x, y].GetIsAlive())
+                    {
+                        lifeStatus = "Alive";
+                        _displayGrid[x, y].name = $"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} [{_cellGrid[x, y].Nationality}]";
+                        // _displayGrid[x, y].Image.color = _cellGrid[x, y].Nationality != -1 ? Cell_Nation.Nation_Colors[_cellGrid[x, y].Nationality] : Color.white;
+                        _displayGrid[x, y].Image.sprite = _cellSprites[_cellGrid[x, y].CellType] ? _cellSprites[_cellGrid[x, y].CellType] : _cellSprites[E_CellType.Cell_Dead];
+                    }
+                    else
+                    {
+                        lifeStatus = "Dead";
+                        _displayGrid[x, y].name = $"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} [{_cellGrid[x, y].Nationality}]";
+                        // _displayGrid[x, y].Image.color = Color.white;
+                        _displayGrid[x, y].Image.sprite = _cellSprites[E_CellType.Cell_Dead];
+                    }
                 }
             }
             // PrintWorldStats(AttemptsAtLife, Generation, CurrentPopulation);

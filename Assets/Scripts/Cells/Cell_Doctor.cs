@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using static ConwaysWorld.Cell_Generator;
 /// <summary>
-/// explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
+/// explorer (picks a UnityEngine.Random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
 /// </summary>
 namespace ConwaysWorld
 {
@@ -19,9 +19,6 @@ namespace ConwaysWorld
             Column = column;
             Row = row;
             CellType = E_CellType.Cell_Doctor;
-            LiveColor = Cell_Colors.Cell_Doctor;
-            DeadColor = Cell_Colors.Cell_Dead;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
             Conditions = new List<string>();
             Vaccines = new List<string>();
         }
@@ -29,8 +26,8 @@ namespace ConwaysWorld
         public override void Live(Cell[,] cellGrid)
         {
             base.Live(cellGrid);
-            ChooseNation();
             SpecialPerformed = false;
+            ChooseNation();
         }
 
         public override bool CalcCellAliveNextGen()

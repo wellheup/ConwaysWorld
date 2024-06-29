@@ -9,8 +9,6 @@ namespace ConwaysWorld
         // plague(diseased cell that spreads disease with higher infection rate than diseased to all touching cells)
         public Cell_Plague(int column, int row, bool isAlive) : base(column, row, isAlive)
         {
-            LiveColor = Cell_Colors.Cell_Plague;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
             TransmissionRate = 75;
             CellType = E_CellType.Cell_Plague;
             Disease = RandomCondition('p');
@@ -19,7 +17,6 @@ namespace ConwaysWorld
         public override void Live(Cell[,] cellGrid)
         {
             IsAlive = true;
-            CurrentColor = LiveColor;
             Age++;
             SpreadDisease(cellGrid);
             if (Age > MatureAge && !Conditions.Contains("mature"))
@@ -33,9 +30,8 @@ namespace ConwaysWorld
         public override void Die()
         {
             IsAlive = false;
-            CurrentColor = DeadColor;
             Conditions.Remove(Disease);
-            Nationality = null;
+            Nationality = -1;
         }
 
         private static new Cell Infect(Cell cell, string disease)
@@ -54,7 +50,7 @@ namespace ConwaysWorld
             // mark neighbors as infected
             for (int i = 0; i < Cell_Neighborhood.NeighborHoodKeys.Length; i++)
             {
-                if (Random.Range(1, 101) < TransmissionRate && Cell_Neighborhood.NeighborHoodKeys[i] != "center")
+                if (UnityEngine.Random.Range(1, 101) < TransmissionRate && Cell_Neighborhood.NeighborHoodKeys[i] != "center")
                 {
                     int nCellCol = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Column;
                     int nCellRow = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Row;

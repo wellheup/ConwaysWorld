@@ -13,16 +13,12 @@ namespace ConwaysWorld
         {
             CellType = E_CellType.Cell_Diplomat;
             MaxAloneTime = 4;
-            LiveColor = Cell_Colors.Cell_Diplomat;
-            DeadColor = Cell_Colors.Cell_Dead;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
             Conditions = new List<string>();
         }
 
         public override void Live(Cell[,] cellGrid)
         {
             IsAlive = true;
-            CurrentColor = LiveColor;
             Age++;
             if (CellNeighborhood.NumNeighbors == 0)
             {
@@ -33,108 +29,28 @@ namespace ConwaysWorld
                 DeathCountDown = 0;
             }
             SpecialPerformed = false;
+            ChooseNation();
         }
 
-        private Cell FindNearestOther(Cell[,] cellGrid)
+        private bool IsCellOtherNation(Cell otherCell)
         {
-            List<Cell> nearestOthers = new();
-            int range = 1,
-                maxRange = 5;
-            while (nearestOthers.Count == 0 && range < maxRange)
-            {
-                for (int x = range * -1; x <= range; x++)
-                {
-                    //row beneath
-                    int targetCol = (Column + x + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
-                    int targetRow = (Row + range * -1 + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
-                    if (cellGrid[targetCol, targetRow].Nationality != Nationality)
-                    {
-                        nearestOthers.Add(cellGrid[targetCol, targetRow]);
-                    }
-                    //row above
-                    targetRow = (Row + range + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
-                    if (cellGrid[targetCol, targetRow].Nationality != Nationality)
-                    {
-                        nearestOthers.Add(cellGrid[targetCol, targetRow]);
-                    }
-                }
-                for (int y = range * -1 + 1; y <= range - 1; y++)
-                {
-                    //col left
-                    int targetCol = (Column + range * -1 + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
-                    int targetRow = (Row + y + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
-                    if (cellGrid[targetCol, targetRow].Nationality != Nationality)
-                    {
-                        nearestOthers.Add(cellGrid[targetCol, targetRow]);
-                    }
-                    //col right
-                    targetCol = (Column + range + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
-                    if (cellGrid[targetCol, targetRow].Nationality != Nationality)
-                    {
-                        nearestOthers.Add(cellGrid[targetCol, targetRow]);
-                    }
-                }
-                range++;
-            }
-            if (nearestOthers.Count > 0)
-            {
-                // select a target cell to travel toward
-                return nearestOthers[Random.Range(0, nearestOthers.Count)];
-            }
-            return null;
-        }
-
-        public Cell GetDiplomaticCellSwap(Cell[,] cellGrid)
-        {
-            Cell nearestOther = FindNearestOther(cellGrid);
-            int nearestCol = Column,
-                nearestRow = Row;
-            if (nearestOther != null)
-            {
-                if (nearestOther.Column > Column)
-                {
-                    nearestCol = nearestOther.Column++;
-                }
-                if (nearestOther.Column < Column)
-                {
-                    nearestCol = nearestOther.Column--;
-                }
-                if (nearestOther.Row > Row)
-                {
-                    nearestRow = nearestOther.Row++;
-                }
-                if (nearestOther.Row < Row)
-                {
-                    nearestRow = nearestOther.Row--;
-                }
-                return cellGrid[nearestCol, nearestRow];
-            }
-            return null;
+            return this.Nationality != otherCell.Nationality;
         }
 
         public override void SpecialActions(Cell[,] cellGrid)
         {
-
-
             if (IsAlive && !SpecialPerformed)
             {
-                // spread nationality
-                if (CellNeighborhood.NeighborhoodDict[Direction].Nationality != Nationality)
+                Cell targetCell = FindNearbyCellsByRule(cellGrid, IsCellOtherNation, 5);
+                Cell cellToSwap = FindNeighborInDirOfCell(cellGrid, targetCell);
+                if (cellToSwap != null)
                 {
-                    CellNeighborhood.NeighborhoodDict[Direction].Nationality = Nationality;
-                    SwapCells(this, CellNeighborhood.NeighborhoodDict[Direction], cellGrid);
+                    if (IsCellOtherNation(cellToSwap)) cellToSwap.Nationality = Nationality;
+                    SwapCells(this, cellToSwap, cellGrid);
                 }
-                else // look for nearest other nation and move toward it
+                else
                 {
-                    Cell cellToSwap = GetDiplomaticCellSwap(cellGrid);
-                    if (cellToSwap != null)
-                    {
-                        SwapCells(this, cellToSwap, cellGrid);
-                    }
-                    else
-                    {
-                        SwapCells(this, CellNeighborhood.NeighborhoodDict[Direction], cellGrid);
-                    }
+                    SwapCells(this, CellNeighborhood.NeighborhoodDict[ChooseTravelDirection()], cellGrid);
                 }
                 SpecialPerformed = true;
             }

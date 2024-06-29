@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using static ConwaysWorld.Cell_Generator;
 /// <summary>
-/// explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
+/// explorer (picks a UnityEngine.Random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
 /// </summary>
 namespace ConwaysWorld
 {
@@ -15,16 +15,13 @@ namespace ConwaysWorld
         {
             CellType = E_CellType.Cell_Explorer;
             MaxAloneTime = 4;
-            LiveColor = Cell_Colors.Cell_Explorer;
-            DeadColor = Cell_Colors.Cell_Dead;
-            CurrentColor = isAlive ? LiveColor : DeadColor;
             Conditions = new List<string>();
+            ChooseNation();
         }
 
         public override void Live(Cell[,] cellGrid)
         {
             IsAlive = true;
-            CurrentColor = LiveColor;
             Age++;
             if (CellNeighborhood.NumNeighbors == 0)
             {
@@ -39,7 +36,6 @@ namespace ConwaysWorld
             {
                 Conditions.Add("exploring");
             }
-            ChooseNation();
         }
 
         protected bool IsNeighborOverEdge(Cell neighbor)

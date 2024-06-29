@@ -13,17 +13,39 @@ namespace ConwaysWorld
     /// </remarks>
     public class Cell_Nation
     {
-        public string Name;
+        public int NationNum;
         public Cell King = null;
         public List<Cell> Citizens;
         public List<Cell> Diplomats;
-        // public GameObject Flag;
-
-        public Cell_Nation(Cell citizenZero)
+        public static List<Color> Nation_Colors { get; set; } = new()
         {
-            Name = citizenZero.Nationality;
+            new(0.14f, 0.17f, 0.46f, 1.00f),
+            new(0.11f, 0.17f, 0.72f, 1.00f),
+            new(0.00f, 0.10f, 0.96f, 1.00f),
+            new(0.28f, 0.24f, 0.08f, 1.00f),
+            new(0.64f, 0.52f, 0.09f, 1.00f),
+            new(0.96f, 0.75f, 0.00f, 1.00f),
+            new(0.28f, 0.08f, 0.09f, 1.00f),
+            new(0.64f, 0.09f, 0.11f, 1.00f),
+            new(0.96f, 0.00f, 0.02f, 1.00f),
+            new(0.09f, 0.28f, 0.14f, 1.00f),
+            new(0.09f, 0.64f, 0.24f, 1.00f),
+            new(0.00f, 0.96f, 0.26f, 1.00f),
+            new(0.38f, 0.50f, 0.11f, 1.00f),
+            new(0.68f, 1.00f, 0.00f, 1.00f),
+            new(0.50f, 0.28f, 0.11f, 1.00f),
+            new(1.00f, 0.44f, 0.00f, 1.00f),
+            new(0.16f, 0.61f, 0.68f, 1.00f),
+            new(0.00f, 0.86f, 1.00f, 1.00f),
+            new(0.40f, 0.11f, 0.50f, 1.00f),
+            new(0.74f, 0.00f, 1.00f, 1.00f)
+        };
+
+        public Cell_Nation(int nationNum)
+        {
             Diplomats = new();
-            Citizens = new List<Cell> { citizenZero };
+            Citizens = new();
+            NationNum = nationNum;
         }
 
         public void SetKing(Cell king)
@@ -34,35 +56,43 @@ namespace ConwaysWorld
         public void Census()
         {
             List<Cell> temp = new();
-            foreach (Cell _ in Citizens)
+            for (int i = 0; i < Citizens.Count; i++)
             {
-                if (_.GetIsAlive() && _.Nationality == Name)
+                if (Citizens[i] != null)
                 {
-                    temp.Add(_);
+                    if (Citizens[i].GetIsAlive() && Citizens[i].Nationality == NationNum)
+                    {
+                        temp.Add(Citizens[i]);
+                    }
+                    else
+                    {
+                        Citizens[i].Nationality = -1;
+                    }
                 }
             }
             Citizens = temp;
             if (Citizens.Count > 5)
             {
-                SetKing(Citizens[Random.Range(0, Citizens.Count)]);
+                SetKing(Citizens[UnityEngine.Random.Range(0, Citizens.Count)]);
             }
         }
 
         public void ElectDiplomat(Cell[,] cellGrid)
         {
-            if (Diplomats.Count < .1f * Citizens.Count)
+            if (Diplomats.Count < .1f * Citizens.Count && Citizens.Count >= 5)
             {
+                // Debug.Log($"Nation {NationNum} elects diplomat with {Citizens.Count} citizens");
                 Cell newDiplomat = King;
                 int maxTries = 5, attempt = 0;
                 //select a cell whom is not a diplomat already
                 while (attempt < maxTries && (newDiplomat == King || Diplomats.Contains(newDiplomat)))
                 {
-                    newDiplomat = Citizens[Random.Range(0, Citizens.Count)];
+                    newDiplomat = Citizens[UnityEngine.Random.Range(0, Citizens.Count)];
                     attempt++;
                 }
 
                 cellGrid[newDiplomat.Column, newDiplomat.Row] = Cell.ReplaceCell(newDiplomat, Cell_Generator.E_CellType.Cell_Diplomat, true);
-                newDiplomat.Nationality = Name;
+                newDiplomat.Nationality = NationNum;
 
                 Diplomats.Add(newDiplomat);
             }

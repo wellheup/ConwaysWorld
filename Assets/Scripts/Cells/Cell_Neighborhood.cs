@@ -2,7 +2,7 @@ using System.Collections.Generic;
 namespace ConwaysWorld
 {
 
-    public struct Cell_Neighborhood
+    public class Cell_Neighborhood
     {
         public int NumNeighbors { get; }
         public int CenterColumn { get; }
@@ -29,6 +29,7 @@ namespace ConwaysWorld
             int neighborhoodKeyIndex = 0;
             NumNeighbors = 0;
             Center = cellGrid[column, row];
+            //cycle through adjacent cells, clockwise, starting with southWest cell
             for (int columnOffset = -1; columnOffset <= 1; columnOffset++)
             {
                 for (int rowOffset = -1; rowOffset <= 1; rowOffset++)
@@ -41,7 +42,7 @@ namespace ConwaysWorld
                     {
                         NeighborhoodDict.Add("center", cellGrid[neighborColumn, neighborRow]);
                     }
-                    else
+                    else // only add cells to neighborhood if they are alive
                     {
                         if (cellGrid[neighborColumn, neighborRow].GetIsAlive())
                             NumNeighbors++;

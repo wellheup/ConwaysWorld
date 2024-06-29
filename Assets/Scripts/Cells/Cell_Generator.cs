@@ -28,6 +28,7 @@ namespace ConwaysWorld
             Cell_Diplomat,
             Cell_Hunter,
             Cell_God,
+            Cell_King,
             Cell_Dead,
         }
 
@@ -54,6 +55,7 @@ namespace ConwaysWorld
             _spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Diseased, TypeSpawnFrequency = 0.2f * BasePercentLiving / 100 });
             _spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Traveler, TypeSpawnFrequency = 0.05f * BasePercentLiving / 100 });
             _spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Doctor, TypeSpawnFrequency = 0.05f * BasePercentLiving / 100 });
+            _spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Hunter, TypeSpawnFrequency = 0.05f * BasePercentLiving / 100 });
 
             float remainingPercentOfLiving = BasePercentLiving / 100;
             for (int i = 0; i < _spawnFrequencies.Count; i++)
@@ -81,7 +83,7 @@ namespace ConwaysWorld
 
         private E_CellType GetRandomCellType()
         {
-            float value = Random.value;
+            float value = UnityEngine.Random.value;
             float cumulative = 0;
             int k;
             for (k = 0; k < _spawnFrequencies.Count; k++)
@@ -99,14 +101,14 @@ namespace ConwaysWorld
         public Cell InitializeCell(int column, int row)
         {
             Cell cell;
-            float _rollForVariant = Random.value;
+            float _rollForVariant = UnityEngine.Random.value;
             switch (GetRandomCellType())
             {
                 case E_CellType.Cell_Basic:
                     cell = new Cell_Basic(column, row, true);
-                    if (Random.Range(1, 5) == 1)// 1/4 chance disease immunity
+                    if (UnityEngine.Random.Range(1, 5) == 1)// 1/4 chance disease immunity
                         cell.Conditions.Add("immune");
-                    if (Random.Range(1, 101) == 1) //1/100 chance immaculate
+                    if (UnityEngine.Random.Range(1, 101) == 1) //1/100 chance immaculate
                         cell.Conditions.Add("immaculate");
                     break;
                 case E_CellType.Cell_Immortal:
@@ -126,6 +128,9 @@ namespace ConwaysWorld
                     break;
                 case E_CellType.Cell_Doctor:
                     cell = new Cell_Doctor(column, row, true);
+                    break;
+                case E_CellType.Cell_Hunter:
+                    cell = new Cell_Hunter(column, row, true);
                     break;
                 default: //this is case E_CellType.Cell_Dead
                     cell = new Cell_Basic(column, row, false);
