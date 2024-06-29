@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using static ConwaysWorld.Cell_Generator;
 /// <summary>
-/// explorer (picks a random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
+/// explorer (picks a UnityEngine.Random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
 /// </summary>
 namespace ConwaysWorld
 {

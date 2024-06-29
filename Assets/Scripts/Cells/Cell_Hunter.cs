@@ -1,6 +1,7 @@
 using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ConwaysWorld
 {
@@ -58,28 +59,52 @@ namespace ConwaysWorld
             return true;
         }
 
-        private Cell SeekPrey(Cell[,] cellGrid)
+        private bool IsCellPrey(Cell otherCell)
         {
-            //TODO: implement FindNearestOther into Cell such that it takes a rule and returns based on that rule
+            return PreyTypes.Contains(otherCell.CellType);
+        }
 
-            return null;
+        private bool IsCellCurrentPrey(Cell otherCell)
+        {
+            return otherCell == CurrentPrey;
         }
 
         public override void SpecialActions(Cell[,] cellGrid)
         {
             if (IsAlive && !SpecialPerformed)
             {
-                /*
-                if currentPrey is null look for prey adjacent
-                    if CurrentPrey is adjacent kill it
-                if no prey adjacent look for prey in range
-                    CurrentPrey ??= SeekPrey(cellGrid);
-                    if prey in range move toward prey
-                    if no prey in range move in random direction
-                */
+                Cell targetCell = CurrentPrey;
+                //if current prey is invalid
+                if (CurrentPrey == null || !CurrentPrey.GetIsAlive())
+                {
+                    //seek new current prey, choose random if invalid
+                    targetCell = FindNearbyCellsByRule(cellGrid, IsCellPrey, 5);
+                    if (targetCell != null)
+                    {
+                        CurrentPrey = targetCell;
+                    }
+                    else
+                    {
+                        targetCell = CellNeighborhood.NeighborhoodDict[ChooseTravelDirection()];
+                    }
+                }
 
-                SwapCells(this, CellNeighborhood.NeighborhoodDict[Direction], cellGrid);
-
+                Cell cellToSwap = FindNeighborInDirOfCell(cellGrid, targetCell); // find nearest cell in dir of target (may be the actual target)
+                if (CurrentPrey != null && IsCellCurrentPrey(cellToSwap)) //if prey was valid or new prey was found
+                {
+                    SwapCells(this, cellToSwap, cellGrid);
+                    cellToSwap.Die(); //TODO: is this valid? or should i mark the cell for death and let model kill it somehow?
+                    CurrentPrey = null;
+                }
+                else if (IsCellPrey(cellToSwap))
+                {
+                    SwapCells(this, cellToSwap, cellGrid);
+                    cellToSwap.Die(); //TODO: is this valid? or should i mark the cell for death and let model kill it somehow?
+                }
+                else
+                {
+                    SwapCells(this, cellToSwap, cellGrid);
+                }
                 SpecialPerformed = true;
             }
         }

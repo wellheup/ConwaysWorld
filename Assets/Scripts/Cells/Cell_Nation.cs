@@ -73,7 +73,7 @@ namespace ConwaysWorld
             Citizens = temp;
             if (Citizens.Count > 5)
             {
-                SetKing(Citizens[Random.Range(0, Citizens.Count)]);
+                SetKing(Citizens[UnityEngine.Random.Range(0, Citizens.Count)]);
             }
         }
 
@@ -87,7 +87,7 @@ namespace ConwaysWorld
                 //select a cell whom is not a diplomat already
                 while (attempt < maxTries && (newDiplomat == King || Diplomats.Contains(newDiplomat)))
                 {
-                    newDiplomat = Citizens[Random.Range(0, Citizens.Count)];
+                    newDiplomat = Citizens[UnityEngine.Random.Range(0, Citizens.Count)];
                     attempt++;
                 }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
@@ -9,12 +10,14 @@ namespace ConwaysWorld
         public Cell_Neighborhood CellNeighborhood;
         public List<string> Conditions;
         protected bool IsAlive = false;
-        public int Column = 0, Row = 0, Age = 0, MatureAge = 10;
         public E_CellType CellType = E_CellType.Cell;
-        public int Nationality = -1;
-        public int MinLivingNeighbors = 2;
-        public int MaxLivingNeighbors = 4;
-
+        public int Age = 0,
+            Column = 0,
+            Row = 0,
+            MatureAge = 10,
+            Nationality = -1,
+            MinLivingNeighbors = 1,
+            MaxLivingNeighbors = 4;
 
         public bool GetIsAlive()
         {
@@ -144,12 +147,12 @@ namespace ConwaysWorld
             List<Cell> cells = new List<Cell>();
             foreach (KeyValuePair<string, Cell> cell in CellNeighborhood.NeighborhoodDict)
             {
-                if (cell.Value.GetIsAlive() == false)
+                if (cell.Value != null && cell.Value.GetIsAlive() == false)
                 {
                     cells.Add(cell.Value);
                 }
             }
-            int randNeighbor = Random.Range(0, cells.Count);
+            int randNeighbor = UnityEngine.Random.Range(0, cells.Count);
             cells[randNeighbor] = ReplaceCell(cells[randNeighbor], CellType, true);
         }
 
@@ -168,7 +171,7 @@ namespace ConwaysWorld
             LiveNoNeighbors(CellGrid, this);
             if (IsAlive)
             {
-                if (Random.Range(1, 3) == 1)
+                if (UnityEngine.Random.Range(1, 3) == 1)
                 {
                     LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["north"]);
                     LiveNoNeighbors(CellGrid, CellNeighborhood.NeighborhoodDict["south"]);
@@ -188,7 +191,7 @@ namespace ConwaysWorld
 
             for (int i = 0; i < stringChars.Length; i++)
             {
-                stringChars[i] = chars[Random.Range(1, chars.Length)];
+                stringChars[i] = chars[UnityEngine.Random.Range(1, chars.Length)];
             }
 
             return prefix + "_" + new string(stringChars);
@@ -208,14 +211,84 @@ namespace ConwaysWorld
                             neighborNations.Add(neighbor.Nationality);
                         }
                     }
-                    int rand = Random.Range(0, neighborNations.Count + 1);
-                    Nationality = rand == neighborNations.Count ? Random.Range(0, Cell_Nation.Nation_Colors.Count) : neighborNations[rand];
+                    int rand = UnityEngine.Random.Range(0, neighborNations.Count + 1);
+                    Nationality = rand == neighborNations.Count ? UnityEngine.Random.Range(0, Cell_Nation.Nation_Colors.Count) : neighborNations[rand];
                 }
                 else
                 {
-                    Nationality = Random.Range(0, Cell_Nation.Nation_Colors.Count);
+                    Nationality = UnityEngine.Random.Range(0, Cell_Nation.Nation_Colors.Count);
                 }
             }
+        }
+
+        protected Cell FindNearbyCellsByRule(Cell[,] cellGrid, Func<Cell, bool> searchRule, int maxRange)
+        {
+            List<Cell> nearestOthers = new();
+            int range = 1;
+            while (nearestOthers.Count == 0 && range < maxRange)
+            {
+                for (int x = range * -1; x <= range; x++)
+                {
+                    //row beneath
+                    int targetCol = (Column + x + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
+                    int targetRow = (Row + range * -1 + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
+                    if (searchRule(cellGrid[targetCol, targetRow]))
+                    {
+                        nearestOthers.Add(cellGrid[targetCol, targetRow]);
+                    }
+                    //row above
+                    targetRow = (Row + range + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
+                    if (searchRule(cellGrid[targetCol, targetRow]))
+                    {
+                        nearestOthers.Add(cellGrid[targetCol, targetRow]);
+                    }
+                }
+                for (int y = range * -1 + 1; y <= range - 1; y++)
+                {
+                    //col left
+                    int targetCol = (Column + range * -1 + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
+                    int targetRow = (Row + y + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
+                    if (searchRule(cellGrid[targetCol, targetRow]))
+                    {
+                        nearestOthers.Add(cellGrid[targetCol, targetRow]);
+                    }
+                    //col right
+                    targetCol = (Column + range + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
+                    if (searchRule(cellGrid[targetCol, targetRow]))
+                    {
+                        nearestOthers.Add(cellGrid[targetCol, targetRow]);
+                    }
+                }
+                range++;
+            }
+
+            if (nearestOthers.Count > 0)
+            {
+                // select a target cell to travel toward
+                return nearestOthers[UnityEngine.Random.Range(0, nearestOthers.Count)];
+            }
+            return null;
+        }
+
+        public Cell FindNeighborInDirOfCell(Cell[,] cellGrid, Cell target)
+        {
+            if (target != null)
+            {
+                int innerDist = Math.Abs(Column - target.Column);
+                int outerDist = Math.Abs(cellGrid.GetLength(0) - innerDist);
+                int targetDir = Column == target.Column ? 0 : Column < target.Column ? 1 : -1;
+                int fastestDir = innerDist <= outerDist ? 1 : -1;
+                int nearestCol = (Column + targetDir * fastestDir + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
+
+                innerDist = Math.Abs(Row - target.Row);
+                outerDist = Math.Abs(cellGrid.GetLength(0) - innerDist);
+                targetDir = Row == target.Row ? 0 : Row < target.Row ? 1 : -1;
+                fastestDir = innerDist <= outerDist ? 1 : -1;
+                int nearestRow = (Row + targetDir * fastestDir + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
+
+                return cellGrid[nearestCol, nearestRow];
+            }
+            return this;
         }
     }
 }

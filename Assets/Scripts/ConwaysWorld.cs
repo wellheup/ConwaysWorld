@@ -106,15 +106,14 @@ namespace ConwaysWorld
 /*TODO:
     - TODO: move nation colors to View    
         - TODO: move cell colors to View
-    - TODO: seems to be no nation 0 members
 - TODO: grid size limits don't seem to work...
+
+- TODO: make MinLivingNeighbors and MaxLivingNeighbors for cells accessible and alterable in ConwaysWorld object
 
 - TODO: add class and method descriptions using /// notation (vscode should suggest a template)
 - TODO: add a Cell_Grid type to contain all grid-based functions
 - TODO: move more of conditions updates to SpecialActions()?
 - TODO: Add to Conway's world an event that uses a "find the largest island" algorithm
-- TODO: add visualization for nations
-    - TODO: reduce nations to a pool of like 25
 - TODO: Add different types of specialized cells inheriting from Cell
     - TODO: king (each turn, it assesses the number of cells in its nation and converts them to its kingdom. If 2 kingdoms touch, create a warfront, but start by doing nothing)
         - TODO: use island finding algorithm?
@@ -123,16 +122,16 @@ namespace ConwaysWorld
         - TODO: once it reaches that nation as a neighbor, it adds that nationality to its conditions and seeks a new one not on its list
     - TODO: necromancer (revives neighbors the turn after they die)
     - TODO: zombie (die if their necromancer dies, do not die from overpopulation)
-    - TODO: warrior (moves in a random direction and kills cells from other nations, zombies, and diseased cells, 2 warrior cells flip a coin for the victor)
-    - TODO: mutant/ mutator (has a small chance every turn to randomly alter surrounding cells to another cell type)
+    - TODO: warrior (moves in a UnityEngine.Random direction and kills cells from other nations, zombies, and diseased cells, 2 warrior cells flip a coin for the victor)
+    - TODO: mutant/ mutator (has a small chance every turn to UnityEngine.Randomly alter surrounding cells to another cell type)
     - TODO: islander (dies if there are more than x number of nearby cells within like 10 cells, moves til finding empty space if it's crowded)
     - TODO: bomber (kills all cells in 2 cell radius)
     - TODO: savior (moves in a direction, cells follow it)
-    - TODO: conqueror (moves in a direction until it leave its nation, when hitting another nation, random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts)
-    - TODO: teacher/ elder (random chance to promote adjacent basic_cells to a new type)
+    - TODO: conqueror (moves in a direction until it leave its nation, when hitting another nation, UnityEngine.Random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts)
+    - TODO: teacher/ elder (UnityEngine.Random chance to promote adjacent basic_cells to a new type)
     - TODO: irradiated (cell cannot live ever again except under certain circumstance)
     - TODO: spy (similar to diplomat, but instead of moving directly toward target, must move through living neighbors)
-    - TODO: hunter (picks a random live (immortal?) cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
+    - TODO: hunter (picks a UnityEngine.Random live (immortal?) cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
     - TODO: god? (effects every living cell on the board in some way)
     - TODO: natural disasters? opportunity for largest island?
 - TODO: add an increased chance to spawn doctors near diseases
@@ -140,13 +139,14 @@ namespace ConwaysWorld
 - TODO: utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
 - TODO: reset grid size after world ending events
 - TODO: make each update frame fade between the 2 more smoothly
+- TODO: the system would be more stable and  likely faster if each cellType has its own phase of the update, so there is a heirarchical order to cell special actions
 
 Visuals
-- add an outline to cells from nations
 - add symbols for each type of cell
     - generated some placeholder ones with https://deepai.org/machine-learning-model/logo-generator
     - replace individual JPGS 
     - TODO: change sprites to sprite atlas
+    - TODO: animate changes between updates so that cells slowly fade in/out during that time
     Cell descriptions:
         Cell_Basic -- lives and dies
         Cell_Immortal -tree- lives forever unless it gets too lonely
@@ -158,15 +158,15 @@ Visuals
         Cell_Doctor -needle?- vaccinates diseased and plague-ridden cells
         Cell_Necromancer -??- resurrects nearby cells as zombie version of themselves
         Cell_Zombie -??- live until it their necromancer dies, do not die until their necromancer dies, do not die from overpopulation, spread like disease
-        Cell_Warrior -sword- moves in a random direction and kills cells from other nations, zombies, and diseased cells
+        Cell_Warrior -sword- moves in a UnityEngine.Random direction and kills cells from other nations, zombies, and diseased cells
         Cell_Teacher -graduation cap- upgrades 1 nearby cell per turn from basic
-        Cell_Mutant -??- has a small chance every turn to randomly alter surrounding cells to another cell type
+        Cell_Mutant -??- has a small chance every turn to UnityEngine.Randomly alter surrounding cells to another cell type
         Cell_Islander -palm tree- dies if there are more than x number of nearby cells within like 10 cells, moves til finding empty space if it's crowded
         Cell_Bomber -bomb- kills all cells within a radius proportional to the size of the grid
         Cell_Savior -cross- moves in a direction and cells within range will change their nation to the savior's nation and also shift in that direction
-        Cell_Conqueror -flag- moves in a direction until it leave its nation, when hitting another nation, random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts to its nation
+        Cell_Conqueror -flag- moves in a direction until it leave its nation, when hitting another nation, UnityEngine.Random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts to its nation
         Cell_Irradiated -nuclear symbol- cannot live ever again except maybe under a special, yet-to-be-determined circumstance
-        Cell_Diplomat -quill- when a nation is large enough, a random member-cell becomes a diplomat and attempts to spread its nation to the nearest other nation
+        Cell_Diplomat -quill- when a nation is large enough, a UnityEngine.Random member-cell becomes a diplomat and attempts to spread its nation to the nearest other nation
         Cell_Hunter -spear- searches for the nearest prey at spawn, selecting only cellTypes from a list of preys within a range. Travels toward that prey and upon reaching adjacentcy to prey, kills prey, then seeks new prey
         Cell_God -cloud- effects every living cell on the board in some way...
         Cell_King -crown- spawns from nations of significant size. each turn, it assesses the number of cells in its nation and converts them to its kingdom. If 2 kingdoms touch, create a warfront of warrior cells

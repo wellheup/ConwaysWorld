@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace ConwaysWorld
 {
     /// <summary>
-    /// traveler (swaps places with random neighbor each turn)
+    /// traveler (swaps places with UnityEngine.Random neighbor each turn)
     /// </summary>
     /// <remarks>
     /// 
@@ -55,7 +55,7 @@ namespace ConwaysWorld
             string direction = "center";
             while (direction == "center")
             {
-                direction = Cell_Neighborhood.NeighborHoodKeys[Random.Range(0, Cell_Neighborhood.NeighborHoodKeys.Length)];
+                direction = Cell_Neighborhood.NeighborHoodKeys[UnityEngine.Random.Range(0, Cell_Neighborhood.NeighborHoodKeys.Length)];
             }
             return direction;
         }

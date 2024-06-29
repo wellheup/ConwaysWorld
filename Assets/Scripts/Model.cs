@@ -227,9 +227,9 @@ namespace ConwaysWorld
                     {
                         _resize = true;
                     }
-                    if (CellGrid[column, row].Age > 2 && CellGrid[column, row].Nationality == -1)//manage grid expansion
+                    if (CellGrid[column, row].Age > 1 && CellGrid[column, row].Nationality == -1)//make edge case cells choose nationality
                     {
-                        Debug.Log(/*$"cell [{column}, {row}], */$"{CellGrid[column, row].CellType}, lived without choosing nation");
+                        CellGrid[column, row].ChooseNation();
                     }
                 }
             }

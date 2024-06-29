@@ -50,7 +50,7 @@ namespace ConwaysWorld
             // mark neighbors as infected
             for (int i = 0; i < Cell_Neighborhood.NeighborHoodKeys.Length; i++)
             {
-                if (Random.Range(1, 101) < TransmissionRate && Cell_Neighborhood.NeighborHoodKeys[i] != "center")
+                if (UnityEngine.Random.Range(1, 101) < TransmissionRate && Cell_Neighborhood.NeighborHoodKeys[i] != "center")
                 {
                     int nCellCol = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Column;
                     int nCellRow = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Row;
