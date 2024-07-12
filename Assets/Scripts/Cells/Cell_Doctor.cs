@@ -23,9 +23,9 @@ namespace ConwaysWorld
             Vaccines = new List<string>();
         }
 
-        public override void Live(Cell[,] cellGrid)
+        public override void Live()
         {
-            base.Live(cellGrid);
+            base.Live();
             SpecialPerformed = false;
             ChooseNation();
         }

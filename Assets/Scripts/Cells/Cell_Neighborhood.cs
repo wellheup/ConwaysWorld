@@ -42,10 +42,12 @@ namespace ConwaysWorld
                     {
                         NeighborhoodDict.Add("center", cellGrid[neighborColumn, neighborRow]);
                     }
-                    else // only add cells to neighborhood if they are alive
+                    else
                     {
                         if (cellGrid[neighborColumn, neighborRow].GetIsAlive())
+                        {
                             NumNeighbors++;
+                        }
                         NeighborhoodDict.Add(NeighborHoodKeys[neighborhoodKeyIndex++], cellGrid[neighborColumn, neighborRow]);
                     }
                 }

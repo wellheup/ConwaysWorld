@@ -9,12 +9,14 @@ namespace ConwaysWorld
         private View FrontEnd;
         public Model BackEnd;
 
-        public bool LifeGoesOn = false;
-        public bool RestartAtZero = false;
-        public bool FToContinue = false;
-        public bool IsRendering = false;
+        public bool IsLifeGoesOn = false,
+            IsRestartAtZero = false,
+            IsFToContinue = false,
+            IsRendering = false,
+            IsPrintingWorldStats = false;
         public int BasePercentLiving = 10,
             MinLifePercent = 5,
+            MinCellsPerNation = 3,
             Generation = 0, //make these private later
             AttemptsAtLife = 1,
             CurrentPopulation = 0,
@@ -38,7 +40,7 @@ namespace ConwaysWorld
             Rows = (int)canvasHeight / (int)_baseTilePrefab.Image.rectTransform.sizeDelta.y;
 
             // Populate the grid backend initially
-            BackEnd = new Model(Columns, Rows, BasePercentLiving, MinLifePercent, GridLimit);
+            BackEnd = new Model(Columns, Rows, BasePercentLiving, MinLifePercent, GridLimit, MinCellsPerNation);
 
             // Prepare the view
             FrontEnd = viewObject_Prefab.GetComponent<View>();
@@ -51,18 +53,18 @@ namespace ConwaysWorld
 
         private void SimulationUpdate()
         {
-            if (LifeGoesOn)
+            if (IsLifeGoesOn)
             {
-                if (FToContinue)
+                if (IsFToContinue)
                 {
-                    LifeGoesOn = false;
+                    IsLifeGoesOn = false;
                 }
                 CurrentPopulation = BackEnd.UpdateCellsGrid();
                 Generation++;
                 if (IsRendering)
-                    FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation);
+                    FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation, IsPrintingWorldStats);
 
-                if (RestartAtZero && CurrentPopulation == 0)
+                if (IsRestartAtZero && CurrentPopulation == 0)
                 {
                     Restart();
                 }
@@ -71,14 +73,14 @@ namespace ConwaysWorld
 
         private void Restart()
         {
-            LifeGoesOn = false;
+            IsLifeGoesOn = false;
             IsRendering = false;
             FrontEnd.IsRendering = false;
             BackEnd.PopulateGrid();
             Generation = 0;
             AttemptsAtLife++;
 
-            LifeGoesOn = true;
+            IsLifeGoesOn = true;
             IsRendering = true;
             FrontEnd.IsRendering = IsRendering;
         }
@@ -93,7 +95,7 @@ namespace ConwaysWorld
             }
             if (Input.GetKeyDown("f")) //stop u
             {
-                LifeGoesOn = true;
+                IsLifeGoesOn = true;
             }
             if (Input.GetKeyDown("t")) //stop rendering
             {
@@ -103,35 +105,31 @@ namespace ConwaysWorld
         }
     }
 }
-/*TODO:
-    - TODO: move nation colors to View    
-        - TODO: move cell colors to View
+/*
+- TODO: maybe cells should be more likely to survive death for every neighbor of the same nation?
+- TODO: move nation colors to View    
+    - TODO: move cell colors to View
 - TODO: grid size limits don't seem to work...
+- TODO: the currentPopulation count is off because it gets updated by special moves and such before the grid is rendered
 
-- TODO: make MinLivingNeighbors and MaxLivingNeighbors for cells accessible and alterable in ConwaysWorld object
-
+- TODO: make MinLivingNeighbors and MaxLivingNeighbors for cells accessible and alterable in ConwaysWorld object    
 - TODO: add class and method descriptions using /// notation (vscode should suggest a template)
 - TODO: add a Cell_Grid type to contain all grid-based functions
 - TODO: move more of conditions updates to SpecialActions()?
 - TODO: Add to Conway's world an event that uses a "find the largest island" algorithm
 - TODO: Add different types of specialized cells inheriting from Cell
-    - TODO: king (each turn, it assesses the number of cells in its nation and converts them to its kingdom. If 2 kingdoms touch, create a warfront, but start by doing nothing)
-        - TODO: use island finding algorithm?
-        - TODO: if cell has 3 neighbors of same nation promote to king?
     - TODO: voyager (version of the explorer cell which goes farther and specifically targets the nearest other nation)
-        - TODO: once it reaches that nation as a neighbor, it adds that nationality to its conditions and seeks a new one not on its list
+        - TODO: once it reaches that nation as a neighbor, it either spawns a diplomat for its nation or spreads plague/disease
     - TODO: necromancer (revives neighbors the turn after they die)
     - TODO: zombie (die if their necromancer dies, do not die from overpopulation)
     - TODO: warrior (moves in a UnityEngine.Random direction and kills cells from other nations, zombies, and diseased cells, 2 warrior cells flip a coin for the victor)
     - TODO: mutant/ mutator (has a small chance every turn to UnityEngine.Randomly alter surrounding cells to another cell type)
     - TODO: islander (dies if there are more than x number of nearby cells within like 10 cells, moves til finding empty space if it's crowded)
-    - TODO: bomber (kills all cells in 2 cell radius)
     - TODO: savior (moves in a direction, cells follow it)
     - TODO: conqueror (moves in a direction until it leave its nation, when hitting another nation, UnityEngine.Random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts)
     - TODO: teacher/ elder (UnityEngine.Random chance to promote adjacent basic_cells to a new type)
     - TODO: irradiated (cell cannot live ever again except under certain circumstance)
     - TODO: spy (similar to diplomat, but instead of moving directly toward target, must move through living neighbors)
-    - TODO: hunter (picks a UnityEngine.Random live (immortal?) cell as a target on the grid and traverses moving toward the nearest dead cell then toward the target. Uses memoized djikstra's algorithm to compute fastest route. Only 1 alive at a time. chooses new target if target dies. Can kill immortals.)
     - TODO: god? (effects every living cell on the board in some way)
     - TODO: natural disasters? opportunity for largest island?
 - TODO: add an increased chance to spawn doctors near diseases
@@ -140,6 +138,8 @@ namespace ConwaysWorld
 - TODO: reset grid size after world ending events
 - TODO: make each update frame fade between the 2 more smoothly
 - TODO: the system would be more stable and  likely faster if each cellType has its own phase of the update, so there is a heirarchical order to cell special actions
+- TODO: make doctors more aggressive. Maybe make range a modifiable number in ConwaysWorld?
+- TODO: report on number of nations and their size
 
 Visuals
 - add symbols for each type of cell
@@ -147,6 +147,7 @@ Visuals
     - replace individual JPGS 
     - TODO: change sprites to sprite atlas
     - TODO: animate changes between updates so that cells slowly fade in/out during that time
+    - TODO: instead of updating the whole grid in 1 tick, visualize per cell and watch it snake through the grid 
     Cell descriptions:
         Cell_Basic -- lives and dies
         Cell_Immortal -tree- lives forever unless it gets too lonely

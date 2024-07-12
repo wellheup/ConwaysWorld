@@ -17,7 +17,7 @@ namespace ConwaysWorld
             CellType = E_CellType.Cell_Immortal;
         }
 
-        public override void Live(Cell[,] cellGrid)
+        public override void Live()
         {
             IsAlive = true;
             Age++;

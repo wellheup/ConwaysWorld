@@ -17,25 +17,22 @@ namespace ConwaysWorld
 
         private int BasePercentLiving = 10,
             MinLifePercent = 5,
+            MinCellsPerNation = 1,
             CurrentPopulation,
             Columns,
             Rows,
             GridLimit;
         public bool UseThreeGroup = false;
 
-        public Model(int columns, int rows, int basePercentLiving, int minLifePercent, int gridLimit)
+        public Model(int columns, int rows, int basePercentLiving, int minLifePercent, int gridLimit, int minCellsPerNation)
         {
             Columns = columns;
             Rows = rows;
             BasePercentLiving = basePercentLiving;
             MinLifePercent = minLifePercent;
+            MinCellsPerNation = minCellsPerNation;
             GridLimit = gridLimit;
             Generator = new Cell_Generator(BasePercentLiving);
-            Nations = new Dictionary<int, Cell_Nation>();
-            for (int i = 0; i < Cell_Nation.Nation_Colors.Count; i++)
-            {
-                Nations.Add(i, new Cell_Nation(i));
-            }
             PopulateGrid(Columns, Rows);
         }
 
@@ -62,6 +59,18 @@ namespace ConwaysWorld
                 {
                     CellGrid[column, row] = Generator.InitializeCell(column, row);
                 }
+            }
+            InitializeNations();
+        }
+
+        private void InitializeNations()
+        {
+            Nations = new Dictionary<int, Cell_Nation>();
+            float numNations = BasePercentLiving / 100f * Columns * Rows / MinCellsPerNation;
+            numNations = numNations < Cell_Nation.Nation_Colors.Count ? numNations : Cell_Nation.Nation_Colors.Count;
+            for (int i = 0; i < numNations; i++)
+            {
+                Nations.Add(i, new Cell_Nation(i));
             }
         }
 
@@ -94,7 +103,7 @@ namespace ConwaysWorld
 
         public void AddRandomLife(int percentOfGrid)
         {
-            if (CurrentPopulation > 0 && CurrentPopulation / (CellGrid.GetLength(0) * CellGrid.GetLength(1)) <= MinLifePercent)
+            if (CurrentPopulation > 0 && CurrentPopulation / (CellGrid.GetLength(0) * CellGrid.GetLength(1)) <= MinLifePercent / 100)
             {
                 int numNewLives = CellGrid.GetLength(0) * CellGrid.GetLength(1) * percentOfGrid / 100;
                 int counter = 0;
@@ -159,7 +168,8 @@ namespace ConwaysWorld
                         {
                             // is alive and stays alive
                             // Debug.Log("Cell " + column + ", " + row + " stay alive ");
-                            CellGrid[column, row].Live(CellGrid);
+                            CellGrid[column, row].Live();
+                            if (CellGrid[column, row].Nationality != -1) Nations[CellGrid[column, row].Nationality].CitizensList.Add(CellGrid[column, row]);
                         }
                         else
                         {
@@ -174,7 +184,7 @@ namespace ConwaysWorld
                         {
                             //replace the cell with a fresh one, rather than leaving an opening for data to leak into a new cell from previous life (MAY WANT TO KEEP PREV-LIFE DATA LATER)
                             //treats the cell as a newborn rather than a revived cell
-                            CellGrid[column, row].Live(CellGrid);
+                            CellGrid[column, row].Live();
                         }
                         else
                         {
@@ -223,13 +233,19 @@ namespace ConwaysWorld
                     {
                         CellGrid[column, row].Immaculate(CellGrid);
                     }
-                    if (CellGrid[column, row].Conditions.Contains("exploring"))//manage grid expansion
+                    if (CellGrid[column, row].GetIsAlive() && CellGrid[column, row].Conditions.Contains("exploring"))//manage grid expansion
                     {
                         _resize = true;
                     }
-                    if (CellGrid[column, row].Age > 1 && CellGrid[column, row].Nationality == -1)//make edge case cells choose nationality
+                    if (CellGrid[column, row].Age >= 1 && CellGrid[column, row].Nationality == -1)//make edge case cells choose nationality
                     {
-                        CellGrid[column, row].ChooseNation();
+                        CellGrid[column, row].Nationality = UnityEngine.Random.Range(0, Nations.Count);
+                    }
+                    if (CellGrid[column, row].Conditions.Contains("toWar") && CellGrid[column, row].GetIsAlive() && CellGrid[column, row].CellType == Cell_Generator.E_CellType.Cell_Basic)
+                    {
+                        // CellGrid[column, row] = Cell.ReplaceCell(CellGrid[column, row], Cell_Generator.E_CellType.Cell_Warrior, true);
+                        CellGrid[column, row].Conditions.RemoveAll(item => item.Contains("toWar"));
+                        //Cell.CellThrowException($"({column}, {row}) toWar!"); //TODO: make warrior spawn similarly to the diseased infect() method
                     }
                 }
             }
@@ -268,15 +284,19 @@ namespace ConwaysWorld
 
         public void UpdateNations()
         {
+            // TODO: make Census() a static function that returns a new nations dictionary
             foreach (Cell_Nation nation in Nations.Values)
             {
-                nation.Census();
-                // Debug.Log(nation.NationNum + " has " + nation.Citizens.Count() + " citizens.");
-                if (nation.Diplomats.Count == 0)
-                {
-                    nation.ElectDiplomat(CellGrid);
-                }
+                nation.Census(CellGrid);
             }
+            float numNations = BasePercentLiving / 100f * Columns * Rows / MinCellsPerNation;
+            numNations = (float)(BasePercentLiving / 100f * Columns * Rows / MinCellsPerNation) < Cell_Nation.Nation_Colors.Count ? (float)(BasePercentLiving / 100f * Columns * Rows / MinCellsPerNation) : Cell_Nation.Nation_Colors.Count;
+            for (int i = Nations.Count; i < numNations; i++)
+            {
+                Nations.Add(i, new Cell_Nation(i));
+                Debug.Log("add new nation");
+            }
+
         }
 
         public int UpdateCellsGrid()

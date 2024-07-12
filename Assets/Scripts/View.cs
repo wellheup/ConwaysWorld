@@ -145,9 +145,11 @@ namespace ConwaysWorld
                             _displayGrid[x, y].Borders[i].color = Cell_Nation.Nation_Colors[cell.Nationality];
                         }
                     }
-                    catch
+                    catch (Exception e)
                     {
+                        Debug.Log($"_displayGrid[{x}, {y}].Borders[{i}].color = Cell_Nation.Nation_Colors[{cell.Nationality}]");
                         _displayGrid[x, y].Borders[i].color = Cell_Nation.Nation_Colors[cell.Nationality];
+                        throw e;
                     }
                 }
             }
@@ -169,7 +171,7 @@ namespace ConwaysWorld
             // }
         }
 
-        public void RenderWorldState(Cell[,] cellGrid, int attemptsAtLife, int generation, int currentPopulation)
+        public void RenderWorldState(Cell[,] cellGrid, int attemptsAtLife, int generation, int currentPopulation, bool IsPrintWorldStats)
         {
             AttemptsAtLife = attemptsAtLife;
             Generation = generation;
@@ -192,19 +194,20 @@ namespace ConwaysWorld
                     {
                         lifeStatus = "Alive";
                         _displayGrid[x, y].name = $"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} [{_cellGrid[x, y].Nationality}]";
-                        // _displayGrid[x, y].Image.color = _cellGrid[x, y].Nationality != -1 ? Cell_Nation.Nation_Colors[_cellGrid[x, y].Nationality] : Color.white;
+                        _displayGrid[x, y].Image.color = _cellGrid[x, y].Nationality != -1 ? Color.Lerp(Cell_Nation.Nation_Colors[_cellGrid[x, y].Nationality], Color.white, 0.70f) : Color.white; //tint 70% toward white from nation color
                         _displayGrid[x, y].Image.sprite = _cellSprites[_cellGrid[x, y].CellType] ? _cellSprites[_cellGrid[x, y].CellType] : _cellSprites[E_CellType.Cell_Dead];
                     }
                     else
                     {
                         lifeStatus = "Dead";
-                        _displayGrid[x, y].name = $"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} [{_cellGrid[x, y].Nationality}]";
-                        // _displayGrid[x, y].Image.color = Color.white;
+                        _displayGrid[x, y].name = $"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} {_cellGrid[x, y].Age}yrs [{_cellGrid[x, y].Nationality}]";
+                        _displayGrid[x, y].Image.color = Color.white;
                         _displayGrid[x, y].Image.sprite = _cellSprites[E_CellType.Cell_Dead];
                     }
                 }
             }
-            // PrintWorldStats(AttemptsAtLife, Generation, CurrentPopulation);
+
+            if (IsPrintWorldStats) PrintWorldStats(AttemptsAtLife, Generation, CurrentPopulation);
         }
 
         // Start is called before the first frame update

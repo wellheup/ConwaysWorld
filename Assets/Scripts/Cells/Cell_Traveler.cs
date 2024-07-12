@@ -27,7 +27,7 @@ namespace ConwaysWorld
             Conditions = new List<string>();
         }
 
-        public override void Live(Cell[,] cellGrid)
+        public override void Live()
         {
             IsAlive = true;
             Age++;

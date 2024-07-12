@@ -16,7 +16,7 @@ namespace ConwaysWorld
             Conditions = new List<string>();
         }
 
-        public override void Live(Cell[,] cellGrid)
+        public override void Live()
         {
             IsAlive = true;
             Age++;
@@ -34,14 +34,14 @@ namespace ConwaysWorld
 
         private bool IsCellOtherNation(Cell otherCell)
         {
-            return this.Nationality != otherCell.Nationality;
+            return this.Nationality != otherCell.Nationality && otherCell.GetIsAlive();
         }
 
         public override void SpecialActions(Cell[,] cellGrid)
         {
             if (IsAlive && !SpecialPerformed)
             {
-                Cell targetCell = FindNearbyCellsByRule(cellGrid, IsCellOtherNation, 5);
+                Cell targetCell = SelectNearbyCellByRule(cellGrid, IsCellOtherNation, 5);
                 Cell cellToSwap = FindNeighborInDirOfCell(cellGrid, targetCell);
                 if (cellToSwap != null)
                 {

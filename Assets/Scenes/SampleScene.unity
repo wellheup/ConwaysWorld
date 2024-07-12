@@ -1394,12 +1394,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   viewObject_Prefab: {fileID: 668518591}
   _baseTilePrefab: {fileID: 4530487581707663245, guid: 86020e297e6045043a7792282839f62f, type: 3}
-  LifeGoesOn: 1
-  RestartAtZero: 1
-  FToContinue: 0
+  IsLifeGoesOn: 1
+  IsRestartAtZero: 1
+  IsFToContinue: 0
   IsRendering: 1
+  IsPrintingWorldStats: 0
   BasePercentLiving: 10
   MinLifePercent: 5
+  MinCellsPerNation: 3
   Generation: 0
   AttemptsAtLife: 1
   CurrentPopulation: 0
@@ -1407,7 +1409,7 @@ MonoBehaviour:
   Rows: 7
   GridLimit: 32
   timeBeforeStart: 1
-  TimeBetweenGenerations: 0.5
+  TimeBetweenGenerations: 0.75
 --- !u!1 &1521573780
 GameObject:
   m_ObjectHideFlags: 0
