@@ -14,17 +14,17 @@ namespace ConwaysWorld
         public int Age = 0,
             Column = 0,
             Row = 0,
-            MatureAge = 10,
+            MatureAge = 3,
             Nationality = -1,
-            MinLivingNeighbors = 1,
-            MaxLivingNeighbors = 4;
+            MinLivingNeighbors = 2,
+            MaxLivingNeighbors = 3;
 
         public bool GetIsAlive()
         {
             return IsAlive;
         }
 
-        public virtual void Live(Cell[,] cellGrid)
+        public virtual void Live()
         {
             IsAlive = true;
             Age++;
@@ -61,7 +61,7 @@ namespace ConwaysWorld
             {
                 return false; // Die due to overpopulation
             }
-            else if (!IsAlive && CellNeighborhood.NumNeighbors == MaxLivingNeighbors)
+            else if (!IsAlive && CellNeighborhood.NumNeighbors == MinLivingNeighbors)
             {
                 return true; // Become alive due to reproduction
             }
@@ -111,6 +111,18 @@ namespace ConwaysWorld
                 case E_CellType.Cell_Diplomat:
                     cell = new Cell_Diplomat(column, row, isAlive);
                     break;
+                case E_CellType.Cell_King:
+                    cell = new Cell_King(column, row, true);
+                    break;
+                case E_CellType.Cell_Hunter:
+                    cell = new Cell_Hunter(column, row, true);
+                    break;
+                case E_CellType.Cell_Bomber:
+                    cell = new Cell_Bomber(column, row, true);
+                    break;
+                case E_CellType.Cell_Warrior:
+                    cell = new Cell_Bomber(column, row, true);
+                    break;
                 default:
                     cell = new Cell_Basic(column, row, isAlive); //this should not occur...
                     break;
@@ -143,17 +155,20 @@ namespace ConwaysWorld
         public virtual void Breed()
         {
             Conditions.RemoveAll(item => item == "mature");
-            Age = 0;
-            List<Cell> cells = new List<Cell>();
-            foreach (KeyValuePair<string, Cell> cell in CellNeighborhood.NeighborhoodDict)
+            if (IsAlive)
             {
-                if (cell.Value != null && cell.Value.GetIsAlive() == false)
+                Age = 0;
+                List<Cell> cells = new List<Cell>();
+                foreach (KeyValuePair<string, Cell> cell in CellNeighborhood.NeighborhoodDict)
                 {
-                    cells.Add(cell.Value);
+                    if (cell.Value != null && cell.Value.GetIsAlive() == false)
+                    {
+                        cells.Add(cell.Value);
+                    }
                 }
+                int randNeighbor = UnityEngine.Random.Range(0, cells.Count);
+                cells[randNeighbor] = ReplaceCell(cells[randNeighbor], CellType, true);
             }
-            int randNeighbor = UnityEngine.Random.Range(0, cells.Count);
-            cells[randNeighbor] = ReplaceCell(cells[randNeighbor], CellType, true);
         }
 
         private void LiveNoNeighbors(Cell[,] CellGrid, Cell cell)
@@ -161,7 +176,7 @@ namespace ConwaysWorld
             if (cell.CellNeighborhood.NumNeighbors == 0)
             {
                 cell.CellNeighborhood = new Cell_Neighborhood(CellGrid, cell.Column, cell.Row);
-                cell.Live(CellGrid);
+                cell.Live();
             }
         }
 
@@ -199,29 +214,34 @@ namespace ConwaysWorld
 
         public void ChooseNation() // this method should always be called in Live() because cellNeighborhood should be defined first if possible
         {
-            if (Nationality < 0 || Nationality >= Cell_Nation.Nation_Colors.Count)
+            if (IsAlive)
             {
-                if (CellNeighborhood != null && CellNeighborhood.NumNeighbors > 0)
+                if (Nationality < 0)
                 {
-                    List<int> neighborNations = new();
-                    foreach (Cell neighbor in CellNeighborhood.NeighborhoodDict.Values)
+                    if (CellNeighborhood != null && CellNeighborhood.NumNeighbors > 0)
                     {
-                        if (neighbor.GetIsAlive() && (neighbor.Nationality < 0 || neighbor.Nationality < Cell_Nation.Nation_Colors.Count))
+                        List<int> neighborNations = new();
+                        foreach (Cell neighbor in CellNeighborhood.NeighborhoodDict.Values)
                         {
-                            neighborNations.Add(neighbor.Nationality);
+                            if (neighbor.GetIsAlive() && neighbor.Nationality > 0)
+                            {
+                                neighborNations.Add(neighbor.Nationality);
+                            }
                         }
+                        int rand = UnityEngine.Random.Range(0, neighborNations.Count);
+                        Nationality = rand > 0 ? neighborNations[rand] : -1;
                     }
-                    int rand = UnityEngine.Random.Range(0, neighborNations.Count + 1);
-                    Nationality = rand == neighborNations.Count ? UnityEngine.Random.Range(0, Cell_Nation.Nation_Colors.Count) : neighborNations[rand];
-                }
-                else
-                {
-                    Nationality = UnityEngine.Random.Range(0, Cell_Nation.Nation_Colors.Count);
+                    else
+                    {
+                        Nationality = -1;
+                    }
                 }
             }
         }
 
-        protected Cell FindNearbyCellsByRule(Cell[,] cellGrid, Func<Cell, bool> searchRule, int maxRange)
+        protected Cell SelectNearbyCellByRule(Cell[,] cellGrid,
+            Func<Cell, bool> searchRule,
+            int maxRange)
         {
             List<Cell> nearestOthers = new();
             int range = 1;
@@ -270,6 +290,28 @@ namespace ConwaysWorld
             return null;
         }
 
+        protected List<Cell> GetAllCellsInRangeByRule(
+            Cell[,] cellGrid,
+            Func<Cell, bool> searchRule,
+            int maxRange)
+        {
+            List<Cell> cellsInRange = new();
+            for (int columnOffset = -1; columnOffset <= maxRange; columnOffset++)
+            {
+                for (int rowOffset = -1; rowOffset <= maxRange; rowOffset++)
+                {
+                    int neighborColumn = (Column + columnOffset + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
+                    int neighborRow = (Row + rowOffset + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
+
+                    if (cellGrid[neighborColumn, neighborRow] != this && searchRule(cellGrid[neighborColumn, neighborRow]))
+                    {
+                        cellsInRange.Add(cellGrid[neighborColumn, neighborRow]);
+                    }
+                }
+            }
+            return cellsInRange;
+        }
+
         public Cell FindNeighborInDirOfCell(Cell[,] cellGrid, Cell target)
         {
             if (target != null)
@@ -289,6 +331,11 @@ namespace ConwaysWorld
                 return cellGrid[nearestCol, nearestRow];
             }
             return this;
+        }
+
+        public static void CellThrowException(string log)
+        {
+            throw new Exception(log);
         }
     }
 }

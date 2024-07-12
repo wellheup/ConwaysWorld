@@ -14,11 +14,10 @@ namespace ConwaysWorld
             Disease = RandomCondition('p');
         }
 
-        public override void Live(Cell[,] cellGrid)
+        public override void Live()
         {
             IsAlive = true;
             Age++;
-            SpreadDisease(cellGrid);
             if (Age > MatureAge && !Conditions.Contains("mature"))
             {
                 Conditions.Add("mature");
@@ -45,6 +44,11 @@ namespace ConwaysWorld
             return cell;
         }
 
+        public override void SpecialActions(Cell[,] cellGrid)
+        {
+            SpreadDisease(cellGrid);
+        }
+
         private void SpreadDisease(Cell[,] cellGrid)
         {
             // mark neighbors as infected
@@ -54,7 +58,8 @@ namespace ConwaysWorld
                 {
                     int nCellCol = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Column;
                     int nCellRow = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Row;
-                    cellGrid[nCellCol, nCellRow].Conditions.Add(Disease);
+                    if (!cellGrid[nCellCol, nCellRow].Conditions.Contains("immune"))
+                        cellGrid[nCellCol, nCellRow].Conditions.Add(Disease);
                 }
             }
         }

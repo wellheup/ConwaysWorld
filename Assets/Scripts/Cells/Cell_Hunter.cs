@@ -27,7 +27,7 @@ namespace ConwaysWorld
             CurrentPrey = null;
         }
 
-        public override void Live(Cell[,] cellGrid)
+        public override void Live()
         {
             IsAlive = true;
             Age++;
@@ -61,12 +61,12 @@ namespace ConwaysWorld
 
         private bool IsCellPrey(Cell otherCell)
         {
-            return PreyTypes.Contains(otherCell.CellType);
+            return PreyTypes.Contains(otherCell.CellType) && otherCell.GetIsAlive();
         }
 
         private bool IsCellCurrentPrey(Cell otherCell)
         {
-            return otherCell == CurrentPrey;
+            return otherCell == CurrentPrey && otherCell.GetIsAlive();
         }
 
         public override void SpecialActions(Cell[,] cellGrid)
@@ -78,7 +78,7 @@ namespace ConwaysWorld
                 if (CurrentPrey == null || !CurrentPrey.GetIsAlive())
                 {
                     //seek new current prey, choose random if invalid
-                    targetCell = FindNearbyCellsByRule(cellGrid, IsCellPrey, 5);
+                    targetCell = SelectNearbyCellByRule(cellGrid, IsCellPrey, 5);
                     if (targetCell != null)
                     {
                         CurrentPrey = targetCell;

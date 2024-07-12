@@ -39,7 +39,7 @@ namespace ConwaysWorld
         }
 
         private List<CellSpawnFrequency> _spawnFrequencies;
-        private float BasePercentLiving;
+        private int BasePercentLiving;
 
         public Cell_Generator(int basePercentLiving)
         {
@@ -56,8 +56,9 @@ namespace ConwaysWorld
             _spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Traveler, TypeSpawnFrequency = 0.05f * BasePercentLiving / 100 });
             _spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Doctor, TypeSpawnFrequency = 0.05f * BasePercentLiving / 100 });
             _spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Hunter, TypeSpawnFrequency = 0.05f * BasePercentLiving / 100 });
+            _spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Bomber, TypeSpawnFrequency = 0.1f * BasePercentLiving / 100 });
 
-            float remainingPercentOfLiving = BasePercentLiving / 100;
+            float remainingPercentOfLiving = BasePercentLiving / 100f;
             for (int i = 0; i < _spawnFrequencies.Count; i++)
             {
                 remainingPercentOfLiving -= _spawnFrequencies[i].TypeSpawnFrequency;
@@ -119,6 +120,7 @@ namespace ConwaysWorld
                         cell = new Cell_Diseased(column, row, true);
                     else
                         cell = new Cell_Plague(column, row, true);
+                    if (_rollForVariant <= .2) Debug.Log("plague born");
                     break;
                 case E_CellType.Cell_Traveler:
                     if (_rollForVariant > .4)
@@ -129,8 +131,22 @@ namespace ConwaysWorld
                 case E_CellType.Cell_Doctor:
                     cell = new Cell_Doctor(column, row, true);
                     break;
+                case E_CellType.Cell_Diplomat:
+                    cell = new Cell_Diplomat(column, row, true);
+                    break;
+                case E_CellType.Cell_King:
+                    cell = new Cell_King(column, row, true);
+                    break;
                 case E_CellType.Cell_Hunter:
                     cell = new Cell_Hunter(column, row, true);
+                    // cell = new Cell_Basic(column, row, true);
+                    break;
+                case E_CellType.Cell_Bomber:
+                    cell = new Cell_Bomber(column, row, true);
+                    // cell = new Cell_Basic(column, row, true);
+                    break;
+                case E_CellType.Cell_Warrior:
+                    cell = new Cell_Bomber(column, row, true);
                     break;
                 default: //this is case E_CellType.Cell_Dead
                     cell = new Cell_Basic(column, row, false);

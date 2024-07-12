@@ -6,7 +6,7 @@ namespace ConwaysWorld
 {
     public class Cell_Basic : Cell
     {
-        public Cell_Basic(int column, int row, bool isAlive)// : base(column, row, isAlive)
+        public Cell_Basic(int column, int row, bool isAlive)
         {
             IsAlive = isAlive;
             Column = column;

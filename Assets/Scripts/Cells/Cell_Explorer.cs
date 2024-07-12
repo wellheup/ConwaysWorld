@@ -19,7 +19,7 @@ namespace ConwaysWorld
             ChooseNation();
         }
 
-        public override void Live(Cell[,] cellGrid)
+        public override void Live()
         {
             IsAlive = true;
             Age++;
