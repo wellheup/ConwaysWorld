@@ -57,7 +57,7 @@ namespace ConwaysWorld
             {
                 for (int row = 0; row < Rows; row++)
                 {
-                    CellGrid[column, row] = Generator.InitializeCell(column, row);
+                    CellGrid[column, row] = Generator.InitializeRandomCell(column, row);
                 }
             }
             InitializeNations();
@@ -113,7 +113,7 @@ namespace ConwaysWorld
                     int randRow = UnityEngine.Random.Range(0, CellGrid.GetLength(1));
                     if (!CellGrid[randCol, randRow].GetIsAlive() && !AliveNextGenGrid[randCol, randRow])
                     {
-                        CellGrid[randCol, randRow] = Generator.InitializeCell(randCol, randRow);
+                        CellGrid[randCol, randRow] = Generator.InitializeRandomCell(randCol, randRow);
                         counter++;
                     }
                 }
@@ -176,7 +176,7 @@ namespace ConwaysWorld
                             // Debug.Log("Cell " + column + ", " + row + " die ");
                             CellGrid[column, row].Die();
                         }
-                        CurrentPopulation++; //was cell alive this update (not will it be alive next update)
+                        CurrentPopulation++; //was cell alive this update (not "will it be alive next update?")
                     }
                     else
                     {
@@ -205,6 +205,10 @@ namespace ConwaysWorld
                 for (int row = 0; row < Rows; row++)
                 {
                     // Chain of ifs for different conditions
+                    if (CellGrid[column, row].Conditions.Contains("cleanup"))
+                    {
+                        CellGrid[column, row] = Cell.ReplaceCell(CellGrid[column, row], Cell_Generator.E_CellType.Cell_Basic, false);
+                    }
                     if (CellGrid[column, row].Conditions.Contains("immune"))//manage immune, not sure if it works...
                     {
                         CellGrid[column, row].Conditions.RemoveAll(item => item.Contains("d_"));
@@ -217,11 +221,12 @@ namespace ConwaysWorld
                         {
                             if (conditions[i].Contains("d_"))
                             {//manage infected
-                                CellGrid[column, row] = Cell_Diseased.Infect(CellGrid[column, row], conditions[i]);
+                                CellGrid[column, row] = Cell_Diseased.Infect(CellGrid[column, row], conditions[i], Cell_Generator.E_CellType.Cell_Diseased);
                             }
                             else if (conditions[i].Contains("p_"))
                             {//manage plague
-                                CellGrid[column, row] = Cell_Plague.Infect(CellGrid[column, row], conditions[i]);
+                                CellGrid[column, row] = Cell_Diseased.Infect(CellGrid[column, row], conditions[i], Cell_Generator.E_CellType.Cell_Plague);
+                                break;
                             }
                         }
                     }
@@ -243,9 +248,9 @@ namespace ConwaysWorld
                     }
                     if (CellGrid[column, row].Conditions.Contains("toWar") && CellGrid[column, row].GetIsAlive() && CellGrid[column, row].CellType == Cell_Generator.E_CellType.Cell_Basic)
                     {
-                        // CellGrid[column, row] = Cell.ReplaceCell(CellGrid[column, row], Cell_Generator.E_CellType.Cell_Warrior, true);
+
+                        CellGrid[column, row] = Cell.ReplaceCell(CellGrid[column, row], Cell_Generator.E_CellType.Cell_Warrior, true);
                         CellGrid[column, row].Conditions.RemoveAll(item => item.Contains("toWar"));
-                        //Cell.CellThrowException($"({column}, {row}) toWar!"); //TODO: make warrior spawn similarly to the diseased infect() method
                     }
                 }
             }
@@ -294,9 +299,7 @@ namespace ConwaysWorld
             for (int i = Nations.Count; i < numNations; i++)
             {
                 Nations.Add(i, new Cell_Nation(i));
-                Debug.Log("add new nation");
             }
-
         }
 
         public int UpdateCellsGrid()

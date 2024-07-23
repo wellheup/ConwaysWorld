@@ -18,6 +18,18 @@ namespace ConwaysWorld
             Conditions = new List<string>();
         }
 
+        public override void Live()
+        {
+            base.Live();
+        }
+
+        public override void Die()
+        {
+            IsAlive = false;
+            Age = 0;
+            Nationality = -1;
+        }
+
         public void MakeArmy()
         {
             foreach (Cell _ in CellNeighborhood.NeighborhoodDict.Values)

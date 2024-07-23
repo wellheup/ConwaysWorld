@@ -93,7 +93,7 @@ namespace ConwaysWorld
                 print("\nRestarting World\n");
                 Restart();
             }
-            if (Input.GetKeyDown("f")) //stop u
+            if (Input.GetKeyDown("f")) //stop up
             {
                 IsLifeGoesOn = true;
             }
@@ -102,6 +102,14 @@ namespace ConwaysWorld
                 print("\nStart/Stop rendering\n");
                 FrontEnd.IsRendering = !FrontEnd.IsRendering;
             }
+            // try
+            // {
+            //     FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation, IsPrintingWorldStats);
+            // }
+            // catch
+            // {
+            //     //
+            // }
         }
     }
 }
@@ -120,14 +128,13 @@ namespace ConwaysWorld
 - TODO: Add different types of specialized cells inheriting from Cell
     - TODO: voyager (version of the explorer cell which goes farther and specifically targets the nearest other nation)
         - TODO: once it reaches that nation as a neighbor, it either spawns a diplomat for its nation or spreads plague/disease
-    - TODO: necromancer (revives neighbors the turn after they die)
+    - TODO: necromancer (revives neighbors the turn after they die) - I think this should wait til after refactor...
     - TODO: zombie (die if their necromancer dies, do not die from overpopulation)
-    - TODO: warrior (moves in a UnityEngine.Random direction and kills cells from other nations, zombies, and diseased cells, 2 warrior cells flip a coin for the victor)
-    - TODO: mutant/ mutator (has a small chance every turn to UnityEngine.Randomly alter surrounding cells to another cell type)
+    - TODO: mutant/ mutator (has a small chance every turn to Randomly alter surrounding cells to another cell type)
     - TODO: islander (dies if there are more than x number of nearby cells within like 10 cells, moves til finding empty space if it's crowded)
     - TODO: savior (moves in a direction, cells follow it)
-    - TODO: conqueror (moves in a direction until it leave its nation, when hitting another nation, UnityEngine.Random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts)
-    - TODO: teacher/ elder (UnityEngine.Random chance to promote adjacent basic_cells to a new type)
+    - TODO: conqueror (moves in a direction until it leave its nation, when hitting another nation, Random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts)
+    - TODO: teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
     - TODO: irradiated (cell cannot live ever again except under certain circumstance)
     - TODO: spy (similar to diplomat, but instead of moving directly toward target, must move through living neighbors)
     - TODO: god? (effects every living cell on the board in some way)

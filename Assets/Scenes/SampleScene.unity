@@ -1409,7 +1409,7 @@ MonoBehaviour:
   Rows: 7
   GridLimit: 32
   timeBeforeStart: 1
-  TimeBetweenGenerations: 0.75
+  TimeBetweenGenerations: 0.2
 --- !u!1 &1521573780
 GameObject:
   m_ObjectHideFlags: 0

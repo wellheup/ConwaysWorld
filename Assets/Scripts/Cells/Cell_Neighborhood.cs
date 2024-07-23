@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 namespace ConwaysWorld
 {
@@ -9,6 +10,17 @@ namespace ConwaysWorld
         public int CenterRow { get; }
         public Cell Center;
         public Dictionary<string, Cell> NeighborhoodDict;
+        public Dictionary<string, Cell> NeighborsDict
+        {
+            get
+            {
+                if (NeighborhoodDict == null) return null;
+
+                var neighbors = new Dictionary<string, Cell>(NeighborhoodDict);
+                neighbors.Remove("center");
+                return neighbors;
+            }
+        }
         public static string[] NeighborHoodKeys = new string[] {
             "southWest",
             "west",

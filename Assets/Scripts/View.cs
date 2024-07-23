@@ -17,6 +17,8 @@ namespace ConwaysWorld
         public bool IsRendering = false;
         private int AttemptsAtLife = 0, Generation = 0, CurrentPopulation = 0;
 
+        private Queue<string> _debugMsgs;
+
         [SerializeField] private BaseTile _baseTilePrefab;
         [SerializeField] private Transform _gridContainer;
         private Dictionary<E_CellType, Sprite> _cellSprites;
@@ -29,6 +31,7 @@ namespace ConwaysWorld
             _cellGrid = cellGrid;
             _baseTileSize = _baseTilePrefab.Image.rectTransform.sizeDelta.y;
             _cellSprites = new();
+            _debugMsgs = new();
 
             foreach (E_CellType i in Enum.GetValues(typeof(E_CellType)))
             {
@@ -63,7 +66,7 @@ namespace ConwaysWorld
             FillDisplayGrid(false);
         }
 
-        public void PrintWorldStats(int attemptsAtLife, int generation, int currentPopulation)
+        private void PrintWorldStats(int attemptsAtLife, int generation, int currentPopulation)
         {
             print(
                 "Attempt at Life: "
@@ -73,6 +76,14 @@ namespace ConwaysWorld
                     + "    Current Population: "
                     + currentPopulation
             );
+        }
+
+        private void PrintDebugMsgs()
+        {
+            while (_debugMsgs.Count > 0)
+            {
+                throw new Exception(_debugMsgs.Dequeue());
+            }
         }
 
         private void DestroyOldDisplayGrid()
@@ -204,10 +215,16 @@ namespace ConwaysWorld
                         _displayGrid[x, y].Image.color = Color.white;
                         _displayGrid[x, y].Image.sprite = _cellSprites[E_CellType.Cell_Dead];
                     }
+                    if (_cellGrid[x, y].DebugMsg != null)
+                    {
+                        _debugMsgs.Enqueue(_cellGrid[x, y].DebugMsg);
+                        _cellGrid[x, y].DebugMsg = null;
+                    }
                 }
             }
 
             if (IsPrintWorldStats) PrintWorldStats(AttemptsAtLife, Generation, CurrentPopulation);
+            PrintDebugMsgs();
         }
 
         // Start is called before the first frame update

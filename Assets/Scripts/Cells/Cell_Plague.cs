@@ -33,35 +33,9 @@ namespace ConwaysWorld
             Nationality = -1;
         }
 
-        private static new Cell Infect(Cell cell, string disease)
-        {
-            if (cell.GetIsAlive() && cell.GetType() != typeof(Cell_Plague))
-            {
-                Cell temp = ReplaceCell(cell, E_CellType.Cell_Plague, true);
-                temp.Conditions.Add(disease);
-                return temp;
-            }
-            return cell;
-        }
-
         public override void SpecialActions(Cell[,] cellGrid)
         {
             SpreadDisease(cellGrid);
-        }
-
-        private void SpreadDisease(Cell[,] cellGrid)
-        {
-            // mark neighbors as infected
-            for (int i = 0; i < Cell_Neighborhood.NeighborHoodKeys.Length; i++)
-            {
-                if (UnityEngine.Random.Range(1, 101) < TransmissionRate && Cell_Neighborhood.NeighborHoodKeys[i] != "center")
-                {
-                    int nCellCol = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Column;
-                    int nCellRow = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Row;
-                    if (!cellGrid[nCellCol, nCellRow].Conditions.Contains("immune"))
-                        cellGrid[nCellCol, nCellRow].Conditions.Add(Disease);
-                }
-            }
         }
     }
 }

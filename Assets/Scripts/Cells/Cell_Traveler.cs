@@ -47,7 +47,6 @@ namespace ConwaysWorld
         {
             base.Die();
             SpecialPerformed = true;
-            Nationality = -1;
         }
 
         protected virtual string ChooseTravelDirection()
