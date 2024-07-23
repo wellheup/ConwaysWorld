@@ -99,7 +99,7 @@ namespace ConwaysWorld
             return _spawnFrequencies[k].Type;
         }
 
-        public Cell InitializeCell(int column, int row)
+        public Cell InitializeRandomCell(int column, int row)
         {
             Cell cell;
             float _rollForVariant = UnityEngine.Random.value;
@@ -120,7 +120,6 @@ namespace ConwaysWorld
                         cell = new Cell_Diseased(column, row, true);
                     else
                         cell = new Cell_Plague(column, row, true);
-                    if (_rollForVariant <= .2) Debug.Log("plague born");
                     break;
                 case E_CellType.Cell_Traveler:
                     if (_rollForVariant > .4)
@@ -131,23 +130,23 @@ namespace ConwaysWorld
                 case E_CellType.Cell_Doctor:
                     cell = new Cell_Doctor(column, row, true);
                     break;
-                case E_CellType.Cell_Diplomat:
-                    cell = new Cell_Diplomat(column, row, true);
-                    break;
-                case E_CellType.Cell_King:
-                    cell = new Cell_King(column, row, true);
-                    break;
+                // Diplomats and Kings should never be spawned on their own
+                // case E_CellType.Cell_Diplomat:
+                //     cell = new Cell_Diplomat(column, row, true);
+                //     break;
+                // case E_CellType.Cell_King:
+                //     cell = new Cell_King(column, row, true);
+                //     break;
                 case E_CellType.Cell_Hunter:
                     cell = new Cell_Hunter(column, row, true);
-                    // cell = new Cell_Basic(column, row, true);
                     break;
                 case E_CellType.Cell_Bomber:
                     cell = new Cell_Bomber(column, row, true);
-                    // cell = new Cell_Basic(column, row, true);
                     break;
-                case E_CellType.Cell_Warrior:
-                    cell = new Cell_Bomber(column, row, true);
-                    break;
+                // warriors should never be spawned on their own
+                // case E_CellType.Cell_Warrior:
+                //     cell = new Cell_Warrior(column, row, true);
+                //     break;
                 default: //this is case E_CellType.Cell_Dead
                     cell = new Cell_Basic(column, row, false);
                     break;

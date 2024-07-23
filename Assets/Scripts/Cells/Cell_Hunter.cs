@@ -39,15 +39,12 @@ namespace ConwaysWorld
             {
                 DeathCountDown = 0;
             }
-            SpecialPerformed = false;
             ChooseNation();
         }
 
         public override void Die()
         {
             base.Die();
-            SpecialPerformed = true;
-            Nationality = -1;
         }
 
         public override bool CalcCellAliveNextGen()
@@ -69,43 +66,47 @@ namespace ConwaysWorld
             return otherCell == CurrentPrey && otherCell.GetIsAlive();
         }
 
-        public override void SpecialActions(Cell[,] cellGrid)
+        protected void Hunt(Cell[,] cellGrid)
         {
-            if (IsAlive && !SpecialPerformed)
+            Cell targetCell = CurrentPrey;
+            //if current prey is invalid
+            if (CurrentPrey == null || !CurrentPrey.GetIsAlive())
             {
-                Cell targetCell = CurrentPrey;
-                //if current prey is invalid
-                if (CurrentPrey == null || !CurrentPrey.GetIsAlive())
+                //seek new current prey, choose random if invalid
+                targetCell = SelectNearbyCellByRule(cellGrid, IsCellPrey, 5);
+                if (targetCell != null)
                 {
-                    //seek new current prey, choose random if invalid
-                    targetCell = SelectNearbyCellByRule(cellGrid, IsCellPrey, 5);
-                    if (targetCell != null)
-                    {
-                        CurrentPrey = targetCell;
-                    }
-                    else
-                    {
-                        targetCell = CellNeighborhood.NeighborhoodDict[ChooseTravelDirection()];
-                    }
-                }
-
-                Cell cellToSwap = FindNeighborInDirOfCell(cellGrid, targetCell); // find nearest cell in dir of target (may be the actual target)
-                if (CurrentPrey != null && IsCellCurrentPrey(cellToSwap)) //if prey was valid or new prey was found
-                {
-                    SwapCells(this, cellToSwap, cellGrid);
-                    cellToSwap.Die(); //TODO: is this valid? or should i mark the cell for death and let model kill it somehow?
-                    CurrentPrey = null;
-                }
-                else if (IsCellPrey(cellToSwap))
-                {
-                    SwapCells(this, cellToSwap, cellGrid);
-                    cellToSwap.Die(); //TODO: is this valid? or should i mark the cell for death and let model kill it somehow?
+                    CurrentPrey = targetCell;
                 }
                 else
                 {
-                    SwapCells(this, cellToSwap, cellGrid);
+                    targetCell = CellNeighborhood.NeighborhoodDict[ChooseTravelDirection()];
                 }
-                SpecialPerformed = true;
+            }
+
+            Cell cellToSwap = FindNeighborInDirOfCell(cellGrid, targetCell); // find nearest cell in dir of target (may be the actual target)
+            if (CurrentPrey != null && IsCellCurrentPrey(cellToSwap)) //if prey was valid or new prey was found
+            {
+                SwapCells(this, cellToSwap, cellGrid);
+                cellToSwap.Die(); //TODO: is this valid? or should i mark the cell for death and let model kill it somehow?
+                CurrentPrey = null;
+            }
+            else if (IsCellPrey(cellToSwap))
+            {
+                SwapCells(this, cellToSwap, cellGrid);
+                cellToSwap.Die(); //TODO: is this valid? or should i mark the cell for death and let model kill it somehow?
+            }
+            else
+            {
+                SwapCells(this, cellToSwap, cellGrid);
+            }
+        }
+
+        public override void SpecialActions(Cell[,] cellGrid)
+        {
+            if (IsAlive)
+            {
+                Hunt(cellGrid);
             }
         }
     }

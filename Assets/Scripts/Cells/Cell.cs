@@ -18,6 +18,7 @@ namespace ConwaysWorld
             Nationality = -1,
             MinLivingNeighbors = 2,
             MaxLivingNeighbors = 3;
+        public string DebugMsg = null;
 
         public bool GetIsAlive()
         {
@@ -26,6 +27,7 @@ namespace ConwaysWorld
 
         public virtual void Live()
         {
+            DebugMsg = null;
             IsAlive = true;
             Age++;
             if (Age > MatureAge && !Conditions.Contains("mature"))
@@ -121,7 +123,7 @@ namespace ConwaysWorld
                     cell = new Cell_Bomber(column, row, true);
                     break;
                 case E_CellType.Cell_Warrior:
-                    cell = new Cell_Bomber(column, row, true);
+                    cell = new Cell_Warrior(column, row, true);
                     break;
                 default:
                     cell = new Cell_Basic(column, row, isAlive); //this should not occur...
@@ -129,8 +131,7 @@ namespace ConwaysWorld
             }
             cell.Conditions = oldCell.Conditions;
             cell.CellNeighborhood = oldCell.CellNeighborhood;
-            if (oldCell.Nationality == -1) cell.ChooseNation();
-            else cell.Nationality = oldCell.Nationality;
+            cell.Nationality = isAlive ? oldCell.Nationality : -1;
 
             return cell;
         }
@@ -231,7 +232,7 @@ namespace ConwaysWorld
                         int rand = UnityEngine.Random.Range(0, neighborNations.Count);
                         Nationality = rand > 0 ? neighborNations[rand] : -1;
                     }
-                    else
+                    else // should only occur when first populating grid
                     {
                         Nationality = -1;
                     }
@@ -241,11 +242,12 @@ namespace ConwaysWorld
 
         protected Cell SelectNearbyCellByRule(Cell[,] cellGrid,
             Func<Cell, bool> searchRule,
-            int maxRange)
+            int excludedRangeMax) //maxRange must be > 0 if this is to work...
         {
+            if (excludedRangeMax <= 1) CellThrowException("you passed an unreasonable range into SelectNearbyCellByRule");
             List<Cell> nearestOthers = new();
             int range = 1;
-            while (nearestOthers.Count == 0 && range < maxRange)
+            while (nearestOthers.Count == 0 && range < excludedRangeMax)
             {
                 for (int x = range * -1; x <= range; x++)
                 {
@@ -336,6 +338,11 @@ namespace ConwaysWorld
         public static void CellThrowException(string log)
         {
             throw new Exception(log);
+        }
+
+        public void CellThrowExceptionInRender(string log)
+        {
+            DebugMsg = log;
         }
     }
 }

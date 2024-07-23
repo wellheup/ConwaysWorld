@@ -32,20 +32,20 @@ namespace ConwaysWorld
             ChooseNation();
         }
 
-        private bool IsCellOtherNation(Cell otherCell)
+        private bool IsCellValidConversionTarget(Cell otherCell)
         {
-            return this.Nationality != otherCell.Nationality && otherCell.GetIsAlive();
+            return this.Nationality != otherCell.Nationality && otherCell.GetIsAlive() && otherCell.GetType() != typeof(Cell_King);
         }
 
         public override void SpecialActions(Cell[,] cellGrid)
         {
             if (IsAlive && !SpecialPerformed)
             {
-                Cell targetCell = SelectNearbyCellByRule(cellGrid, IsCellOtherNation, 5);
+                Cell targetCell = SelectNearbyCellByRule(cellGrid, IsCellValidConversionTarget, 5);
                 Cell cellToSwap = FindNeighborInDirOfCell(cellGrid, targetCell);
                 if (cellToSwap != null)
                 {
-                    if (IsCellOtherNation(cellToSwap)) cellToSwap.Nationality = Nationality;
+                    if (IsCellValidConversionTarget(cellToSwap)) cellToSwap.Nationality = Nationality;
                     SwapCells(this, cellToSwap, cellGrid);
                 }
                 else
