@@ -166,14 +166,19 @@
     cursor: pointer;
   }
   .spawn-val {
-    width: 26px;
+    width: 42px;
     text-align: right;
     color: #c0d0ff;
     font-weight: 600;
     font-size: 11px;
     flex-shrink: 0;
+    background: #1a1a2a;
+    border: 1px solid #3a3a5a;
+    border-radius: 4px;
+    padding: 2px 5px;
   }
-  .spawn-val.zero { color: #444; }
+  .spawn-val:focus { outline: none; border-color: #6080ff; }
+  .spawn-val.zero { color: #555; }
 
   /* apply button */
   #btn-apply {
@@ -1218,8 +1223,10 @@ function buildSpawnGrid() {
       <div class="spawn-dot" style="background:${color}"></div>
       <div class="spawn-label">${label}</div>
       <input type="range" min="0" max="100" value="${w}" data-type="${type}"
-        oninput="onSpawnSlider(this)">
-      <div class="spawn-val${w === 0 ? ' zero' : ''}" id="sw-val-${type}">${w}</div>
+        id="sw-range-${type}" oninput="onSpawnSlider(this)">
+      <input type="number" min="0" max="100" value="${w}" data-type="${type}"
+        id="sw-val-${type}" class="spawn-val${w === 0 ? ' zero' : ''}"
+        oninput="onSpawnNumber(this)">
     `;
     container.appendChild(row);
   }
@@ -1230,9 +1237,19 @@ function onSpawnSlider(el) {
   let type = el.dataset.type;
   let v = parseInt(el.value);
   spawnWeights[type] = v;
-  let valEl = document.getElementById('sw-val-' + type);
-  valEl.textContent = v;
-  valEl.className = 'spawn-val' + (v === 0 ? ' zero' : '');
+  let numEl = document.getElementById('sw-val-' + type);
+  numEl.value = v;
+  numEl.className = 'spawn-val' + (v === 0 ? ' zero' : '');
+  updateSpawnTotal();
+}
+
+function onSpawnNumber(el) {
+  let type = el.dataset.type;
+  let v = Math.max(0, Math.min(100, parseInt(el.value) || 0));
+  spawnWeights[type] = v;
+  el.value = v;
+  el.className = 'spawn-val' + (v === 0 ? ' zero' : '');
+  document.getElementById('sw-range-' + type).value = v;
   updateSpawnTotal();
 }
 
