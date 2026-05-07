@@ -68,6 +68,18 @@
     white-space: nowrap;
   }
   #speed-wrap input[type=range] { width: 70px; accent-color: #6080ff; }
+  #speedLabel {
+    width: 48px;
+    background: #1a1a2a;
+    border: 1px solid #3a3a5a;
+    color: #c0d0ff;
+    border-radius: 4px;
+    padding: 2px 5px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: right;
+  }
+  #speedLabel:focus { outline: none; border-color: #6080ff; }
 
   /* settings dropdown */
   #settings-wrap { position: relative; flex-shrink: 0; }
@@ -343,7 +355,8 @@
     <button onclick="restart()">↺ Restart</button>
     <div id="speed-wrap">
       Speed: <input type="range" id="speedSlider" min="50" max="1000" value="400" step="50" oninput="updateSpeed()">
-      <span id="speedLabel">650ms</span>
+      <input type="number" id="speedLabel" value="650" min="50" max="1000" step="50" oninput="updateSpeedFromInput(this)">
+      <span style="color:#666;font-size:11px">ms</span>
     </div>
   </div>
   <div id="settings-wrap">
@@ -1275,7 +1288,15 @@ function applyAndRestart() {
 function updateSpeed() {
   let slider = document.getElementById('speedSlider');
   intervalMs = 1050 - parseInt(slider.value);
-  document.getElementById('speedLabel').textContent = intervalMs + 'ms';
+  document.getElementById('speedLabel').value = intervalMs;
+  if (running) { clearTimeout(timerId); scheduleStep(); }
+}
+
+function updateSpeedFromInput(el) {
+  let v = Math.max(50, Math.min(1000, parseInt(el.value) || 50));
+  intervalMs = v;
+  el.value = v;
+  document.getElementById('speedSlider').value = 1050 - v;
   if (running) { clearTimeout(timerId); scheduleStep(); }
 }
 
@@ -1320,7 +1341,7 @@ function init() {
   resizeCanvas();
   let slider = document.getElementById('speedSlider');
   intervalMs = 1050 - parseInt(slider.value);
-  document.getElementById('speedLabel').textContent = intervalMs + 'ms';
+  document.getElementById('speedLabel').value = intervalMs;
   let [c, r] = clampedGridDims();
   initGrid(c, r);
   countTypes();
