@@ -1181,12 +1181,18 @@ function togglePlay() {
   }
 }
 
+function clampedGridDims() {
+  let c = Math.floor(canvas.width / userCellSize);
+  let r = Math.floor(canvas.height / userCellSize);
+  if (gridLimit > 0) { c = Math.min(c, gridLimit); r = Math.min(r, gridLimit); }
+  return [c, r];
+}
+
 function restart() {
   clearTimeout(timerId);
   generation = 0; population = 0;
   resizeCanvas();
-  let c = Math.floor(canvas.width / userCellSize);
-  let r = Math.floor(canvas.height / userCellSize);
+  let [c, r] = clampedGridDims();
   initGrid(c, r);
   countTypes();
   updateStats();
@@ -1298,8 +1304,7 @@ function init() {
   let slider = document.getElementById('speedSlider');
   intervalMs = 1050 - parseInt(slider.value);
   document.getElementById('speedLabel').textContent = intervalMs + 'ms';
-  let c = Math.floor(canvas.width / userCellSize);
-  let r = Math.floor(canvas.height / userCellSize);
+  let [c, r] = clampedGridDims();
   initGrid(c, r);
   countTypes();
   updateStats();
