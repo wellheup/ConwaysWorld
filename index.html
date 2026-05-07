@@ -20,15 +20,18 @@
   #header {
     background: #111118;
     border-bottom: 1px solid #2a2a3a;
-    padding: 6px 14px;
+    padding: 0 14px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     flex-shrink: 0;
-    flex-wrap: wrap;
+    height: 40px;
+    overflow: visible;
+    position: relative;
+    z-index: 50;
   }
   #title {
-    font-size: 17px;
+    font-size: 15px;
     font-weight: 700;
     color: #a0c4ff;
     letter-spacing: 1px;
@@ -39,19 +42,19 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
     flex: 1;
   }
   button {
     background: #1e1e2e;
     border: 1px solid #3a3a5a;
     color: #c0c0e0;
-    padding: 5px 12px;
+    padding: 4px 11px;
     border-radius: 5px;
     cursor: pointer;
     font-size: 12px;
     transition: all 0.15s;
     white-space: nowrap;
+    flex-shrink: 0;
   }
   button:hover { background: #2a2a40; border-color: #6060a0; }
   button.active { background: #2a3060; border-color: #6080ff; color: #a0c4ff; }
@@ -66,27 +69,63 @@
   }
   #speed-wrap input[type=range] { width: 70px; accent-color: #6080ff; }
 
-  /* param inputs */
+  /* settings dropdown */
+  #settings-wrap { position: relative; flex-shrink: 0; }
+  #settings-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #131320;
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    padding: 14px 16px;
+    z-index: 200;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    min-width: 340px;
+  }
+  #settings-panel.open { display: block; }
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin-bottom: 12px;
+  }
   .param-group {
     display: flex;
-    align-items: center;
-    gap: 5px;
+    flex-direction: column;
+    gap: 4px;
     font-size: 11px;
-    color: #888;
-    white-space: nowrap;
   }
-  .param-group label { color: #9090b0; }
+  .param-group label { color: #7080a0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
   .param-group input[type=number] {
-    width: 52px;
+    width: 100%;
     background: #1a1a2a;
     border: 1px solid #3a3a5a;
     color: #c0d0ff;
     border-radius: 4px;
-    padding: 3px 5px;
-    font-size: 11px;
+    padding: 5px 8px;
+    font-size: 12px;
   }
   .param-group input[type=number]:focus { outline: none; border-color: #6080ff; }
-  .param-sep { color: #333; font-size: 14px; }
+  #btn-apply {
+    width: 100%;
+    padding: 7px;
+    background: #1e3060;
+    border-color: #4060c0;
+    color: #a0c4ff;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  #btn-apply:hover { background: #2a3a80; }
+  .settings-title {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #5060a0;
+    margin-bottom: 10px;
+  }
 
   /* ── Stats bar below header ── */
   #stats-bar {
@@ -240,28 +279,35 @@
       Speed: <input type="range" id="speedSlider" min="50" max="1000" value="400" step="50" oninput="updateSpeed()">
       <span id="speedLabel">650ms</span>
     </div>
-    <span class="param-sep">|</span>
-    <div class="param-group">
-      <label>Initial pop %</label>
-      <input type="number" id="inp-pop" value="10" min="1" max="50" title="Starting % of cells that are alive">
+  </div>
+  <div id="settings-wrap">
+    <button id="btn-settings" onclick="toggleSettings()">⚙ Settings</button>
+    <div id="settings-panel">
+      <div class="settings-title">Simulation Parameters</div>
+      <div class="settings-grid">
+        <div class="param-group">
+          <label>Initial pop %</label>
+          <input type="number" id="inp-pop" value="10" min="1" max="50" title="% of cells alive at start">
+        </div>
+        <div class="param-group">
+          <label>Grid limit</label>
+          <input type="number" id="inp-gridlimit" value="50" min="0" max="500" title="Max grid size (0 = unlimited)">
+        </div>
+        <div class="param-group">
+          <label>Cell size (px)</label>
+          <input type="number" id="inp-cellsize" value="8" min="2" max="24" title="Pixel size of each cell">
+        </div>
+        <div class="param-group">
+          <label>Disease rate %</label>
+          <input type="number" id="inp-disrate" value="20" min="0" max="100" title="% of living cells that start diseased">
+        </div>
+        <div class="param-group">
+          <label>Bomber rate %</label>
+          <input type="number" id="inp-bombrate" value="10" min="0" max="100" title="% of living cells that are bombers">
+        </div>
+      </div>
+      <button id="btn-apply" onclick="applyAndRestart()">↺ Apply &amp; Restart</button>
     </div>
-    <div class="param-group">
-      <label>Grid limit</label>
-      <input type="number" id="inp-gridlimit" value="50" min="10" max="500" title="Max grid dimension (0 = unlimited)">
-    </div>
-    <div class="param-group">
-      <label>Cell size px</label>
-      <input type="number" id="inp-cellsize" value="8" min="2" max="24" title="Pixel size of each cell">
-    </div>
-    <div class="param-group">
-      <label title="Relative spawn weight for Disease vs Basic">Disease rate</label>
-      <input type="number" id="inp-disrate" value="20" min="0" max="100" title="% of living cells that start diseased (0–100)">
-    </div>
-    <div class="param-group">
-      <label title="Relative spawn weight for Bomber vs Basic">Bomber rate</label>
-      <input type="number" id="inp-bombrate" value="10" min="0" max="100" title="% of living cells that are bombers (0–100)">
-    </div>
-    <button onclick="applyAndRestart()" title="Apply settings and restart">Apply & Restart</button>
   </div>
 </div>
 
@@ -1048,6 +1094,22 @@ function updateNationLeaderboard() {
 }
 
 // ── Controls ─────────────────────────────────────────────────────────────
+function toggleSettings() {
+  let panel = document.getElementById('settings-panel');
+  let btn = document.getElementById('btn-settings');
+  panel.classList.toggle('open');
+  btn.classList.toggle('active');
+}
+
+// Close settings when clicking outside
+document.addEventListener('click', e => {
+  let wrap = document.getElementById('settings-wrap');
+  if (!wrap.contains(e.target)) {
+    document.getElementById('settings-panel').classList.remove('open');
+    document.getElementById('btn-settings').classList.remove('active');
+  }
+});
+
 function togglePlay() {
   running = !running;
   let btn = document.getElementById('btn-play');
