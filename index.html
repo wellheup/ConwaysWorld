@@ -427,8 +427,6 @@
     <div id="tooltip"></div>
   </div>
 
-  <div id="type-tip"></div>
-
   <div id="side-panel">
     <div class="panel-section">
       <div class="panel-title">Cell Types</div>
@@ -1371,6 +1369,15 @@ canvas.addEventListener('mouseleave', () => { document.getElementById('tooltip')
   const tip = document.getElementById('type-tip');
   const breakdown = document.getElementById('type-breakdown');
 
+  function positionTip(e) {
+    let x = e.clientX - tip.offsetWidth - 14;
+    if (x < 6) x = e.clientX + 14;
+    let y = e.clientY - tip.offsetHeight / 2;
+    y = Math.max(6, Math.min(y, window.innerHeight - tip.offsetHeight - 6));
+    tip.style.left = x + 'px';
+    tip.style.top  = y + 'px';
+  }
+
   breakdown.addEventListener('mouseover', e => {
     let row = e.target.closest('[data-type]');
     if (!row) { tip.style.display = 'none'; return; }
@@ -1381,22 +1388,18 @@ canvas.addEventListener('mouseleave', () => { document.getElementById('tooltip')
     let label = TYPE_LABELS[type] || type;
     tip.innerHTML = `<b style="color:${color}">${label}</b>${desc}`;
     tip.style.display = 'block';
+    positionTip(e);
   });
 
   breakdown.addEventListener('mousemove', e => {
     if (tip.style.display === 'none') return;
-    let x = e.clientX - tip.offsetWidth - 14;
-    if (x < 6) x = e.clientX + 14;
-    let y = e.clientY - tip.offsetHeight / 2;
-    y = Math.max(6, Math.min(y, window.innerHeight - tip.offsetHeight - 6));
-    tip.style.left = x + 'px';
-    tip.style.top  = y + 'px';
+    positionTip(e);
   });
 
   breakdown.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
 })();
 
-// ── Keyboard shortcuts ────────────────────────────────────────────────────
+// ── Keyboard shortcuts ─────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (e.key === ' ') { e.preventDefault(); togglePlay(); }
   if (e.key === 'r' || e.key === 'R') restart();
@@ -1422,5 +1425,6 @@ window.addEventListener('resize', () => { resizeCanvas(); render(); });
 
 init();
 </script>
+<div id="type-tip"></div>
 </body>
 </html>
