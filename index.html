@@ -69,7 +69,7 @@
   }
   #speed-wrap input[type=range] { width: 70px; accent-color: #6080ff; }
   #speedLabel {
-    width: 48px;
+    width: 62px;
     background: #1a1a2a;
     border: 1px solid #3a3a5a;
     color: #c0d0ff;
@@ -374,8 +374,8 @@
     <button id="btn-play" class="active" onclick="togglePlay()">⏸ Pause</button>
     <button onclick="restart()">↺ Restart</button>
     <div id="speed-wrap">
-      Speed: <input type="range" id="speedSlider" min="50" max="5000" value="650" step="50" oninput="updateSpeed()">
-      <input type="number" id="speedLabel" value="650" min="50" max="5000" step="50" oninput="updateSpeedFromInput(this)">
+      Speed: <input type="range" id="speedSlider" min="50" max="5000" value="100" step="50" oninput="updateSpeed()">
+      <input type="number" id="speedLabel" value="100" min="50" max="5000" step="50" oninput="updateSpeedFromInput(this)">
       <span style="color:#666;font-size:11px">ms</span>
     </div>
   </div>
@@ -390,7 +390,7 @@
         </div>
         <div class="param-group">
           <label>Grid limit</label>
-          <input type="number" id="inp-gridlimit" value="50" min="0" max="500" title="Max grid size (0 = unlimited)">
+          <input type="number" id="inp-gridlimit" value="10" min="0" max="500" title="Max grid size (0 = unlimited)">
         </div>
         <div class="param-group">
           <label>Cell size (px)</label>
@@ -551,7 +551,7 @@ let nations = [];
 let generation = 0, population = 0;
 let basePercentLiving = 10;
 let minCellsPerNation = 3;
-let gridLimit = 50;
+let gridLimit = 10;
 let userCellSize = 8;
 let running = true;
 let intervalMs = 650;
@@ -1317,7 +1317,7 @@ function resetSpawnWeights() {
 
 function applyAndRestart() {
   basePercentLiving = Math.max(1, Math.min(50, parseInt(document.getElementById('inp-pop').value) || 10));
-  gridLimit = Math.max(0, parseInt(document.getElementById('inp-gridlimit').value) || 50);
+  gridLimit = Math.max(0, parseInt(document.getElementById('inp-gridlimit').value) || 10);
   userCellSize = Math.max(2, Math.min(24, parseInt(document.getElementById('inp-cellsize').value) || 8));
   restart();
 }
