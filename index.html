@@ -1367,39 +1367,26 @@ canvas.addEventListener('mousemove', e => {
 canvas.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display = 'none'; });
 
 // ── Cell type description tooltip ─────────────────────────────────────────
-(function() {
-  const tip = document.getElementById('type-tip');
-  const breakdown = document.getElementById('type-breakdown');
+const sidePanel = document.getElementById('side-panel');
+const typeTip   = document.getElementById('type-tip');
 
-  function positionTip(e) {
-    let x = e.clientX - tip.offsetWidth - 14;
-    if (x < 6) x = e.clientX + 14;
-    let y = e.clientY - tip.offsetHeight / 2;
-    y = Math.max(6, Math.min(y, window.innerHeight - tip.offsetHeight - 6));
-    tip.style.left = x + 'px';
-    tip.style.top  = y + 'px';
-  }
+sidePanel.addEventListener('mousemove', e => {
+  let row = e.target.closest('[data-type]');
+  if (!row) { typeTip.style.display = 'none'; return; }
+  let type  = row.dataset.type;
+  let desc  = TYPE_DESCRIPTIONS[type];
+  if (!desc) { typeTip.style.display = 'none'; return; }
+  typeTip.innerHTML = `<b style="color:${CELL_COLORS[type]}">${TYPE_LABELS[type]}</b>${desc}`;
+  typeTip.style.display = 'block';
+  let x = e.clientX - typeTip.offsetWidth - 14;
+  if (x < 6) x = e.clientX + 14;
+  let y = e.clientY - typeTip.offsetHeight / 2;
+  y = Math.max(6, Math.min(y, window.innerHeight - typeTip.offsetHeight - 6));
+  typeTip.style.left = x + 'px';
+  typeTip.style.top  = y + 'px';
+});
 
-  breakdown.addEventListener('mouseover', e => {
-    let row = e.target.closest('[data-type]');
-    if (!row) { tip.style.display = 'none'; return; }
-    let type = row.dataset.type;
-    let desc = TYPE_DESCRIPTIONS[type];
-    if (!desc) return;
-    let color = CELL_COLORS[type];
-    let label = TYPE_LABELS[type] || type;
-    tip.innerHTML = `<b style="color:${color}">${label}</b>${desc}`;
-    tip.style.display = 'block';
-    positionTip(e);
-  });
-
-  breakdown.addEventListener('mousemove', e => {
-    if (tip.style.display === 'none') return;
-    positionTip(e);
-  });
-
-  breakdown.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
-})();
+sidePanel.addEventListener('mouseleave', () => { typeTip.style.display = 'none'; });
 
 // ── Keyboard shortcuts ─────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
