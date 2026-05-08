@@ -762,6 +762,7 @@ function updateLives(aliveNext) {
 function cellLive(cell) {
   cell.alive = true;
   cell.age++;
+  if (cell.type === TYPE.DEAD) cell.type = TYPE.BASIC;
   let t = cell.type;
   if (t === TYPE.TRAVELER || t === TYPE.EXPLORER || t === TYPE.DIPLOMAT ||
       t === TYPE.HUNTER   || t === TYPE.WARRIOR) {
