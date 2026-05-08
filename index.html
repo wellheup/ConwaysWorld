@@ -294,8 +294,28 @@
     border-radius: 2px;
     flex-shrink: 0;
   }
-  .type-name { flex: 1; color: #a0a0c0; }
+  .type-name { flex: 1; color: #a0a0c0; cursor: default; }
   .type-count { color: #c0d0ff; font-weight: 600; min-width: 28px; text-align: right; }
+  .type-row { cursor: default; }
+  .type-row:hover .type-name { color: #d0d8ff; }
+
+  /* cell type description tooltip */
+  #type-tip {
+    display: none;
+    position: fixed;
+    background: rgba(10,10,22,0.97);
+    border: 1px solid #3a3a6a;
+    border-radius: 7px;
+    padding: 8px 11px;
+    font-size: 11px;
+    line-height: 1.55;
+    color: #b0b8d8;
+    max-width: 220px;
+    z-index: 300;
+    pointer-events: none;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+  }
+  #type-tip b { display: block; margin-bottom: 4px; font-size: 12px; }
   .type-bar-wrap {
     width: 100%;
     height: 3px;
@@ -407,6 +427,8 @@
     <div id="tooltip"></div>
   </div>
 
+  <div id="type-tip"></div>
+
   <div id="side-panel">
     <div class="panel-section">
       <div class="panel-title">Cell Types</div>
@@ -451,6 +473,21 @@ const TYPE_LABELS = {
   [TYPE.DOCTOR]: 'Doctor', [TYPE.WARRIOR]: 'Warrior',
   [TYPE.HUNTER]: 'Hunter', [TYPE.BOMBER]: 'Bomber',
   [TYPE.DIPLOMAT]: 'Diplomat', [TYPE.KING]: 'King',
+};
+
+const TYPE_DESCRIPTIONS = {
+  [TYPE.BASIC]:    'Follows standard Conway rules. Lives with 2–3 neighbours, dies from isolation or overcrowding. Occasionally born immune to disease, or in rare cases immaculate.',
+  [TYPE.IMMORTAL]: 'Lives as long as it has at least one neighbour. Only dies when completely isolated. Cannot be killed by disease, but can be hunted.',
+  [TYPE.DISEASED]: 'Carries a disease that spreads to adjacent cells at a 25% rate per step. Has a 3-turn countdown before it dies from its own infection.',
+  [TYPE.PLAGUE]:   'A more aggressive disease carrier. Spreads infection at 50% rate and progresses faster than Diseased. Poses a greater threat to surrounding cells.',
+  [TYPE.TRAVELER]: 'Moves one cell in a fixed random direction each turn instead of staying in place. Follows Conway life/death rules at its new position.',
+  [TYPE.EXPLORER]: 'Like a Traveler, but can trigger the grid to expand when it reaches an edge. Helps the simulation grow beyond its starting bounds.',
+  [TYPE.DOCTOR]:   'Cures diseased neighbours each turn and is completely immune to infection. Carries a stock of vaccines to neutralise disease on contact.',
+  [TYPE.WARRIOR]:  'Recruited by large nations to fight disease. Seeks out and destroys Diseased and Plague cells from rival nations in adjacent cells.',
+  [TYPE.HUNTER]:   'Actively seeks and kills Immortal and King cells. Moves toward the nearest target in its neighbourhood each step.',
+  [TYPE.BOMBER]:   'Detonates after 2 turns, killing all cells within its blast radius regardless of type or nation. Handles its own death as part of the explosion.',
+  [TYPE.DIPLOMAT]: 'Spawned by nations that grow large enough. Travels the grid converting enemy cells to its own nation, expanding influence peacefully.',
+  [TYPE.KING]:     'Crowned when a nation reaches a population threshold. Converts all neighbours into Warriors each turn, rapidly militarising the nation.',
 };
 
 const NATION_COLORS = [
@@ -1124,7 +1161,7 @@ function updateTypeBreakdown() {
     let count = typeCounts[t] || 0;
     let pct = Math.round(count / maxCount * 100);
     html += `
-      <div class="type-row">
+      <div class="type-row" data-type="${t}">
         <div class="type-dot" style="background:${CELL_COLORS[t]}"></div>
         <div class="type-name">${TYPE_LABELS[t]}</div>
         <div class="type-count">${count}</div>
@@ -1328,6 +1365,36 @@ canvas.addEventListener('mousemove', e => {
   }
 });
 canvas.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display = 'none'; });
+
+// ── Cell type description tooltip ─────────────────────────────────────────
+(function() {
+  const tip = document.getElementById('type-tip');
+  const breakdown = document.getElementById('type-breakdown');
+
+  breakdown.addEventListener('mouseover', e => {
+    let row = e.target.closest('[data-type]');
+    if (!row) { tip.style.display = 'none'; return; }
+    let type = row.dataset.type;
+    let desc = TYPE_DESCRIPTIONS[type];
+    if (!desc) return;
+    let color = CELL_COLORS[type];
+    let label = TYPE_LABELS[type] || type;
+    tip.innerHTML = `<b style="color:${color}">${label}</b>${desc}`;
+    tip.style.display = 'block';
+  });
+
+  breakdown.addEventListener('mousemove', e => {
+    if (tip.style.display === 'none') return;
+    let x = e.clientX - tip.offsetWidth - 14;
+    if (x < 6) x = e.clientX + 14;
+    let y = e.clientY - tip.offsetHeight / 2;
+    y = Math.max(6, Math.min(y, window.innerHeight - tip.offsetHeight - 6));
+    tip.style.left = x + 'px';
+    tip.style.top  = y + 'px';
+  });
+
+  breakdown.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+})();
 
 // ── Keyboard shortcuts ────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
