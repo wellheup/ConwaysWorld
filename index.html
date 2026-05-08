@@ -475,6 +475,31 @@ const TYPE_LABELS = {
   [TYPE.DIPLOMAT]: 'Diplomat', [TYPE.KING]: 'King',
 };
 
+const CELL_SPRITE_PATHS = {
+  [TYPE.BASIC]:    'Assets/Sprites/Cell_Basic.jpg',
+  [TYPE.IMMORTAL]: 'Assets/Sprites/Cell_Immortal.jpg',
+  [TYPE.DISEASED]: 'Assets/Sprites/Cell_Diseased.jpg',
+  [TYPE.PLAGUE]:   'Assets/Sprites/Cell_Plague.jpg',
+  [TYPE.TRAVELER]: 'Assets/Sprites/Cell_Traveler.jpg',
+  [TYPE.EXPLORER]: 'Assets/Sprites/Cell_Explorer.jpg',
+  [TYPE.DOCTOR]:   'Assets/Sprites/Cell_Doctor.jpg',
+  [TYPE.WARRIOR]:  'Assets/Sprites/Cell_Warrior.jpg',
+  [TYPE.HUNTER]:   'Assets/Sprites/Cell_Hunter.jpg',
+  [TYPE.BOMBER]:   'Assets/Sprites/Cell_Bomber.jpg',
+  [TYPE.DIPLOMAT]: 'Assets/Sprites/Cell_Diplomat.jpg',
+  [TYPE.KING]:     'Assets/Sprites/Cell_King.jpg',
+};
+
+const SPRITE_IMGS = {};
+let spritesLoaded = 0;
+const spriteTotal = Object.keys(CELL_SPRITE_PATHS).length;
+for (let [type, path] of Object.entries(CELL_SPRITE_PATHS)) {
+  let img = new Image();
+  img.onload = () => { spritesLoaded++; if (typeof render === 'function') render(); };
+  img.src = path;
+  SPRITE_IMGS[type] = img;
+}
+
 const TYPE_DESCRIPTIONS = {
   [TYPE.BASIC]:    'Follows standard Conway rules. Lives with 2–3 neighbours, dies from isolation or overcrowding. Occasionally born immune to disease, or in rare cases immaculate.',
   [TYPE.IMMORTAL]: 'Lives as long as it has at least one neighbour. Only dies when completely isolated. Cannot be killed by disease, but can be hunted.',
@@ -1111,18 +1136,28 @@ function render() {
         ctx.fillRect(x, y, cellSize, cellSize);
         continue;
       }
+      let sprite = SPRITE_IMGS[cell.type];
       if (cell.nationality >= 0 && cell.nationality < NATION_COLORS.length) {
         ctx.fillStyle = NATION_COLORS[cell.nationality];
         ctx.fillRect(x, y, cellSize, cellSize);
-        ctx.fillStyle = CELL_COLORS[cell.type] || '#aaa';
-        let inner = cellSize * 0.6;
-        ctx.fillRect(x+(cellSize-inner)/2, y+(cellSize-inner)/2, inner, inner);
+        let border = Math.max(1, cellSize * 0.12);
+        if (sprite && sprite.complete && sprite.naturalWidth > 0) {
+          ctx.drawImage(sprite, x + border, y + border, cellSize - border * 2, cellSize - border * 2);
+        } else {
+          ctx.fillStyle = CELL_COLORS[cell.type] || '#aaa';
+          let inner = cellSize * 0.76;
+          ctx.fillRect(x + (cellSize - inner) / 2, y + (cellSize - inner) / 2, inner, inner);
+        }
       } else {
-        ctx.fillStyle = CELL_COLORS[cell.type] || '#aaa';
-        ctx.fillRect(x, y, cellSize, cellSize);
+        if (sprite && sprite.complete && sprite.naturalWidth > 0) {
+          ctx.drawImage(sprite, x, y, cellSize, cellSize);
+        } else {
+          ctx.fillStyle = CELL_COLORS[cell.type] || '#aaa';
+          ctx.fillRect(x, y, cellSize, cellSize);
+        }
       }
       if (cellSize >= 4) {
-        ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+        ctx.strokeStyle = 'rgba(0,0,0,0.25)';
         ctx.lineWidth = 0.5;
         ctx.strokeRect(x, y, cellSize, cellSize);
       }
