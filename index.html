@@ -1463,9 +1463,17 @@ canvas.addEventListener('mousemove', e => {
                 let natStr = cell.nationality >= 0 ? `<span style="color:${natColor}">Nation ${cell.nationality+1}</span>` : 'None';
                 let conds = cell.conditions.filter(x => x !== 'mature').join(', ') || 'none';
                 tip.style.display = 'block';
-                tip.style.left = (e.clientX - wrap.getBoundingClientRect().left + 14) + 'px';
-                tip.style.top  = (e.clientY - wrap.getBoundingClientRect().top - 8) + 'px';
                 tip.innerHTML = `<b style="color:${CELL_COLORS[cell.type]}">${TYPE_LABELS[cell.type] || cell.type}</b><br>Nation: ${natStr}<br>Age: ${cell.age}<br>Conditions: ${conds}`;
+                let wrapRect = wrap.getBoundingClientRect();
+                let cursorX = e.clientX - wrapRect.left;
+                let cursorY = e.clientY - wrapRect.top;
+                let tipW = tip.offsetWidth;
+                if (wrapRect.width - cursorX - 14 < tipW) {
+                    tip.style.left = (cursorX - tipW - 10) + 'px';
+                } else {
+                    tip.style.left = (cursorX + 14) + 'px';
+                }
+                tip.style.top = (cursorY - 8) + 'px';
         } else {
                 tip.style.display = 'none';
         }
