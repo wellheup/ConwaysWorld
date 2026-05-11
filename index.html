@@ -608,12 +608,13 @@ const SPAWN_DEFAULTS = {
         [TYPE.HUNTER]:    5,
         [TYPE.BOMBER]:   10,
         [TYPE.DIPLOMAT]:  0,
+        [TYPE.KING]:      0,
 };
 let spawnWeights = { ...SPAWN_DEFAULTS };
 
 const SPAWN_CHECKABLE = [
         TYPE.IMMORTAL, TYPE.DISEASED, TYPE.PLAGUE, TYPE.TRAVELER,
-        TYPE.EXPLORER, TYPE.DOCTOR, TYPE.HUNTER, TYPE.BOMBER, TYPE.DIPLOMAT,
+        TYPE.EXPLORER, TYPE.DOCTOR, TYPE.HUNTER, TYPE.BOMBER, TYPE.DIPLOMAT, TYPE.KING,
 ];
 let spawnEnabled = Object.fromEntries(SPAWN_CHECKABLE.map(t => [t, true]));
 
@@ -1103,6 +1104,7 @@ function electDiplomat(nation) {
 
 function crownKing(nation) {
         if (nation.king && !nation.king.alive) { nation.king.conditions.push('cleanup'); nation.king = null; }
+        if (spawnEnabled[TYPE.KING] === false) return;
         if (nation.king === null && nation.citizens.length > nation.diplomats.length && nation.citizens.length >= 5) {
                 let candidates = nation.citizens.filter(c => c.alive && !nation.diplomats.includes(c));
                 if (candidates.length > 0) {
@@ -1344,7 +1346,7 @@ function restart() {
 function buildSpawnGrid() {
         const spawnOrder = [
                 TYPE.BASIC, TYPE.IMMORTAL, TYPE.DISEASED, TYPE.PLAGUE,
-                TYPE.TRAVELER, TYPE.EXPLORER, TYPE.DOCTOR, TYPE.HUNTER, TYPE.BOMBER, TYPE.DIPLOMAT,
+                TYPE.TRAVELER, TYPE.EXPLORER, TYPE.DOCTOR, TYPE.HUNTER, TYPE.BOMBER, TYPE.DIPLOMAT, TYPE.KING,
         ];
         const container = document.getElementById('spawn-grid');
         container.innerHTML = '';
