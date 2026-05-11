@@ -5,438 +5,439 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Conway's World</title>
 <style>
-	* { margin: 0; padding: 0; box-sizing: border-box; }
-	body {
-		background: #0a0a0f;
-		color: #e0e0e0;
-		font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-		height: 100vh;
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-	}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+                background: #0a0a0f;
+                color: #e0e0e0;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+        }
 
-	/* ── Header ── */
-	#header {
-		background: #111118;
-		border-bottom: 1px solid #2a2a3a;
-		padding: 0 14px;
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		flex-shrink: 0;
-		height: 40px;
-		overflow: visible;
-		position: relative;
-		z-index: 50;
-	}
-	#title {
-		font-size: 15px;
-		font-weight: 700;
-		color: #a0c4ff;
-		letter-spacing: 1px;
-		white-space: nowrap;
-		flex-shrink: 0;
-	}
-	#controls {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		flex: 1;
-	}
-	button {
-		background: #1e1e2e;
-		border: 1px solid #3a3a5a;
-		color: #c0c0e0;
-		padding: 4px 11px;
-		border-radius: 5px;
-		cursor: pointer;
-		font-size: 12px;
-		transition: all 0.15s;
-		white-space: nowrap;
-		flex-shrink: 0;
-	}
-	button:hover { background: #2a2a40; border-color: #6060a0; }
-	button.active { background: #2a3060; border-color: #6080ff; color: #a0c4ff; }
+        /* ── Header ── */
+        #header {
+                background: #111118;
+                border-bottom: 1px solid #2a2a3a;
+                padding: 0 14px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-shrink: 0;
+                height: 40px;
+                overflow: visible;
+                position: relative;
+                z-index: 50;
+        }
+        #title {
+                font-size: 15px;
+                font-weight: 700;
+                color: #a0c4ff;
+                letter-spacing: 1px;
+                white-space: nowrap;
+                flex-shrink: 0;
+        }
+        #controls {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex: 1;
+        }
+        button {
+                background: #1e1e2e;
+                border: 1px solid #3a3a5a;
+                color: #c0c0e0;
+                padding: 4px 11px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 12px;
+                transition: all 0.15s;
+                white-space: nowrap;
+                flex-shrink: 0;
+        }
+        button:hover { background: #2a2a40; border-color: #6060a0; }
+        button.active { background: #2a3060; border-color: #6080ff; color: #a0c4ff; }
 
-	#speed-wrap {
-		display: flex;
-		align-items: center;
-		gap: 5px;
-		font-size: 12px;
-		color: #888;
-		white-space: nowrap;
-	}
-	#speed-wrap input[type=range] { width: 70px; accent-color: #6080ff; }
-	#speedLabel {
-		width: 62px;
-		background: #1a1a2a;
-		border: 1px solid #3a3a5a;
-		color: #c0d0ff;
-		border-radius: 4px;
-		padding: 2px 5px;
-		font-size: 12px;
-		font-weight: 600;
-		text-align: right;
-	}
-	#speedLabel:focus { outline: none; border-color: #6080ff; }
+        #speed-wrap {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                font-size: 12px;
+                color: #888;
+                white-space: nowrap;
+        }
+        #speed-wrap input[type=range] { width: 70px; accent-color: #6080ff; }
+        #speedLabel {
+                width: 62px;
+                background: #1a1a2a;
+                border: 1px solid #3a3a5a;
+                color: #c0d0ff;
+                border-radius: 4px;
+                padding: 2px 5px;
+                font-size: 12px;
+                font-weight: 600;
+                text-align: right;
+        }
+        #speedLabel:focus { outline: none; border-color: #6080ff; }
 
-	/* settings dropdown */
-	#settings-wrap { position: relative; flex-shrink: 0; }
-	#settings-panel {
-		display: none;
-		position: absolute;
-		top: calc(100% + 6px);
-		right: 0;
-		background: #131320;
-		border: 1px solid #2a2a4a;
-		border-radius: 8px;
-		padding: 14px 16px;
-		z-index: 200;
-		box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-		min-width: 480px;
-	}
-	#settings-panel.open { display: block; }
-	.settings-title {
-		font-size: 10px;
-		font-weight: 700;
-		letter-spacing: 1.5px;
-		text-transform: uppercase;
-		color: #5060a0;
-		margin-bottom: 8px;
-	}
-	.settings-divider { border: none; border-top: 1px solid #1e1e30; margin: 12px 0; }
+        /* settings dropdown */
+        #settings-wrap { position: relative; flex-shrink: 0; }
+        #settings-panel {
+                display: none;
+                position: absolute;
+                top: calc(100% + 6px);
+                right: 0;
+                background: #131320;
+                border: 1px solid #2a2a4a;
+                border-radius: 8px;
+                padding: 14px 16px;
+                z-index: 200;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+                min-width: 480px;
+        }
+        #settings-panel.open { display: block; }
+        .settings-title {
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                color: #5060a0;
+                margin-bottom: 8px;
+        }
+        .settings-divider { border: none; border-top: 1px solid #1e1e30; margin: 12px 0; }
 
-	/* top params grid */
-	.settings-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
-		gap: 8px 16px;
-		margin-bottom: 4px;
-	}
-	.param-group {
-		display: flex;
-		flex-direction: column;
-		gap: 3px;
-		font-size: 11px;
-	}
-	.param-group label { color: #7080a0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-	.param-group input[type=number] {
-		width: 100%;
-		background: #1a1a2a;
-		border: 1px solid #3a3a5a;
-		color: #c0d0ff;
-		border-radius: 4px;
-		padding: 4px 7px;
-		font-size: 12px;
-	}
-	.param-group input[type=number]:focus { outline: none; border-color: #6080ff; }
+        /* top params grid */
+        .settings-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 8px 16px;
+                margin-bottom: 4px;
+        }
+        .param-group {
+                display: flex;
+                flex-direction: column;
+                gap: 3px;
+                font-size: 11px;
+        }
+        .param-group label { color: #7080a0; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .param-group input[type=number] {
+                width: 100%;
+                background: #1a1a2a;
+                border: 1px solid #3a3a5a;
+                color: #c0d0ff;
+                border-radius: 4px;
+                padding: 4px 7px;
+                font-size: 12px;
+        }
+        .param-group input[type=number]:focus { outline: none; border-color: #6080ff; }
 
-	/* spawn weight rows */
-	.spawn-section-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		margin-bottom: 8px;
-	}
-	.spawn-total {
-		font-size: 10px;
-		color: #666;
-	}
-	.spawn-total span { color: #a0c4ff; font-weight: 600; }
-	.spawn-reset {
-		font-size: 10px;
-		color: #5060a0;
-		cursor: pointer;
-		background: none;
-		border: none;
-		padding: 0;
-		text-decoration: underline;
-	}
-	.spawn-reset:hover { color: #8090d0; background: none; border: none; }
-	.spawn-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 6px 16px;
-	}
-	.spawn-row {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		font-size: 11px;
-	}
-	.spawn-dot {
-		width: 8px; height: 8px;
-		border-radius: 2px;
-		flex-shrink: 0;
-	}
-	.spawn-label { flex: 1; color: #9090b0; white-space: nowrap; }
-	.spawn-row input[type=range] {
-		width: 70px;
-		flex-shrink: 0;
-		accent-color: #6080ff;
-		cursor: pointer;
-	}
-	.spawn-val {
-		width: 42px;
-		text-align: right;
-		color: #c0d0ff;
-		font-weight: 600;
-		font-size: 11px;
-		flex-shrink: 0;
-		background: #1a1a2a;
-		border: 1px solid #3a3a5a;
-		border-radius: 4px;
-		padding: 2px 5px;
-	}
-	.spawn-val:focus { outline: none; border-color: #6080ff; }
-	.spawn-val.zero { color: #555; }
+        /* spawn weight rows */
+        .spawn-section-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 8px;
+        }
+        .spawn-total {
+                font-size: 10px;
+                color: #666;
+        }
+        .spawn-total span { color: #a0c4ff; font-weight: 600; }
+        .spawn-reset {
+                font-size: 10px;
+                color: #5060a0;
+                cursor: pointer;
+                background: none;
+                border: none;
+                padding: 0;
+                text-decoration: underline;
+        }
+        .spawn-reset:hover { color: #8090d0; background: none; border: none; }
+        .spawn-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px 16px;
+        }
+        .spawn-row {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 11px;
+        }
+        .spawn-dot {
+                width: 8px; height: 8px;
+                border-radius: 2px;
+                flex-shrink: 0;
+        }
+        .spawn-label { flex: 1; color: #9090b0; white-space: nowrap; }
+        .spawn-row input[type=range] {
+                width: 70px;
+                flex-shrink: 0;
+                accent-color: #6080ff;
+                cursor: pointer;
+        }
+        .spawn-val {
+                width: 42px;
+                text-align: right;
+                color: #c0d0ff;
+                font-weight: 600;
+                font-size: 11px;
+                flex-shrink: 0;
+                background: #1a1a2a;
+                border: 1px solid #3a3a5a;
+                border-radius: 4px;
+                padding: 2px 5px;
+        }
+        .spawn-val:focus { outline: none; border-color: #6080ff; }
+        .spawn-val.zero { color: #555; }
 
-	/* apply button */
-	#btn-apply {
-		width: 100%;
-		padding: 7px;
-		background: #1e3060;
-		border-color: #4060c0;
-		color: #a0c4ff;
-		font-size: 12px;
-		font-weight: 600;
-		margin-top: 12px;
-	}
-	#btn-apply:hover { background: #2a3a80; }
+        /* apply button */
+        #btn-apply {
+                width: 100%;
+                padding: 7px;
+                background: #1e3060;
+                border-color: #4060c0;
+                color: #a0c4ff;
+                font-size: 12px;
+                font-weight: 600;
+                margin-top: 12px;
+        }
+        #btn-apply:hover { background: #2a3a80; }
 
-	/* ── Stats bar below header ── */
-	#stats-bar {
-		background: #0d0d18;
-		border-bottom: 1px solid #1e1e30;
-		padding: 4px 14px;
-		display: flex;
-		gap: 18px;
-		flex-shrink: 0;
-		font-size: 11px;
-		color: #666;
-		flex-wrap: wrap;
-	}
-	.stat { display: flex; gap: 4px; align-items: center; }
-	.stat-val { color: #a0c4ff; font-weight: 600; }
+        /* ── Stats bar below header ── */
+        #stats-bar {
+                background: #0d0d18;
+                border-bottom: 1px solid #1e1e30;
+                padding: 4px 14px;
+                display: flex;
+                gap: 18px;
+                flex-shrink: 0;
+                font-size: 11px;
+                color: #666;
+                flex-wrap: wrap;
+        }
+        .stat { display: flex; gap: 4px; align-items: center; }
+        .stat-val { color: #a0c4ff; font-weight: 600; }
 
-	/* ── Main content area ── */
-	#main {
-		flex: 1;
-		display: flex;
-		overflow: hidden;
-	}
+        /* ── Main content area ── */
+        #main {
+                flex: 1;
+                display: flex;
+                overflow: hidden;
+        }
 
-	/* ── Canvas area ── */
-	#canvas-wrap {
-		flex: 1;
-		overflow: hidden;
-		position: relative;
-	}
-	#gameCanvas {
-		display: block;
-		width: 100%;
-		height: 100%;
-	}
-	#tooltip {
-		position: absolute;
-		pointer-events: none;
-		background: rgba(10,10,20,0.93);
-		border: 1px solid #3a3a6a;
-		border-radius: 6px;
-		padding: 6px 10px;
-		font-size: 11px;
-		display: none;
-		z-index: 100;
-		line-height: 1.6;
-		max-width: 200px;
-	}
+        /* ── Canvas area ── */
+        #canvas-wrap {
+                flex: 1;
+                overflow: hidden;
+                position: relative;
+        }
+        #gameCanvas {
+                display: block;
+                width: 100%;
+                height: 100%;
+        }
+        #tooltip {
+                position: absolute;
+                pointer-events: none;
+                background: rgba(10,10,20,0.93);
+                border: 1px solid #3a3a6a;
+                border-radius: 6px;
+                padding: 6px 10px;
+                font-size: 11px;
+                display: none;
+                z-index: 100;
+                line-height: 1.6;
+                max-width: 200px;
+        }
 
-	/* ── Side panel ── */
-	#side-panel {
-		width: 220px;
-		flex-shrink: 0;
-		background: #0d0d18;
-		border-left: 1px solid #1e1e30;
-		overflow-y: auto;
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-	}
-	#side-panel::-webkit-scrollbar { width: 5px; }
-	#side-panel::-webkit-scrollbar-track { background: #0a0a14; }
-	#side-panel::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 3px; }
+        /* ── Side panel ── */
+        #side-panel {
+                width: 220px;
+                flex-shrink: 0;
+                background: #0d0d18;
+                border-left: 1px solid #1e1e30;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+        }
+        #side-panel::-webkit-scrollbar { width: 5px; }
+        #side-panel::-webkit-scrollbar-track { background: #0a0a14; }
+        #side-panel::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 3px; }
 
-	.panel-section {
-		padding: 10px 12px;
-		border-bottom: 1px solid #1a1a28;
-	}
-	.panel-section:last-child { border-bottom: none; }
-	.panel-title {
-		font-size: 10px;
-		font-weight: 700;
-		color: #5060a0;
-		letter-spacing: 1.5px;
-		text-transform: uppercase;
-		margin-bottom: 8px;
-	}
+        .panel-section {
+                padding: 10px 12px;
+                border-bottom: 1px solid #1a1a28;
+        }
+        .panel-section:last-child { border-bottom: none; }
+        .panel-title {
+                font-size: 10px;
+                font-weight: 700;
+                color: #5060a0;
+                letter-spacing: 1.5px;
+                text-transform: uppercase;
+                margin-bottom: 8px;
+        }
 
-	/* cell type breakdown */
-	.type-row {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		margin-bottom: 4px;
-		font-size: 11px;
-	}
-	.type-dot {
-		width: 9px; height: 9px;
-		border-radius: 2px;
-		flex-shrink: 0;
-	}
-	.type-name { flex: 1; color: #a0a0c0; cursor: default; }
-	.type-count { color: #c0d0ff; font-weight: 600; min-width: 28px; text-align: right; }
-	.type-row { cursor: default; }
-	.type-row:hover .type-name { color: #d0d8ff; }
+        /* cell type breakdown */
+        .type-row {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin-bottom: 4px;
+                font-size: 11px;
+        }
+        .type-dot {
+                width: 9px; height: 9px;
+                border-radius: 2px;
+                flex-shrink: 0;
+        }
+        .type-name { flex: 1; color: #a0a0c0; cursor: default; }
+        .type-count { color: #c0d0ff; font-weight: 600; min-width: 28px; text-align: right; }
+        .type-row { cursor: default; }
+        .type-row:hover .type-name { color: #d0d8ff; }
 
-	/* cell type description tooltip */
-	#type-tip {
-		display: none;
-		position: fixed;
-		background: rgba(10,10,22,0.97);
-		border: 1px solid #3a3a6a;
-		border-radius: 7px;
-		padding: 8px 11px;
-		font-size: 11px;
-		line-height: 1.55;
-		color: #b0b8d8;
-		max-width: 220px;
-		z-index: 300;
-		pointer-events: none;
-		box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-	}
-	#type-tip b { display: block; margin-bottom: 4px; font-size: 12px; }
-	.type-bar-wrap {
-		width: 100%;
-		height: 3px;
-		background: #1a1a28;
-		border-radius: 2px;
-		margin-bottom: 7px;
-		overflow: hidden;
-	}
-	.type-bar { height: 100%; border-radius: 2px; transition: width 0.3s; }
+        /* cell type description tooltip */
+        #type-tip {
+                display: none;
+                position: fixed;
+                background: rgba(10,10,22,0.97);
+                border: 1px solid #3a3a6a;
+                border-radius: 7px;
+                padding: 8px 11px;
+                font-size: 11px;
+                line-height: 1.55;
+                color: #b0b8d8;
+                max-width: 220px;
+                z-index: 300;
+                pointer-events: none;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
+        #type-tip b { display: block; margin-bottom: 4px; font-size: 12px; }
+        .type-bar-wrap {
+                width: 100%;
+                height: 3px;
+                background: #1a1a28;
+                border-radius: 2px;
+                margin-bottom: 7px;
+                overflow: hidden;
+        }
+        .type-bar { height: 100%; border-radius: 2px; transition: width 0.3s; }
 
-	/* nation leaderboard */
-	.nation-row {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		margin-bottom: 6px;
-		font-size: 11px;
-	}
-	.nation-swatch {
-		width: 11px; height: 11px;
-		border-radius: 2px;
-		flex-shrink: 0;
-	}
-	.nation-info { flex: 1; min-width: 0; }
-	.nation-name { color: #a0a0c0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-	.nation-badges { display: flex; gap: 3px; margin-top: 1px; }
-	.badge {
-		font-size: 9px;
-		padding: 0 3px;
-		border-radius: 2px;
-		background: #1e1e30;
-		color: #7080a0;
-		white-space: nowrap;
-	}
-	.badge.king { background: #2a2000; color: #ffcc44; }
-	.badge.diplomat { background: #1e1030; color: #cc88ff; }
-	.nation-pop { color: #c0d0ff; font-weight: 600; min-width: 28px; text-align: right; }
-	.nation-bar-wrap {
-		width: 100%;
-		height: 3px;
-		background: #1a1a28;
-		border-radius: 2px;
-		margin-bottom: 8px;
-		overflow: hidden;
-	}
-	.nation-bar { height: 100%; border-radius: 2px; transition: width 0.3s; }
+        /* nation leaderboard */
+        .nation-row {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin-bottom: 6px;
+                font-size: 11px;
+        }
+        .nation-swatch {
+                width: 11px; height: 11px;
+                border-radius: 2px;
+                flex-shrink: 0;
+        }
+        .nation-info { flex: 1; min-width: 0; }
+        .nation-name { color: #a0a0c0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .nation-badges { display: flex; gap: 3px; margin-top: 1px; }
+        .badge {
+                font-size: 9px;
+                padding: 0 3px;
+                border-radius: 2px;
+                background: #1e1e30;
+                color: #7080a0;
+                white-space: nowrap;
+        }
+        .badge.king { background: #2a2000; color: #ffcc44; }
+        .badge.diplomat { background: #1e1030; color: #cc88ff; }
+        .nation-pop { color: #c0d0ff; font-weight: 600; min-width: 28px; text-align: right; }
+        .nation-bar-wrap {
+                width: 100%;
+                height: 3px;
+                background: #1a1a28;
+                border-radius: 2px;
+                margin-bottom: 8px;
+                overflow: hidden;
+        }
+        .nation-bar { height: 100%; border-radius: 2px; transition: width 0.3s; }
 
-	.empty-msg { color: #444; font-size: 11px; font-style: italic; }
+        .empty-msg { color: #444; font-size: 11px; font-style: italic; }
 </style>
 </head>
 <body>
 
 <div id="header">
-	<div id="title">CONWAY'S WORLD</div>
-	<div id="controls">
-		<button id="btn-play" class="active" onclick="togglePlay()">⏸ Pause</button>
-		<button onclick="restart()">↺ Restart</button>
-		<div id="speed-wrap">
-			Speed: <input type="range" id="speedSlider" min="50" max="5000" value="1000" step="50" oninput="updateSpeed()">
-			<input type="number" id="speedLabel" value="1000" min="50" max="5000" step="50" oninput="updateSpeedFromInput(this)">
-			<span style="color:#666;font-size:11px">ms</span>
-		</div>
-	</div>
-	<div id="settings-wrap">
-		<button id="btn-settings" onclick="toggleSettings()">⚙ Settings</button>
-		<div id="settings-panel">
-			<div class="settings-title">World Parameters</div>
-			<div class="settings-grid">
-				<div class="param-group">
-					<label>Initial pop %</label>
-					<input type="number" id="inp-pop" value="10" min="1" max="50" title="% of cells alive at start">
-				</div>
-				<div class="param-group">
-					<label>Grid limit</label>
-					<input type="number" id="inp-gridlimit" value="10" min="0" max="500" title="Max grid size (0 = unlimited)">
-				</div>
-				<div class="param-group">
-					<label>Cell size (px)</label>
-					<input type="number" id="inp-cellsize" value="8" min="2" max="24" title="Pixel size of each cell">
-				</div>
-			</div>
-			<hr class="settings-divider">
-			<div class="spawn-section-header">
-				<div class="settings-title" style="margin-bottom:0">Cell Spawn Weights</div>
-				<div style="display:flex;align-items:center;gap:10px">
-					<div class="spawn-total">Total: <span id="spawn-total-val">100</span></div>
-					<button class="spawn-reset" onclick="resetSpawnWeights()">Reset defaults</button>
-				</div>
-			</div>
-			<div class="spawn-grid" id="spawn-grid"></div>
-			<button id="btn-apply" onclick="applyAndRestart()">↺ Apply &amp; Restart</button>
-		</div>
-	</div>
+        <div id="title">CONWAY'S WORLD</div>
+        <div id="controls">
+                <button id="btn-play" class="active" onclick="togglePlay()">⏸ Pause</button>
+                <button id="btn-step" onclick="stepOnce()" disabled title="Advance one generation (paused only)">⏭ Step</button>
+                <button onclick="restart()">↺ Restart</button>
+                <div id="speed-wrap">
+                        Speed: <input type="range" id="speedSlider" min="50" max="5000" value="1000" step="50" oninput="updateSpeed()">
+                        <input type="number" id="speedLabel" value="1000" min="50" max="5000" step="50" oninput="updateSpeedFromInput(this)">
+                        <span style="color:#666;font-size:11px">ms</span>
+                </div>
+        </div>
+        <div id="settings-wrap">
+                <button id="btn-settings" onclick="toggleSettings()">⚙ Settings</button>
+                <div id="settings-panel">
+                        <div class="settings-title">World Parameters</div>
+                        <div class="settings-grid">
+                                <div class="param-group">
+                                        <label>Initial pop %</label>
+                                        <input type="number" id="inp-pop" value="10" min="1" max="50" title="% of cells alive at start">
+                                </div>
+                                <div class="param-group">
+                                        <label>Grid limit</label>
+                                        <input type="number" id="inp-gridlimit" value="10" min="0" max="500" title="Max grid size (0 = unlimited)">
+                                </div>
+                                <div class="param-group">
+                                        <label>Cell size (px)</label>
+                                        <input type="number" id="inp-cellsize" value="8" min="2" max="24" title="Pixel size of each cell">
+                                </div>
+                        </div>
+                        <hr class="settings-divider">
+                        <div class="spawn-section-header">
+                                <div class="settings-title" style="margin-bottom:0">Cell Spawn Weights</div>
+                                <div style="display:flex;align-items:center;gap:10px">
+                                        <div class="spawn-total">Total: <span id="spawn-total-val">100</span></div>
+                                        <button class="spawn-reset" onclick="resetSpawnWeights()">Reset defaults</button>
+                                </div>
+                        </div>
+                        <div class="spawn-grid" id="spawn-grid"></div>
+                        <button id="btn-apply" onclick="applyAndRestart()">↺ Apply &amp; Restart</button>
+                </div>
+        </div>
 </div>
 
 <div id="stats-bar">
-	<div class="stat">Generation <span class="stat-val" id="s-gen">0</span></div>
-	<div class="stat">Population <span class="stat-val" id="s-pop">0</span></div>
-	<div class="stat">Active Nations <span class="stat-val" id="s-nations">0</span></div>
-	<div class="stat">Grid <span class="stat-val" id="s-grid">0×0</span></div>
-	<div class="stat">Diseased <span class="stat-val" id="s-dis">0</span></div>
-	<div class="stat">Warriors <span class="stat-val" id="s-war">0</span></div>
-	<div class="stat">Kings <span class="stat-val" id="s-kings">0</span></div>
+        <div class="stat">Generation <span class="stat-val" id="s-gen">0</span></div>
+        <div class="stat">Population <span class="stat-val" id="s-pop">0</span></div>
+        <div class="stat">Active Nations <span class="stat-val" id="s-nations">0</span></div>
+        <div class="stat">Grid <span class="stat-val" id="s-grid">0×0</span></div>
+        <div class="stat">Diseased <span class="stat-val" id="s-dis">0</span></div>
+        <div class="stat">Warriors <span class="stat-val" id="s-war">0</span></div>
+        <div class="stat">Kings <span class="stat-val" id="s-kings">0</span></div>
 </div>
 
 <div id="main">
-	<div id="canvas-wrap">
-		<canvas id="gameCanvas"></canvas>
-		<div id="tooltip"></div>
-	</div>
+        <div id="canvas-wrap">
+                <canvas id="gameCanvas"></canvas>
+                <div id="tooltip"></div>
+        </div>
 
-	<div id="side-panel">
-		<div class="panel-section">
-			<div class="panel-title">Cell Types</div>
-			<div id="type-breakdown"></div>
-		</div>
-		<div class="panel-section">
-			<div class="panel-title">Nation Leaderboard</div>
-			<div id="nation-leaderboard"></div>
-		</div>
-	</div>
+        <div id="side-panel">
+                <div class="panel-section">
+                        <div class="panel-title">Cell Types</div>
+                        <div id="type-breakdown"></div>
+                </div>
+                <div class="panel-section">
+                        <div class="panel-title">Nation Leaderboard</div>
+                        <div id="nation-leaderboard"></div>
+                </div>
+        </div>
 </div>
 
 <div id="type-tip"></div>
@@ -444,82 +445,82 @@
 <script>
 // ── Cell types ──────────────────────────────────────────────────────────────
 const TYPE = {
-	DEAD: 'dead', BASIC: 'basic', IMMORTAL: 'immortal',
-	DISEASED: 'diseased', PLAGUE: 'plague', TRAVELER: 'traveler',
-	EXPLORER: 'explorer', DOCTOR: 'doctor', WARRIOR: 'warrior',
-	HUNTER: 'hunter', BOMBER: 'bomber', DIPLOMAT: 'diplomat', KING: 'king',
+        DEAD: 'dead', BASIC: 'basic', IMMORTAL: 'immortal',
+        DISEASED: 'diseased', PLAGUE: 'plague', TRAVELER: 'traveler',
+        EXPLORER: 'explorer', DOCTOR: 'doctor', WARRIOR: 'warrior',
+        HUNTER: 'hunter', BOMBER: 'bomber', DIPLOMAT: 'diplomat', KING: 'king',
 };
 
 const CELL_COLORS = {
-	[TYPE.DEAD]:     '#0f0f18',
-	[TYPE.BASIC]:    '#aaaaaa',
-	[TYPE.IMMORTAL]: '#44ff66',
-	[TYPE.DISEASED]: '#cc3333',
-	[TYPE.PLAGUE]:   '#880000',
-	[TYPE.TRAVELER]: '#22aaff',
-	[TYPE.EXPLORER]: '#0066cc',
-	[TYPE.DOCTOR]:   '#ff4488',
-	[TYPE.WARRIOR]:  '#ffaa00',
-	[TYPE.HUNTER]:   '#ff6600',
-	[TYPE.BOMBER]:   '#ff2200',
-	[TYPE.DIPLOMAT]: '#cc88ff',
-	[TYPE.KING]:     '#ffdd00',
+        [TYPE.DEAD]:     '#0f0f18',
+        [TYPE.BASIC]:    '#aaaaaa',
+        [TYPE.IMMORTAL]: '#44ff66',
+        [TYPE.DISEASED]: '#cc3333',
+        [TYPE.PLAGUE]:   '#880000',
+        [TYPE.TRAVELER]: '#22aaff',
+        [TYPE.EXPLORER]: '#0066cc',
+        [TYPE.DOCTOR]:   '#ff4488',
+        [TYPE.WARRIOR]:  '#ffaa00',
+        [TYPE.HUNTER]:   '#ff6600',
+        [TYPE.BOMBER]:   '#ff2200',
+        [TYPE.DIPLOMAT]: '#cc88ff',
+        [TYPE.KING]:     '#ffdd00',
 };
 
 const TYPE_LABELS = {
-	[TYPE.BASIC]: 'Basic', [TYPE.IMMORTAL]: 'Immortal',
-	[TYPE.DISEASED]: 'Diseased', [TYPE.PLAGUE]: 'Plague',
-	[TYPE.TRAVELER]: 'Traveler', [TYPE.EXPLORER]: 'Explorer',
-	[TYPE.DOCTOR]: 'Doctor', [TYPE.WARRIOR]: 'Warrior',
-	[TYPE.HUNTER]: 'Hunter', [TYPE.BOMBER]: 'Bomber',
-	[TYPE.DIPLOMAT]: 'Diplomat', [TYPE.KING]: 'King',
+        [TYPE.BASIC]: 'Basic', [TYPE.IMMORTAL]: 'Immortal',
+        [TYPE.DISEASED]: 'Diseased', [TYPE.PLAGUE]: 'Plague',
+        [TYPE.TRAVELER]: 'Traveler', [TYPE.EXPLORER]: 'Explorer',
+        [TYPE.DOCTOR]: 'Doctor', [TYPE.WARRIOR]: 'Warrior',
+        [TYPE.HUNTER]: 'Hunter', [TYPE.BOMBER]: 'Bomber',
+        [TYPE.DIPLOMAT]: 'Diplomat', [TYPE.KING]: 'King',
 };
 
 const CELL_SPRITE_PATHS = {
-	[TYPE.BASIC]:    'Assets/Sprites/Cell_Basic.jpg',
-	[TYPE.IMMORTAL]: 'Assets/Sprites/Cell_Immortal.jpg',
-	[TYPE.DISEASED]: 'Assets/Sprites/Cell_Diseased.jpg',
-	[TYPE.PLAGUE]:   'Assets/Sprites/Cell_Plague.jpg',
-	[TYPE.TRAVELER]: 'Assets/Sprites/Cell_Traveler.jpg',
-	[TYPE.EXPLORER]: 'Assets/Sprites/Cell_Explorer.jpg',
-	[TYPE.DOCTOR]:   'Assets/Sprites/Cell_Doctor.jpg',
-	[TYPE.WARRIOR]:  'Assets/Sprites/Cell_Warrior.jpg',
-	[TYPE.HUNTER]:   'Assets/Sprites/Cell_Hunter.jpg',
-	[TYPE.BOMBER]:   'Assets/Sprites/Cell_Bomber.jpg',
-	[TYPE.DIPLOMAT]: 'Assets/Sprites/Cell_Diplomat.jpg',
-	[TYPE.KING]:     'Assets/Sprites/Cell_King.jpg',
+        [TYPE.BASIC]:    'Assets/Sprites/Cell_Basic.jpg',
+        [TYPE.IMMORTAL]: 'Assets/Sprites/Cell_Immortal.jpg',
+        [TYPE.DISEASED]: 'Assets/Sprites/Cell_Diseased.jpg',
+        [TYPE.PLAGUE]:   'Assets/Sprites/Cell_Plague.jpg',
+        [TYPE.TRAVELER]: 'Assets/Sprites/Cell_Traveler.jpg',
+        [TYPE.EXPLORER]: 'Assets/Sprites/Cell_Explorer.jpg',
+        [TYPE.DOCTOR]:   'Assets/Sprites/Cell_Doctor.jpg',
+        [TYPE.WARRIOR]:  'Assets/Sprites/Cell_Warrior.jpg',
+        [TYPE.HUNTER]:   'Assets/Sprites/Cell_Hunter.jpg',
+        [TYPE.BOMBER]:   'Assets/Sprites/Cell_Bomber.jpg',
+        [TYPE.DIPLOMAT]: 'Assets/Sprites/Cell_Diplomat.jpg',
+        [TYPE.KING]:     'Assets/Sprites/Cell_King.jpg',
 };
 
 const SPRITE_IMGS = {};
 let spritesLoaded = 0;
 const spriteTotal = Object.keys(CELL_SPRITE_PATHS).length;
 for (let [type, path] of Object.entries(CELL_SPRITE_PATHS)) {
-	let img = new Image();
-	img.onload = () => { spritesLoaded++; if (typeof render === 'function') render(); };
-	img.src = path;
-	SPRITE_IMGS[type] = img;
+        let img = new Image();
+        img.onload = () => { spritesLoaded++; if (typeof render === 'function') render(); };
+        img.src = path;
+        SPRITE_IMGS[type] = img;
 }
 
 const TYPE_DESCRIPTIONS = {
-	[TYPE.BASIC]:    'Follows standard Conway rules. Lives with 2–3 neighbours, dies from isolation or overcrowding. Occasionally born immune to disease, or in rare cases immaculate.',
-	[TYPE.IMMORTAL]: 'Lives as long as it has at least one neighbour. Only dies when completely isolated. Cannot be killed by disease, but can be hunted.',
-	[TYPE.DISEASED]: 'Carries a disease that spreads to adjacent cells at a 25% rate per step. Has a 3-turn countdown before it dies from its own infection.',
-	[TYPE.PLAGUE]:   'A more aggressive disease carrier. Spreads infection at 50% rate and progresses faster than Diseased. Poses a greater threat to surrounding cells.',
-	[TYPE.TRAVELER]: 'Moves one cell in a fixed random direction each turn instead of staying in place. Follows Conway life/death rules at its new position.',
-	[TYPE.EXPLORER]: 'Like a Traveler, but can trigger the grid to expand when it reaches an edge. Helps the simulation grow beyond its starting bounds.',
-	[TYPE.DOCTOR]:   'Cures diseased neighbours each turn and is completely immune to infection. Carries a stock of vaccines to neutralise disease on contact.',
-	[TYPE.WARRIOR]:  'Recruited by large nations to fight disease. Seeks out and destroys Diseased and Plague cells from rival nations in adjacent cells.',
-	[TYPE.HUNTER]:   'Actively seeks and kills Immortal and King cells. Moves toward the nearest target in its neighbourhood each step.',
-	[TYPE.BOMBER]:   'Detonates after 2 turns, killing all cells within its blast radius regardless of type or nation. Handles its own death as part of the explosion.',
-	[TYPE.DIPLOMAT]: 'Spawned by nations that grow large enough. Travels the grid converting enemy cells to its own nation, expanding influence peacefully.',
-	[TYPE.KING]:     'Crowned when a nation reaches a population threshold. Converts all neighbours into Warriors each turn, rapidly militarising the nation.',
+        [TYPE.BASIC]:    'Follows standard Conway rules. Lives with 2–3 neighbours, dies from isolation or overcrowding. Occasionally born immune to disease, or in rare cases immaculate.',
+        [TYPE.IMMORTAL]: 'Lives as long as it has at least one neighbour. Only dies when completely isolated. Cannot be killed by disease, but can be hunted.',
+        [TYPE.DISEASED]: 'Carries a disease that spreads to adjacent cells at a 25% rate per step. Has a 3-turn countdown before it dies from its own infection.',
+        [TYPE.PLAGUE]:   'A more aggressive disease carrier. Spreads infection at 50% rate and progresses faster than Diseased. Poses a greater threat to surrounding cells.',
+        [TYPE.TRAVELER]: 'Moves one cell in a fixed random direction each turn instead of staying in place. Follows Conway life/death rules at its new position.',
+        [TYPE.EXPLORER]: 'Like a Traveler, but can trigger the grid to expand when it reaches an edge. Helps the simulation grow beyond its starting bounds.',
+        [TYPE.DOCTOR]:   'Cures diseased neighbours each turn and is completely immune to infection. Carries a stock of vaccines to neutralise disease on contact.',
+        [TYPE.WARRIOR]:  'Recruited by large nations to fight disease. Seeks out and destroys Diseased and Plague cells from rival nations in adjacent cells.',
+        [TYPE.HUNTER]:   'Actively seeks and kills Immortal and King cells. Moves toward the nearest target in its neighbourhood each step.',
+        [TYPE.BOMBER]:   'Detonates after 2 turns, killing all cells within its blast radius regardless of type or nation. Handles its own death as part of the explosion.',
+        [TYPE.DIPLOMAT]: 'Spawned by nations that grow large enough. Travels the grid converting enemy cells to its own nation, expanding influence peacefully.',
+        [TYPE.KING]:     'Crowned when a nation reaches a population threshold. Converts all neighbours into Warriors each turn, rapidly militarising the nation.',
 };
 
 const NATION_COLORS = [
-	'#bc00ff','#471315','#a41a1c','#00f542','#607d1c','#f50004',
-	'#473d14','#17a33d','#a48517','#299bae','#00daff','#f5bf00',
-	'#232b75','#ff7000','#0019f5','#aeff00','#7f471c','#671d80',
-	'#1c2bb8','#172447'
+        '#bc00ff','#471315','#a41a1c','#00f542','#607d1c','#f50004',
+        '#473d14','#17a33d','#a48517','#299bae','#00daff','#f5bf00',
+        '#232b75','#ff7000','#0019f5','#aeff00','#7f471c','#671d80',
+        '#1c2bb8','#172447'
 ];
 
 const rand = () => Math.random();
@@ -528,46 +529,46 @@ const randBool = () => Math.random() < 0.5;
 const randChoice = arr => arr[randInt(0, arr.length)];
 
 function randomCondition(prefix) {
-	let chars = '0123456789';
-	let s = prefix + '_';
-	for (let i = 0; i < 8; i++) s += chars[randInt(0, chars.length)];
-	return s;
+        let chars = '0123456789';
+        let s = prefix + '_';
+        for (let i = 0; i < 8; i++) s += chars[randInt(0, chars.length)];
+        return s;
 }
 
 const DIRS = ['southWest','west','northWest','south','north','southEast','east','northEast'];
 
 function createCell(col, row, type, alive) {
-	return {
-		col, row, type,
-		alive: alive === true,
-		age: 0, nationality: -1, conditions: [],
-		direction: randChoice(DIRS),
-		deathCountDown: 0, maxAloneTime: 3, specialPerformed: false,
-		disease: null, countDown: 3, transmissionRate: 25,
-		currentPrey: null, vaccines: [], hood: null,
-	};
+        return {
+                col, row, type,
+                alive: alive === true,
+                age: 0, nationality: -1, conditions: [],
+                direction: randChoice(DIRS),
+                deathCountDown: 0, maxAloneTime: 3, specialPerformed: false,
+                disease: null, countDown: 3, transmissionRate: 25,
+                currentPrey: null, vaccines: [], hood: null,
+        };
 }
 
 function wrapCol(c, cols) { return ((c % cols) + cols) % cols; }
 function wrapRow(r, rows) { return ((r % rows) + rows) % rows; }
 
 function buildNeighborhood(grid, cols, rows, c, r) {
-	let hood = { numNeighbors: 0, dict: {} };
-	let ki = 0;
-	for (let dc = -1; dc <= 1; dc++) {
-		for (let dr = -1; dr <= 1; dr++) {
-			let nc = wrapCol(c + dc, cols);
-			let nr = wrapRow(r + dr, rows);
-			if (dc === 0 && dr === 0) {
-				hood.dict['center'] = grid[nc][nr];
-			} else {
-				let neighbor = grid[nc][nr];
-				if (neighbor.alive) hood.numNeighbors++;
-				hood.dict[DIRS[ki++]] = neighbor;
-			}
-		}
-	}
-	return hood;
+        let hood = { numNeighbors: 0, dict: {} };
+        let ki = 0;
+        for (let dc = -1; dc <= 1; dc++) {
+                for (let dr = -1; dr <= 1; dr++) {
+                        let nc = wrapCol(c + dc, cols);
+                        let nr = wrapRow(r + dr, rows);
+                        if (dc === 0 && dr === 0) {
+                                hood.dict['center'] = grid[nc][nr];
+                        } else {
+                                let neighbor = grid[nc][nr];
+                                if (neighbor.alive) hood.numNeighbors++;
+                                hood.dict[DIRS[ki++]] = neighbor;
+                        }
+                }
+        }
+        return hood;
 }
 
 // ── Simulation state ───────────────────────────────────────────────────────
@@ -580,535 +581,536 @@ let gridLimit = 10;
 let userCellSize = 8;
 let running = true;
 let intervalMs = 650;
+let selectedCell = null;
 let timerId = null;
 // per-type counts updated each step
 let typeCounts = {};
 
 // Spawn weights: relative share of living cells for each type (0 = never spawn)
 const SPAWN_DEFAULTS = {
-	[TYPE.BASIC]:    54,
-	[TYPE.IMMORTAL]:  3,
-	[TYPE.DISEASED]: 13,
-	[TYPE.PLAGUE]:    3,
-	[TYPE.TRAVELER]:  3,
-	[TYPE.EXPLORER]:  2,
-	[TYPE.DOCTOR]:    5,
-	[TYPE.HUNTER]:    5,
-	[TYPE.BOMBER]:   10,
+        [TYPE.BASIC]:    54,
+        [TYPE.IMMORTAL]:  3,
+        [TYPE.DISEASED]: 13,
+        [TYPE.PLAGUE]:    3,
+        [TYPE.TRAVELER]:  3,
+        [TYPE.EXPLORER]:  2,
+        [TYPE.DOCTOR]:    5,
+        [TYPE.HUNTER]:    5,
+        [TYPE.BOMBER]:   10,
 };
 let spawnWeights = { ...SPAWN_DEFAULTS };
 
 // ── Init ───────────────────────────────────────────────────────────────────
 function initGrid(c, r) {
-	cols = c; rows = r;
-	grid = [];
-	for (let col = 0; col < cols; col++) {
-		grid[col] = [];
-		for (let row = 0; row < rows; row++) {
-			grid[col][row] = spawnRandomCell(col, row);
-		}
-	}
-	initNations();
+        cols = c; rows = r;
+        grid = [];
+        for (let col = 0; col < cols; col++) {
+                grid[col] = [];
+                for (let row = 0; row < rows; row++) {
+                        grid[col][row] = spawnRandomCell(col, row);
+                }
+        }
+        initNations();
 }
 
 function buildFreqs() {
-	let bp = basePercentLiving / 100;
-	let totalW = Object.values(spawnWeights).reduce((a, b) => a + b, 0) || 1;
-	let freqs = [];
-	for (let [type, w] of Object.entries(spawnWeights)) {
-		if (w > 0) freqs.push({ type, f: (w / totalW) * bp });
-	}
-	freqs.push({ type: TYPE.DEAD, f: Math.max(0, 1 - bp) });
-	return freqs;
+        let bp = basePercentLiving / 100;
+        let totalW = Object.values(spawnWeights).reduce((a, b) => a + b, 0) || 1;
+        let freqs = [];
+        for (let [type, w] of Object.entries(spawnWeights)) {
+                if (w > 0) freqs.push({ type, f: (w / totalW) * bp });
+        }
+        freqs.push({ type: TYPE.DEAD, f: Math.max(0, 1 - bp) });
+        return freqs;
 }
 
 function spawnRandomCell(col, row) {
-	let freqs = buildFreqs();
-	let v = rand();
-	let cum = 0;
-	let chosen = TYPE.DEAD;
-	for (let i = 0; i < freqs.length; i++) {
-		cum += freqs[i].f;
-		if (v < cum) { chosen = freqs[i].type; break; }
-	}
+        let freqs = buildFreqs();
+        let v = rand();
+        let cum = 0;
+        let chosen = TYPE.DEAD;
+        for (let i = 0; i < freqs.length; i++) {
+                cum += freqs[i].f;
+                if (v < cum) { chosen = freqs[i].type; break; }
+        }
 
-	let cell;
-	if (chosen === TYPE.BASIC) {
-		cell = createCell(col, row, TYPE.BASIC, true);
-		if (randInt(1,5) === 1) cell.conditions.push('immune');
-		if (randInt(1,101) === 1) cell.conditions.push('immaculate');
-	} else if (chosen === TYPE.IMMORTAL) {
-		cell = createCell(col, row, TYPE.IMMORTAL, true);
-	} else if (chosen === TYPE.DISEASED) {
-		cell = createCell(col, row, TYPE.DISEASED, true);
-		cell.disease = randomCondition('d');
-	} else if (chosen === TYPE.PLAGUE) {
-		cell = createCell(col, row, TYPE.PLAGUE, true);
-		cell.disease = randomCondition('p');
-	} else if (chosen === TYPE.TRAVELER) {
-		cell = createCell(col, row, TYPE.TRAVELER, true);
-	} else if (chosen === TYPE.EXPLORER) {
-		cell = createCell(col, row, TYPE.EXPLORER, true);
-		cell.maxAloneTime = 4;
-	} else if (chosen === TYPE.DOCTOR) {
-		cell = createCell(col, row, TYPE.DOCTOR, true);
-		cell.vaccines = [];
-	} else if (chosen === TYPE.HUNTER) {
-		cell = createCell(col, row, TYPE.HUNTER, true);
-		cell.maxAloneTime = 3;
-	} else if (chosen === TYPE.BOMBER) {
-		cell = createCell(col, row, TYPE.BOMBER, true);
-	} else {
-		cell = createCell(col, row, TYPE.DEAD, false);
-	}
-	return cell;
+        let cell;
+        if (chosen === TYPE.BASIC) {
+                cell = createCell(col, row, TYPE.BASIC, true);
+                if (randInt(1,5) === 1) cell.conditions.push('immune');
+                if (randInt(1,101) === 1) cell.conditions.push('immaculate');
+        } else if (chosen === TYPE.IMMORTAL) {
+                cell = createCell(col, row, TYPE.IMMORTAL, true);
+        } else if (chosen === TYPE.DISEASED) {
+                cell = createCell(col, row, TYPE.DISEASED, true);
+                cell.disease = randomCondition('d');
+        } else if (chosen === TYPE.PLAGUE) {
+                cell = createCell(col, row, TYPE.PLAGUE, true);
+                cell.disease = randomCondition('p');
+        } else if (chosen === TYPE.TRAVELER) {
+                cell = createCell(col, row, TYPE.TRAVELER, true);
+        } else if (chosen === TYPE.EXPLORER) {
+                cell = createCell(col, row, TYPE.EXPLORER, true);
+                cell.maxAloneTime = 4;
+        } else if (chosen === TYPE.DOCTOR) {
+                cell = createCell(col, row, TYPE.DOCTOR, true);
+                cell.vaccines = [];
+        } else if (chosen === TYPE.HUNTER) {
+                cell = createCell(col, row, TYPE.HUNTER, true);
+                cell.maxAloneTime = 3;
+        } else if (chosen === TYPE.BOMBER) {
+                cell = createCell(col, row, TYPE.BOMBER, true);
+        } else {
+                cell = createCell(col, row, TYPE.DEAD, false);
+        }
+        return cell;
 }
 
 function initNations() {
-	nations = [];
-	let numNations = Math.floor(basePercentLiving / 100 * cols * rows / minCellsPerNation);
-	numNations = Math.min(numNations, NATION_COLORS.length);
-	for (let i = 0; i < numNations; i++) {
-		nations.push({ id: i, citizens: [], diplomats: [], king: null });
-	}
+        nations = [];
+        let numNations = Math.floor(basePercentLiving / 100 * cols * rows / minCellsPerNation);
+        numNations = Math.min(numNations, NATION_COLORS.length);
+        for (let i = 0; i < numNations; i++) {
+                nations.push({ id: i, citizens: [], diplomats: [], king: null });
+        }
 }
 
 // ── Simulation update ──────────────────────────────────────────────────────
 function step() {
-	updateNeighborhoods();
-	let aliveNext = computeAliveNext();
-	updateLives(aliveNext);
-	updateConditions();
-	updateSpecialActions();
-	addRandomLife();
-	updateNations();
-	generation++;
-	countTypes();
-	updateStats();
-	render();
-	updateSidePanel();
+        updateNeighborhoods();
+        let aliveNext = computeAliveNext();
+        updateLives(aliveNext);
+        updateConditions();
+        updateSpecialActions();
+        addRandomLife();
+        updateNations();
+        generation++;
+        countTypes();
+        updateStats();
+        render();
+        updateSidePanel();
 }
 
 function countTypes() {
-	typeCounts = {};
-	for (let t of Object.values(TYPE)) typeCounts[t] = 0;
-	for (let c = 0; c < cols; c++) {
-		for (let r = 0; r < rows; r++) {
-			let cell = grid[c][r];
-			if (cell.alive) typeCounts[cell.type] = (typeCounts[cell.type] || 0) + 1;
-		}
-	}
+        typeCounts = {};
+        for (let t of Object.values(TYPE)) typeCounts[t] = 0;
+        for (let c = 0; c < cols; c++) {
+                for (let r = 0; r < rows; r++) {
+                        let cell = grid[c][r];
+                        if (cell.alive) typeCounts[cell.type] = (typeCounts[cell.type] || 0) + 1;
+                }
+        }
 }
 
 function updateNeighborhoods() {
-	for (let c = 0; c < cols; c++)
-		for (let r = 0; r < rows; r++)
-			grid[c][r].hood = buildNeighborhood(grid, cols, rows, c, r);
+        for (let c = 0; c < cols; c++)
+                for (let r = 0; r < rows; r++)
+                        grid[c][r].hood = buildNeighborhood(grid, cols, rows, c, r);
 }
 
 function liveBasic(alive, n, min, max) {
-	if (alive && n < min) return false;
-	if (alive && n >= min && n <= max) return true;
-	if (alive && n > max) return false;
-	if (!alive && n === min) return true;
-	if (!alive && n !== max) return false;
-	return alive;
+        if (alive && n < min) return false;
+        if (alive && n >= min && n <= max) return true;
+        if (alive && n > max) return false;
+        if (!alive && n === min) return true;
+        if (!alive && n !== max) return false;
+        return alive;
 }
 
 function calcAliveNextGen(cell) {
-	let type = cell.type, hood = cell.hood, alive = cell.alive;
-	if (type === TYPE.TRAVELER || type === TYPE.EXPLORER || type === TYPE.DIPLOMAT ||
-			type === TYPE.HUNTER   || type === TYPE.WARRIOR) {
-		return cell.deathCountDown <= cell.maxAloneTime;
-	}
-	if (type === TYPE.DOCTOR) {
-		if (cell.specialPerformed) return true;
-		return liveBasic(alive, hood.numNeighbors, 2, 3);
-	}
-	if (type === TYPE.DISEASED || type === TYPE.PLAGUE) {
-		cell.countDown = (cell.countDown || 3) - 1;
-		if (cell.countDown <= 0) return false;
-		return liveBasic(alive, hood.numNeighbors, 2, 3);
-	}
-	if (type === TYPE.BOMBER) return true;
-	if (type === TYPE.IMMORTAL) return hood.numNeighbors >= 1 || alive;
-	return liveBasic(alive, hood.numNeighbors, 2, 3);
+        let type = cell.type, hood = cell.hood, alive = cell.alive;
+        if (type === TYPE.TRAVELER || type === TYPE.EXPLORER || type === TYPE.DIPLOMAT ||
+                        type === TYPE.HUNTER   || type === TYPE.WARRIOR) {
+                return cell.deathCountDown <= cell.maxAloneTime;
+        }
+        if (type === TYPE.DOCTOR) {
+                if (cell.specialPerformed) return true;
+                return liveBasic(alive, hood.numNeighbors, 2, 3);
+        }
+        if (type === TYPE.DISEASED || type === TYPE.PLAGUE) {
+                cell.countDown = (cell.countDown || 3) - 1;
+                if (cell.countDown <= 0) return false;
+                return liveBasic(alive, hood.numNeighbors, 2, 3);
+        }
+        if (type === TYPE.BOMBER) return true;
+        if (type === TYPE.IMMORTAL) return hood.numNeighbors >= 1 || alive;
+        return liveBasic(alive, hood.numNeighbors, 2, 3);
 }
 
 function computeAliveNext() {
-	let next = [];
-	for (let c = 0; c < cols; c++) {
-		next[c] = [];
-		for (let r = 0; r < rows; r++) next[c][r] = calcAliveNextGen(grid[c][r]);
-	}
-	return next;
+        let next = [];
+        for (let c = 0; c < cols; c++) {
+                next[c] = [];
+                for (let r = 0; r < rows; r++) next[c][r] = calcAliveNextGen(grid[c][r]);
+        }
+        return next;
 }
 
 function updateLives(aliveNext) {
-	population = 0;
-	for (let c = 0; c < cols; c++) {
-		for (let r = 0; r < rows; r++) {
-			let cell = grid[c][r];
-			if (cell.alive) {
-				aliveNext[c][r] ? cellLive(cell) : cellDie(cell);
-				population++;
-			} else {
-				if (aliveNext[c][r]) cellLive(cell);
-			}
-		}
-	}
+        population = 0;
+        for (let c = 0; c < cols; c++) {
+                for (let r = 0; r < rows; r++) {
+                        let cell = grid[c][r];
+                        if (cell.alive) {
+                                aliveNext[c][r] ? cellLive(cell) : cellDie(cell);
+                                population++;
+                        } else {
+                                if (aliveNext[c][r]) cellLive(cell);
+                        }
+                }
+        }
 }
 
 function cellLive(cell) {
-	cell.alive = true;
-	cell.age++;
-	if (cell.type === TYPE.DEAD) cell.type = TYPE.BASIC;
-	let t = cell.type;
-	if (t === TYPE.TRAVELER || t === TYPE.EXPLORER || t === TYPE.DIPLOMAT ||
-			t === TYPE.HUNTER   || t === TYPE.WARRIOR) {
-		cell.hood.numNeighbors === 0 ? cell.deathCountDown++ : (cell.deathCountDown = 0);
-		cell.specialPerformed = false;
-	}
-	if (cell.age > 3 && !cell.conditions.includes('mature')) cell.conditions.push('mature');
-	chooseNation(cell);
+        cell.alive = true;
+        cell.age++;
+        if (cell.type === TYPE.DEAD) cell.type = TYPE.BASIC;
+        let t = cell.type;
+        if (t === TYPE.TRAVELER || t === TYPE.EXPLORER || t === TYPE.DIPLOMAT ||
+                        t === TYPE.HUNTER   || t === TYPE.WARRIOR) {
+                cell.hood.numNeighbors === 0 ? cell.deathCountDown++ : (cell.deathCountDown = 0);
+                cell.specialPerformed = false;
+        }
+        if (cell.age > 3 && !cell.conditions.includes('mature')) cell.conditions.push('mature');
+        chooseNation(cell);
 }
 
 function cellDie(cell) {
-	cell.alive = false;
-	cell.age = 0;
-	cell.nationality = -1;
-	cell.deathCountDown = 0;
-	if (cell.disease) cell.conditions = cell.conditions.filter(c => c !== cell.disease);
+        cell.alive = false;
+        cell.age = 0;
+        cell.nationality = -1;
+        cell.deathCountDown = 0;
+        if (cell.disease) cell.conditions = cell.conditions.filter(c => c !== cell.disease);
 }
 
 function chooseNation(cell) {
-	if (!cell.alive || cell.nationality >= 0) return;
-	if (cell.hood && cell.hood.numNeighbors > 0) {
-		let nn = [];
-		for (let dir of DIRS) {
-			let nb = cell.hood.dict[dir];
-			if (nb && nb.alive && nb.nationality >= 0) nn.push(nb.nationality);
-		}
-		if (nn.length > 0) cell.nationality = randChoice(nn);
-	}
+        if (!cell.alive || cell.nationality >= 0) return;
+        if (cell.hood && cell.hood.numNeighbors > 0) {
+                let nn = [];
+                for (let dir of DIRS) {
+                        let nb = cell.hood.dict[dir];
+                        if (nb && nb.alive && nb.nationality >= 0) nn.push(nb.nationality);
+                }
+                if (nn.length > 0) cell.nationality = randChoice(nn);
+        }
 }
 
 function updateConditions() {
-	let _resize = false;
-	for (let c = 0; c < cols; c++) {
-		for (let r = 0; r < rows; r++) {
-			let cell = grid[c][r];
-			if (cell.conditions.includes('cleanup')) {
-				let nc = createCell(c, r, TYPE.BASIC, false);
-				nc.hood = cell.hood;
-				grid[c][r] = cell = nc;
-			}
-			if (cell.conditions.includes('immune'))
-				cell.conditions = cell.conditions.filter(x => !x.startsWith('d_') && !x.startsWith('p_'));
-			if (cell.type !== TYPE.DOCTOR) {
-				for (let cond of [...cell.conditions]) {
-					if (cond.startsWith('d_') && cell.alive && cell.type !== TYPE.DISEASED) {
-						let nc = replaceCell(cell, TYPE.DISEASED, true);
-						nc.disease = cond; nc.conditions.push(cond); nc.hood = cell.hood;
-						grid[c][r] = cell = nc;
-					} else if (cond.startsWith('p_') && cell.alive && cell.type !== TYPE.PLAGUE) {
-						let nc = replaceCell(cell, TYPE.PLAGUE, true);
-						nc.disease = cond; nc.conditions.push(cond); nc.hood = cell.hood;
-						grid[c][r] = cell = nc; break;
-					}
-				}
-			}
-			if (cell.conditions.includes('mature')) breedCell(cell);
-			if (cell.conditions.includes('immaculate')) immaculateCell(cell);
-			if (cell.alive && cell.conditions.includes('exploring')) _resize = true;
-			if (cell.age >= 1 && cell.nationality === -1)
-				cell.nationality = randInt(0, Math.max(nations.length, 1));
-			if (cell.conditions.includes('toWar') && cell.alive && cell.type === TYPE.BASIC) {
-				let nc = replaceCell(cell, TYPE.WARRIOR, true);
-				nc.hood = cell.hood;
-				nc.conditions = nc.conditions.filter(x => x !== 'toWar');
-				grid[c][r] = nc;
-			}
-		}
-	}
-	if (_resize && (gridLimit === 0 || (cols < gridLimit && rows < gridLimit))) resizeGrid();
+        let _resize = false;
+        for (let c = 0; c < cols; c++) {
+                for (let r = 0; r < rows; r++) {
+                        let cell = grid[c][r];
+                        if (cell.conditions.includes('cleanup')) {
+                                let nc = createCell(c, r, TYPE.BASIC, false);
+                                nc.hood = cell.hood;
+                                grid[c][r] = cell = nc;
+                        }
+                        if (cell.conditions.includes('immune'))
+                                cell.conditions = cell.conditions.filter(x => !x.startsWith('d_') && !x.startsWith('p_'));
+                        if (cell.type !== TYPE.DOCTOR) {
+                                for (let cond of [...cell.conditions]) {
+                                        if (cond.startsWith('d_') && cell.alive && cell.type !== TYPE.DISEASED) {
+                                                let nc = replaceCell(cell, TYPE.DISEASED, true);
+                                                nc.disease = cond; nc.conditions.push(cond); nc.hood = cell.hood;
+                                                grid[c][r] = cell = nc;
+                                        } else if (cond.startsWith('p_') && cell.alive && cell.type !== TYPE.PLAGUE) {
+                                                let nc = replaceCell(cell, TYPE.PLAGUE, true);
+                                                nc.disease = cond; nc.conditions.push(cond); nc.hood = cell.hood;
+                                                grid[c][r] = cell = nc; break;
+                                        }
+                                }
+                        }
+                        if (cell.conditions.includes('mature')) breedCell(cell);
+                        if (cell.conditions.includes('immaculate')) immaculateCell(cell);
+                        if (cell.alive && cell.conditions.includes('exploring')) _resize = true;
+                        if (cell.age >= 1 && cell.nationality === -1)
+                                cell.nationality = randInt(0, Math.max(nations.length, 1));
+                        if (cell.conditions.includes('toWar') && cell.alive && cell.type === TYPE.BASIC) {
+                                let nc = replaceCell(cell, TYPE.WARRIOR, true);
+                                nc.hood = cell.hood;
+                                nc.conditions = nc.conditions.filter(x => x !== 'toWar');
+                                grid[c][r] = nc;
+                        }
+                }
+        }
+        if (_resize && (gridLimit === 0 || (cols < gridLimit && rows < gridLimit))) resizeGrid();
 }
 
 function breedCell(cell) {
-	cell.conditions = cell.conditions.filter(c => c !== 'mature');
-	if (!cell.alive) return;
-	cell.age = 0;
-	let empties = DIRS.map(d => cell.hood.dict[d]).filter(nb => nb && !nb.alive);
-	if (empties.length > 0) {
-		let target = randChoice(empties);
-		let nc = createCell(target.col, target.row, cell.type, true);
-		nc.nationality = cell.nationality;
-		grid[target.col][target.row] = nc;
-	}
+        cell.conditions = cell.conditions.filter(c => c !== 'mature');
+        if (!cell.alive) return;
+        cell.age = 0;
+        let empties = DIRS.map(d => cell.hood.dict[d]).filter(nb => nb && !nb.alive);
+        if (empties.length > 0) {
+                let target = randChoice(empties);
+                let nc = createCell(target.col, target.row, cell.type, true);
+                nc.nationality = cell.nationality;
+                grid[target.col][target.row] = nc;
+        }
 }
 
 function immaculateCell(cell) {
-	cell.conditions = cell.conditions.filter(c => c !== 'immaculate');
-	if (!cell.alive) return;
-	let dirs = randBool() ? ['north','south'] : ['west','east'];
-	for (let dir of dirs) {
-		let nb = cell.hood.dict[dir];
-		if (nb && !nb.alive && nb.hood && nb.hood.numNeighbors === 0) nb.alive = true;
-	}
+        cell.conditions = cell.conditions.filter(c => c !== 'immaculate');
+        if (!cell.alive) return;
+        let dirs = randBool() ? ['north','south'] : ['west','east'];
+        for (let dir of dirs) {
+                let nb = cell.hood.dict[dir];
+                if (nb && !nb.alive && nb.hood && nb.hood.numNeighbors === 0) nb.alive = true;
+        }
 }
 
 function updateSpecialActions() {
-	for (let c = 0; c < cols; c++)
-		for (let r = 0; r < rows; r++)
-			specialActions(grid[c][r]);
+        for (let c = 0; c < cols; c++)
+                for (let r = 0; r < rows; r++)
+                        specialActions(grid[c][r]);
 }
 
 function specialActions(cell) {
-	if (!cell.alive || !cell.hood) return;
-	let type = cell.type;
-	if (type === TYPE.DISEASED || type === TYPE.PLAGUE) { spreadDisease(cell); }
-	else if (type === TYPE.DOCTOR) { cureDisease(cell); seekDisease(cell); }
-	else if (type === TYPE.TRAVELER) {
-		if (!cell.specialPerformed) { swapCells(cell, cell.hood.dict[cell.direction]); cell.specialPerformed = true; }
-	} else if (type === TYPE.EXPLORER) {
-		if (!cell.specialPerformed) {
-			cell.conditions = cell.conditions.filter(c => c !== 'exploring');
-			swapCells(cell, cell.hood.dict[cell.direction]); cell.specialPerformed = true;
-		}
-	} else if (type === TYPE.DIPLOMAT) {
-		if (!cell.specialPerformed) {
-			let target = selectNearbyCellByRule(cell, nb => nb.nationality !== cell.nationality && nb.alive, 5);
-			let toSwap = target ? findNeighborInDir(cell, target) : null;
-			if (toSwap) {
-				if (toSwap.nationality !== cell.nationality && toSwap.alive && toSwap.type !== TYPE.KING)
-					toSwap.nationality = cell.nationality;
-				swapCells(cell, toSwap);
-			} else {
-				swapCells(cell, cell.hood.dict[cell.direction]);
-			}
-			cell.specialPerformed = true;
-		}
-	} else if (type === TYPE.HUNTER) { huntCell(cell); }
-	else if (type === TYPE.WARRIOR) { fightCell(cell); }
-	else if (type === TYPE.KING)    { makeArmy(cell); }
-	else if (type === TYPE.BOMBER)  { detonateCell(cell); }
+        if (!cell.alive || !cell.hood) return;
+        let type = cell.type;
+        if (type === TYPE.DISEASED || type === TYPE.PLAGUE) { spreadDisease(cell); }
+        else if (type === TYPE.DOCTOR) { cureDisease(cell); seekDisease(cell); }
+        else if (type === TYPE.TRAVELER) {
+                if (!cell.specialPerformed) { swapCells(cell, cell.hood.dict[cell.direction]); cell.specialPerformed = true; }
+        } else if (type === TYPE.EXPLORER) {
+                if (!cell.specialPerformed) {
+                        cell.conditions = cell.conditions.filter(c => c !== 'exploring');
+                        swapCells(cell, cell.hood.dict[cell.direction]); cell.specialPerformed = true;
+                }
+        } else if (type === TYPE.DIPLOMAT) {
+                if (!cell.specialPerformed) {
+                        let target = selectNearbyCellByRule(cell, nb => nb.nationality !== cell.nationality && nb.alive, 5);
+                        let toSwap = target ? findNeighborInDir(cell, target) : null;
+                        if (toSwap) {
+                                if (toSwap.nationality !== cell.nationality && toSwap.alive && toSwap.type !== TYPE.KING)
+                                        toSwap.nationality = cell.nationality;
+                                swapCells(cell, toSwap);
+                        } else {
+                                swapCells(cell, cell.hood.dict[cell.direction]);
+                        }
+                        cell.specialPerformed = true;
+                }
+        } else if (type === TYPE.HUNTER) { huntCell(cell); }
+        else if (type === TYPE.WARRIOR) { fightCell(cell); }
+        else if (type === TYPE.KING)    { makeArmy(cell); }
+        else if (type === TYPE.BOMBER)  { detonateCell(cell); }
 }
 
 function spreadDisease(cell) {
-	if (!cell.disease) return;
-	let rate = cell.type === TYPE.PLAGUE ? 50 : 25;
-	for (let dir of DIRS) {
-		if (randInt(1, 101) < rate) {
-			let nb = cell.hood.dict[dir];
-			if (nb && !nb.conditions.includes('immune')) nb.conditions.push(cell.disease);
-		}
-	}
+        if (!cell.disease) return;
+        let rate = cell.type === TYPE.PLAGUE ? 50 : 25;
+        for (let dir of DIRS) {
+                if (randInt(1, 101) < rate) {
+                        let nb = cell.hood.dict[dir];
+                        if (nb && !nb.conditions.includes('immune')) nb.conditions.push(cell.disease);
+                }
+        }
 }
 
 function seekDisease(cell) {
-	for (let dir of [...DIRS, 'center']) {
-		let nb = cell.hood.dict[dir];
-		if (!nb) continue;
-		for (let cond of nb.conditions)
-			if ((cond.startsWith('d_') || cond.startsWith('p_')) && !cell.vaccines.includes(cond))
-				cell.vaccines.push(cond);
-	}
+        for (let dir of [...DIRS, 'center']) {
+                let nb = cell.hood.dict[dir];
+                if (!nb) continue;
+                for (let cond of nb.conditions)
+                        if ((cond.startsWith('d_') || cond.startsWith('p_')) && !cell.vaccines.includes(cond))
+                                cell.vaccines.push(cond);
+        }
 }
 
 function cureDisease(cell) {
-	for (let dir of DIRS) {
-		let nb = cell.hood.dict[dir];
-		if (nb && nb.alive && nb !== cell) {
-			for (let vaccine of cell.vaccines) {
-				let before = nb.conditions.length;
-				nb.conditions = nb.conditions.filter(c => c !== vaccine);
-				if (nb.conditions.length < before && (nb.type === TYPE.DISEASED || nb.type === TYPE.PLAGUE)) {
-					let nc = replaceCell(nb, TYPE.BASIC, true);
-					nc.hood = nb.hood;
-					grid[nb.col][nb.row] = nc;
-				}
-			}
-		}
-	}
-	cell.hood = buildNeighborhood(grid, cols, rows, cell.col, cell.row);
+        for (let dir of DIRS) {
+                let nb = cell.hood.dict[dir];
+                if (nb && nb.alive && nb !== cell) {
+                        for (let vaccine of cell.vaccines) {
+                                let before = nb.conditions.length;
+                                nb.conditions = nb.conditions.filter(c => c !== vaccine);
+                                if (nb.conditions.length < before && (nb.type === TYPE.DISEASED || nb.type === TYPE.PLAGUE)) {
+                                        let nc = replaceCell(nb, TYPE.BASIC, true);
+                                        nc.hood = nb.hood;
+                                        grid[nb.col][nb.row] = nc;
+                                }
+                        }
+                }
+        }
+        cell.hood = buildNeighborhood(grid, cols, rows, cell.col, cell.row);
 }
 
 function detonateCell(cell) {
-	if (cell.age >= 2) {
-		for (let dc = -2; dc <= 2; dc++) {
-			for (let dr = -2; dr <= 2; dr++) {
-				let nc = wrapCol(cell.col + dc, cols);
-				let nr = wrapRow(cell.row + dr, rows);
-				if (grid[nc][nr] !== cell && grid[nc][nr].alive) cellDie(grid[nc][nr]);
-			}
-		}
-		cellDie(cell);
-		cell.conditions.push('cleanup');
-	}
+        if (cell.age >= 2) {
+                for (let dc = -2; dc <= 2; dc++) {
+                        for (let dr = -2; dr <= 2; dr++) {
+                                let nc = wrapCol(cell.col + dc, cols);
+                                let nr = wrapRow(cell.row + dr, rows);
+                                if (grid[nc][nr] !== cell && grid[nc][nr].alive) cellDie(grid[nc][nr]);
+                        }
+                }
+                cellDie(cell);
+                cell.conditions.push('cleanup');
+        }
 }
 
 function makeArmy(cell) {
-	for (let dir of DIRS) {
-		let nb = cell.hood.dict[dir];
-		if (nb && nb.alive && nb.type === TYPE.BASIC) nb.conditions.push('toWar');
-	}
+        for (let dir of DIRS) {
+                let nb = cell.hood.dict[dir];
+                if (nb && nb.alive && nb.type === TYPE.BASIC) nb.conditions.push('toWar');
+        }
 }
 
 function huntCell(cell) {
-	if (!cell.hood) return;
-	let isPrey = nb => nb && [TYPE.IMMORTAL, TYPE.KING].includes(nb.type) && nb.alive;
-	let target = cell.currentPrey;
-	if (!target || !target.alive) {
-		target = selectNearbyCellByRule(cell, isPrey, 5);
-		cell.currentPrey = target;
-		if (!target) target = cell.hood.dict[cell.direction];
-	}
-	let toSwap = target ? findNeighborInDir(cell, target) : (cell.hood.dict[cell.direction] || null);
-	if (!toSwap) return;
-	if (isPrey(toSwap)) {
-		swapCells(cell, toSwap); cellDie(toSwap); toSwap.conditions.push('cleanup'); cell.currentPrey = null;
-	} else {
-		swapCells(cell, toSwap);
-	}
+        if (!cell.hood) return;
+        let isPrey = nb => nb && [TYPE.IMMORTAL, TYPE.KING].includes(nb.type) && nb.alive;
+        let target = cell.currentPrey;
+        if (!target || !target.alive) {
+                target = selectNearbyCellByRule(cell, isPrey, 5);
+                cell.currentPrey = target;
+                if (!target) target = cell.hood.dict[cell.direction];
+        }
+        let toSwap = target ? findNeighborInDir(cell, target) : (cell.hood.dict[cell.direction] || null);
+        if (!toSwap) return;
+        if (isPrey(toSwap)) {
+                swapCells(cell, toSwap); cellDie(toSwap); toSwap.conditions.push('cleanup'); cell.currentPrey = null;
+        } else {
+                swapCells(cell, toSwap);
+        }
 }
 
 function fightCell(cell) {
-	let isEnemy = nb => nb && nb.nationality !== cell.nationality && [TYPE.DISEASED, TYPE.PLAGUE].includes(nb.type) && nb.alive;
-	let target = selectNearbyCellByRule(cell, isEnemy, 2);
-	if (target) { swapCells(cell, target); cellDie(target); target.conditions.push('cleanup'); }
+        let isEnemy = nb => nb && nb.nationality !== cell.nationality && [TYPE.DISEASED, TYPE.PLAGUE].includes(nb.type) && nb.alive;
+        let target = selectNearbyCellByRule(cell, isEnemy, 2);
+        if (target) { swapCells(cell, target); cellDie(target); target.conditions.push('cleanup'); }
 }
 
 function swapCells(a, b) {
-	if (!a || !b || a === b) return;
-	let ac = a.col, ar = a.row, bc = b.col, br = b.row;
-	grid[bc][br] = a; grid[ac][ar] = b;
-	a.col = bc; a.row = br; b.col = ac; b.row = ar;
-	a.hood = buildNeighborhood(grid, cols, rows, a.col, a.row);
-	b.hood = buildNeighborhood(grid, cols, rows, b.col, b.row);
+        if (!a || !b || a === b) return;
+        let ac = a.col, ar = a.row, bc = b.col, br = b.row;
+        grid[bc][br] = a; grid[ac][ar] = b;
+        a.col = bc; a.row = br; b.col = ac; b.row = ar;
+        a.hood = buildNeighborhood(grid, cols, rows, a.col, a.row);
+        b.hood = buildNeighborhood(grid, cols, rows, b.col, b.row);
 }
 
 function selectNearbyCellByRule(cell, rule, maxRange) {
-	for (let range = 1; range < maxRange; range++) {
-		let found = [];
-		for (let x = -range; x <= range; x++) {
-			for (let cand of [
-				grid[wrapCol(cell.col+x,cols)][wrapRow(cell.row-range,rows)],
-				grid[wrapCol(cell.col+x,cols)][wrapRow(cell.row+range,rows)],
-			]) try { if (cand && rule(cand)) found.push(cand); } catch(e) {}
-		}
-		for (let y = -range+1; y <= range-1; y++) {
-			for (let cand of [
-				grid[wrapCol(cell.col-range,cols)][wrapRow(cell.row+y,rows)],
-				grid[wrapCol(cell.col+range,cols)][wrapRow(cell.row+y,rows)],
-			]) try { if (cand && rule(cand)) found.push(cand); } catch(e) {}
-		}
-		if (found.length > 0) return randChoice(found);
-	}
-	return null;
+        for (let range = 1; range < maxRange; range++) {
+                let found = [];
+                for (let x = -range; x <= range; x++) {
+                        for (let cand of [
+                                grid[wrapCol(cell.col+x,cols)][wrapRow(cell.row-range,rows)],
+                                grid[wrapCol(cell.col+x,cols)][wrapRow(cell.row+range,rows)],
+                        ]) try { if (cand && rule(cand)) found.push(cand); } catch(e) {}
+                }
+                for (let y = -range+1; y <= range-1; y++) {
+                        for (let cand of [
+                                grid[wrapCol(cell.col-range,cols)][wrapRow(cell.row+y,rows)],
+                                grid[wrapCol(cell.col+range,cols)][wrapRow(cell.row+y,rows)],
+                        ]) try { if (cand && rule(cand)) found.push(cand); } catch(e) {}
+                }
+                if (found.length > 0) return randChoice(found);
+        }
+        return null;
 }
 
 function findNeighborInDir(cell, target) {
-	if (!target) return cell;
-	let dc = cell.col - target.col, outerDc = cols - Math.abs(dc);
-	let dirC = dc === 0 ? 0 : dc < 0 ? 1 : -1;
-	let nc = wrapCol(cell.col + dirC * (Math.abs(dc) <= outerDc ? 1 : -1), cols);
-	let dr = cell.row - target.row, outerDr = rows - Math.abs(dr);
-	let dirR = dr === 0 ? 0 : dr < 0 ? 1 : -1;
-	let nr = wrapRow(cell.row + dirR * (Math.abs(dr) <= outerDr ? 1 : -1), rows);
-	return grid[nc][nr];
+        if (!target) return cell;
+        let dc = cell.col - target.col, outerDc = cols - Math.abs(dc);
+        let dirC = dc === 0 ? 0 : dc < 0 ? 1 : -1;
+        let nc = wrapCol(cell.col + dirC * (Math.abs(dc) <= outerDc ? 1 : -1), cols);
+        let dr = cell.row - target.row, outerDr = rows - Math.abs(dr);
+        let dirR = dr === 0 ? 0 : dr < 0 ? 1 : -1;
+        let nr = wrapRow(cell.row + dirR * (Math.abs(dr) <= outerDr ? 1 : -1), rows);
+        return grid[nc][nr];
 }
 
 function replaceCell(oldCell, type, alive) {
-	let nc = createCell(oldCell.col, oldCell.row, type, alive);
-	nc.conditions = [...oldCell.conditions];
-	nc.nationality = alive ? oldCell.nationality : -1;
-	if (type === TYPE.DISEASED) { nc.disease = randomCondition('d'); nc.countDown = 3; nc.transmissionRate = 25; }
-	if (type === TYPE.PLAGUE)   { nc.disease = randomCondition('p'); nc.countDown = 3; nc.transmissionRate = 50; }
-	if (type === TYPE.DOCTOR)   { nc.vaccines = []; }
-	if (type === TYPE.TRAVELER || type === TYPE.EXPLORER || type === TYPE.DIPLOMAT) {
-		nc.direction = oldCell.direction || randChoice(DIRS);
-		nc.deathCountDown = 0;
-		nc.maxAloneTime = (type === TYPE.EXPLORER || type === TYPE.DIPLOMAT) ? 4 : 3;
-	}
-	return nc;
+        let nc = createCell(oldCell.col, oldCell.row, type, alive);
+        nc.conditions = [...oldCell.conditions];
+        nc.nationality = alive ? oldCell.nationality : -1;
+        if (type === TYPE.DISEASED) { nc.disease = randomCondition('d'); nc.countDown = 3; nc.transmissionRate = 25; }
+        if (type === TYPE.PLAGUE)   { nc.disease = randomCondition('p'); nc.countDown = 3; nc.transmissionRate = 50; }
+        if (type === TYPE.DOCTOR)   { nc.vaccines = []; }
+        if (type === TYPE.TRAVELER || type === TYPE.EXPLORER || type === TYPE.DIPLOMAT) {
+                nc.direction = oldCell.direction || randChoice(DIRS);
+                nc.deathCountDown = 0;
+                nc.maxAloneTime = (type === TYPE.EXPLORER || type === TYPE.DIPLOMAT) ? 4 : 3;
+        }
+        return nc;
 }
 
 function addRandomLife() {
-	let total = cols * rows;
-	if (population > 0 && population / total <= 0.05) {
-		let numNew = Math.floor(total * basePercentLiving / 100);
-		let added = 0, attempts = 0;
-		while (added < numNew && attempts < numNew * 3) {
-			let rc = randInt(0,cols), rr = randInt(0,rows);
-			if (!grid[rc][rr].alive) { grid[rc][rr] = spawnRandomCell(rc, rr); added++; }
-			attempts++;
-		}
-	}
+        let total = cols * rows;
+        if (population > 0 && population / total <= 0.05) {
+                let numNew = Math.floor(total * basePercentLiving / 100);
+                let added = 0, attempts = 0;
+                while (added < numNew && attempts < numNew * 3) {
+                        let rc = randInt(0,cols), rr = randInt(0,rows);
+                        if (!grid[rc][rr].alive) { grid[rc][rr] = spawnRandomCell(rc, rr); added++; }
+                        attempts++;
+                }
+        }
 }
 
 function updateNations() {
-	for (let n of nations) { n.citizens = []; n.diplomats = []; }
-	for (let c = 0; c < cols; c++) {
-		for (let r = 0; r < rows; r++) {
-			let cell = grid[c][r];
-			if (cell.alive && cell.nationality >= 0 && cell.nationality < nations.length) {
-				nations[cell.nationality].citizens.push(cell);
-				if (cell.type === TYPE.DIPLOMAT) nations[cell.nationality].diplomats.push(cell);
-			}
-		}
-	}
-	for (let n of nations) { electDiplomat(n); crownKing(n); }
-	let numNations = Math.min(
-		Math.floor(basePercentLiving / 100 * cols * rows / minCellsPerNation),
-		NATION_COLORS.length
-	);
-	for (let i = nations.length; i < numNations; i++)
-		nations.push({ id: i, citizens: [], diplomats: [], king: null });
+        for (let n of nations) { n.citizens = []; n.diplomats = []; }
+        for (let c = 0; c < cols; c++) {
+                for (let r = 0; r < rows; r++) {
+                        let cell = grid[c][r];
+                        if (cell.alive && cell.nationality >= 0 && cell.nationality < nations.length) {
+                                nations[cell.nationality].citizens.push(cell);
+                                if (cell.type === TYPE.DIPLOMAT) nations[cell.nationality].diplomats.push(cell);
+                        }
+                }
+        }
+        for (let n of nations) { electDiplomat(n); crownKing(n); }
+        let numNations = Math.min(
+                Math.floor(basePercentLiving / 100 * cols * rows / minCellsPerNation),
+                NATION_COLORS.length
+        );
+        for (let i = nations.length; i < numNations; i++)
+                nations.push({ id: i, citizens: [], diplomats: [], king: null });
 }
 
 function electDiplomat(nation) {
-	if (nation.diplomats.length < 0.1 * nation.citizens.length && nation.citizens.length >= 5) {
-		let candidates = nation.citizens.filter(c => !nation.diplomats.includes(c) && c !== nation.king && c.alive);
-		if (candidates.length > 0) {
-			let elect = randChoice(candidates);
-			let nc = replaceCell(elect, TYPE.DIPLOMAT, true);
-			nc.hood = elect.hood;
-			grid[elect.col][elect.row] = nc;
-			nation.citizens.push(nc); nation.diplomats.push(nc);
-		}
-	}
+        if (nation.diplomats.length < 0.1 * nation.citizens.length && nation.citizens.length >= 5) {
+                let candidates = nation.citizens.filter(c => !nation.diplomats.includes(c) && c !== nation.king && c.alive);
+                if (candidates.length > 0) {
+                        let elect = randChoice(candidates);
+                        let nc = replaceCell(elect, TYPE.DIPLOMAT, true);
+                        nc.hood = elect.hood;
+                        grid[elect.col][elect.row] = nc;
+                        nation.citizens.push(nc); nation.diplomats.push(nc);
+                }
+        }
 }
 
 function crownKing(nation) {
-	if (nation.king && !nation.king.alive) { nation.king.conditions.push('cleanup'); nation.king = null; }
-	if (nation.king === null && nation.citizens.length > nation.diplomats.length && nation.citizens.length >= 5) {
-		let candidates = nation.citizens.filter(c => c.alive && !nation.diplomats.includes(c));
-		if (candidates.length > 0) {
-			let newKing = randChoice(candidates);
-			let nc = replaceCell(newKing, TYPE.KING, true);
-			nc.hood = newKing.hood;
-			grid[newKing.col][newKing.row] = nc;
-			nation.king = nc;
-		}
-	}
+        if (nation.king && !nation.king.alive) { nation.king.conditions.push('cleanup'); nation.king = null; }
+        if (nation.king === null && nation.citizens.length > nation.diplomats.length && nation.citizens.length >= 5) {
+                let candidates = nation.citizens.filter(c => c.alive && !nation.diplomats.includes(c));
+                if (candidates.length > 0) {
+                        let newKing = randChoice(candidates);
+                        let nc = replaceCell(newKing, TYPE.KING, true);
+                        nc.hood = newKing.hood;
+                        grid[newKing.col][newKing.row] = nc;
+                        nation.king = nc;
+                }
+        }
 }
 
 function resizeGrid() {
-	let newCols = cols + 2, newRows = rows + 2;
-	let newGrid = [];
-	for (let c = 0; c < newCols; c++) {
-		newGrid[c] = [];
-		for (let r = 0; r < newRows; r++) {
-			if (c === 0 || c === newCols-1 || r === 0 || r === newRows-1) {
-				newGrid[c][r] = createCell(c, r, TYPE.BASIC, false);
-			} else {
-				let old = grid[c-1][r-1];
-				old.col = c; old.row = r;
-				newGrid[c][r] = old;
-			}
-		}
-	}
-	grid = newGrid; cols = newCols; rows = newRows;
+        let newCols = cols + 2, newRows = rows + 2;
+        let newGrid = [];
+        for (let c = 0; c < newCols; c++) {
+                newGrid[c] = [];
+                for (let r = 0; r < newRows; r++) {
+                        if (c === 0 || c === newCols-1 || r === 0 || r === newRows-1) {
+                                newGrid[c][r] = createCell(c, r, TYPE.BASIC, false);
+                        } else {
+                                let old = grid[c-1][r-1];
+                                old.col = c; old.row = r;
+                                newGrid[c][r] = old;
+                        }
+                }
+        }
+        grid = newGrid; cols = newCols; rows = newRows;
 }
 
 // ── Rendering ──────────────────────────────────────────────────────────────
@@ -1116,334 +1118,375 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 function resizeCanvas() {
-	let wrap = document.getElementById('canvas-wrap');
-	canvas.width = wrap.clientWidth;
-	canvas.height = wrap.clientHeight;
+        let wrap = document.getElementById('canvas-wrap');
+        canvas.width = wrap.clientWidth;
+        canvas.height = wrap.clientHeight;
 }
 
 function render() {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	let cellSize = Math.min(canvas.width / cols, canvas.height / rows);
-	let offsetX = (canvas.width - cellSize * cols) / 2;
-	let offsetY = (canvas.height - cellSize * rows) / 2;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let cellSize = Math.min(canvas.width / cols, canvas.height / rows);
+        let offsetX = (canvas.width - cellSize * cols) / 2;
+        let offsetY = (canvas.height - cellSize * rows) / 2;
 
-	for (let c = 0; c < cols; c++) {
-		for (let r = 0; r < rows; r++) {
-			let cell = grid[c][r];
-			let x = offsetX + c * cellSize;
-			let y = offsetY + r * cellSize;
-			if (!cell.alive) {
-				ctx.fillStyle = '#0f0f18';
-				ctx.fillRect(x, y, cellSize, cellSize);
-				continue;
-			}
-			let sprite = SPRITE_IMGS[cell.type];
-			if (cell.nationality >= 0 && cell.nationality < NATION_COLORS.length) {
-				ctx.fillStyle = NATION_COLORS[cell.nationality];
-				ctx.fillRect(x, y, cellSize, cellSize);
-				let border = Math.max(1, cellSize * 0.12);
-				if (sprite && sprite.complete && sprite.naturalWidth > 0) {
-					ctx.drawImage(sprite, x + border, y + border, cellSize - border * 2, cellSize - border * 2);
-				} else {
-					ctx.fillStyle = CELL_COLORS[cell.type] || '#aaa';
-					let inner = cellSize * 0.76;
-					ctx.fillRect(x + (cellSize - inner) / 2, y + (cellSize - inner) / 2, inner, inner);
-				}
-			} else {
-				if (sprite && sprite.complete && sprite.naturalWidth > 0) {
-					ctx.drawImage(sprite, x, y, cellSize, cellSize);
-				} else {
-					ctx.fillStyle = CELL_COLORS[cell.type] || '#aaa';
-					ctx.fillRect(x, y, cellSize, cellSize);
-				}
-			}
-			if (cellSize >= 4) {
-				ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-				ctx.lineWidth = 0.5;
-				ctx.strokeRect(x, y, cellSize, cellSize);
-			}
-		}
-	}
+        for (let c = 0; c < cols; c++) {
+                for (let r = 0; r < rows; r++) {
+                        let cell = grid[c][r];
+                        let x = offsetX + c * cellSize;
+                        let y = offsetY + r * cellSize;
+                        if (!cell.alive) {
+                                ctx.fillStyle = '#0f0f18';
+                                ctx.fillRect(x, y, cellSize, cellSize);
+                                continue;
+                        }
+                        let sprite = SPRITE_IMGS[cell.type];
+                        if (cell.nationality >= 0 && cell.nationality < NATION_COLORS.length) {
+                                ctx.fillStyle = NATION_COLORS[cell.nationality];
+                                ctx.fillRect(x, y, cellSize, cellSize);
+                                let border = Math.max(1, cellSize * 0.12);
+                                if (sprite && sprite.complete && sprite.naturalWidth > 0) {
+                                        ctx.drawImage(sprite, x + border, y + border, cellSize - border * 2, cellSize - border * 2);
+                                } else {
+                                        ctx.fillStyle = CELL_COLORS[cell.type] || '#aaa';
+                                        let inner = cellSize * 0.76;
+                                        ctx.fillRect(x + (cellSize - inner) / 2, y + (cellSize - inner) / 2, inner, inner);
+                                }
+                        } else {
+                                if (sprite && sprite.complete && sprite.naturalWidth > 0) {
+                                        ctx.drawImage(sprite, x, y, cellSize, cellSize);
+                                } else {
+                                        ctx.fillStyle = CELL_COLORS[cell.type] || '#aaa';
+                                        ctx.fillRect(x, y, cellSize, cellSize);
+                                }
+                        }
+                        if (cellSize >= 4) {
+                                ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+                                ctx.lineWidth = 0.5;
+                                ctx.strokeRect(x, y, cellSize, cellSize);
+                        }
+                }
+        }
+
+        // ── Selection highlight ─────────────────────────────────────────────────
+        if (selectedCell) {
+                if (!selectedCell.alive) {
+                        selectedCell = null;
+                } else {
+                        let sx = offsetX + selectedCell.col * cellSize;
+                        let sy = offsetY + selectedCell.row * cellSize;
+                        ctx.save();
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2.5;
+                        ctx.strokeRect(sx + 1, sy + 1, cellSize - 2, cellSize - 2);
+                        ctx.strokeStyle = '#ffe600';
+                        ctx.lineWidth = 1.5;
+                        ctx.setLineDash([3, 3]);
+                        ctx.strokeRect(sx + 1, sy + 1, cellSize - 2, cellSize - 2);
+                        ctx.restore();
+                }
+        }
 }
 
 // ── Stats header bar ───────────────────────────────────────────────────────
 function updateStats() {
-	document.getElementById('s-gen').textContent = generation;
-	document.getElementById('s-pop').textContent = population;
-	document.getElementById('s-nations').textContent = nations.filter(n => n.citizens.length > 0).length;
-	document.getElementById('s-grid').textContent = `${cols}×${rows}`;
-	document.getElementById('s-dis').textContent = (typeCounts[TYPE.DISEASED]||0) + (typeCounts[TYPE.PLAGUE]||0);
-	document.getElementById('s-war').textContent = typeCounts[TYPE.WARRIOR] || 0;
-	document.getElementById('s-kings').textContent = typeCounts[TYPE.KING] || 0;
+        document.getElementById('s-gen').textContent = generation;
+        document.getElementById('s-pop').textContent = population;
+        document.getElementById('s-nations').textContent = nations.filter(n => n.citizens.length > 0).length;
+        document.getElementById('s-grid').textContent = `${cols}×${rows}`;
+        document.getElementById('s-dis').textContent = (typeCounts[TYPE.DISEASED]||0) + (typeCounts[TYPE.PLAGUE]||0);
+        document.getElementById('s-war').textContent = typeCounts[TYPE.WARRIOR] || 0;
+        document.getElementById('s-kings').textContent = typeCounts[TYPE.KING] || 0;
 }
 
 // ── Side panel ────────────────────────────────────────────────────────────
 function updateSidePanel() {
-	updateTypeBreakdown();
-	updateNationLeaderboard();
+        updateTypeBreakdown();
+        updateNationLeaderboard();
 }
 
 const DISPLAY_TYPES = [
-	TYPE.BASIC, TYPE.IMMORTAL, TYPE.DISEASED, TYPE.PLAGUE,
-	TYPE.TRAVELER, TYPE.EXPLORER, TYPE.DOCTOR, TYPE.WARRIOR,
-	TYPE.HUNTER, TYPE.BOMBER, TYPE.DIPLOMAT, TYPE.KING,
+        TYPE.BASIC, TYPE.IMMORTAL, TYPE.DISEASED, TYPE.PLAGUE,
+        TYPE.TRAVELER, TYPE.EXPLORER, TYPE.DOCTOR, TYPE.WARRIOR,
+        TYPE.HUNTER, TYPE.BOMBER, TYPE.DIPLOMAT, TYPE.KING,
 ];
 
 function updateTypeBreakdown() {
-	let el = document.getElementById('type-breakdown');
-	let maxCount = Math.max(1, ...DISPLAY_TYPES.map(t => typeCounts[t] || 0));
-	let html = '';
-	for (let t of DISPLAY_TYPES) {
-		let count = typeCounts[t] || 0;
-		let pct = Math.round(count / maxCount * 100);
-		html += `
-			<div class="type-row" data-type="${t}">
-				<div class="type-dot" style="background:${CELL_COLORS[t]}"></div>
-				<div class="type-name">${TYPE_LABELS[t]}</div>
-				<div class="type-count">${count}</div>
-			</div>
-			<div class="type-bar-wrap">
-				<div class="type-bar" style="width:${pct}%;background:${CELL_COLORS[t]}"></div>
-			</div>`;
-	}
-	el.innerHTML = html;
+        let el = document.getElementById('type-breakdown');
+        let maxCount = Math.max(1, ...DISPLAY_TYPES.map(t => typeCounts[t] || 0));
+        let html = '';
+        for (let t of DISPLAY_TYPES) {
+                let count = typeCounts[t] || 0;
+                let pct = Math.round(count / maxCount * 100);
+                html += `
+                        <div class="type-row" data-type="${t}">
+                                <div class="type-dot" style="background:${CELL_COLORS[t]}"></div>
+                                <div class="type-name">${TYPE_LABELS[t]}</div>
+                                <div class="type-count">${count}</div>
+                        </div>
+                        <div class="type-bar-wrap">
+                                <div class="type-bar" style="width:${pct}%;background:${CELL_COLORS[t]}"></div>
+                        </div>`;
+        }
+        el.innerHTML = html;
 }
 
 function updateNationLeaderboard() {
-	let el = document.getElementById('nation-leaderboard');
-	let active = nations
-		.filter(n => n.citizens.length > 0)
-		.sort((a,b) => b.citizens.length - a.citizens.length)
-		.slice(0, 15);
+        let el = document.getElementById('nation-leaderboard');
+        let active = nations
+                .filter(n => n.citizens.length > 0)
+                .sort((a,b) => b.citizens.length - a.citizens.length)
+                .slice(0, 15);
 
-	if (active.length === 0) {
-		el.innerHTML = '<div class="empty-msg">No active nations yet</div>';
-		return;
-	}
+        if (active.length === 0) {
+                el.innerHTML = '<div class="empty-msg">No active nations yet</div>';
+                return;
+        }
 
-	let maxPop = Math.max(1, active[0].citizens.length);
-	let html = '';
-	for (let n of active) {
-		let color = NATION_COLORS[n.id] || '#888';
-		let pct = Math.round(n.citizens.length / maxPop * 100);
-		let badges = '';
-		if (n.king && n.king.alive) badges += '<span class="badge king">♛ King</span>';
-		if (n.diplomats.length > 0) badges += `<span class="badge diplomat">✦ ${n.diplomats.length} Dip.</span>`;
-		html += `
-			<div class="nation-row">
-				<div class="nation-swatch" style="background:${color}"></div>
-				<div class="nation-info">
-					<div class="nation-name">Nation ${n.id + 1}</div>
-					${badges ? `<div class="nation-badges">${badges}</div>` : ''}
-				</div>
-				<div class="nation-pop">${n.citizens.length}</div>
-			</div>
-			<div class="nation-bar-wrap">
-				<div class="nation-bar" style="width:${pct}%;background:${color}"></div>
-			</div>`;
-	}
-	el.innerHTML = html;
+        let maxPop = Math.max(1, active[0].citizens.length);
+        let html = '';
+        for (let n of active) {
+                let color = NATION_COLORS[n.id] || '#888';
+                let pct = Math.round(n.citizens.length / maxPop * 100);
+                let badges = '';
+                if (n.king && n.king.alive) badges += '<span class="badge king">♛ King</span>';
+                if (n.diplomats.length > 0) badges += `<span class="badge diplomat">✦ ${n.diplomats.length} Dip.</span>`;
+                html += `
+                        <div class="nation-row">
+                                <div class="nation-swatch" style="background:${color}"></div>
+                                <div class="nation-info">
+                                        <div class="nation-name">Nation ${n.id + 1}</div>
+                                        ${badges ? `<div class="nation-badges">${badges}</div>` : ''}
+                                </div>
+                                <div class="nation-pop">${n.citizens.length}</div>
+                        </div>
+                        <div class="nation-bar-wrap">
+                                <div class="nation-bar" style="width:${pct}%;background:${color}"></div>
+                        </div>`;
+        }
+        el.innerHTML = html;
 }
 
 // ── Controls ─────────────────────────────────────────────────────────────
 function toggleSettings() {
-	let panel = document.getElementById('settings-panel');
-	let btn = document.getElementById('btn-settings');
-	panel.classList.toggle('open');
-	btn.classList.toggle('active');
+        let panel = document.getElementById('settings-panel');
+        let btn = document.getElementById('btn-settings');
+        panel.classList.toggle('open');
+        btn.classList.toggle('active');
 }
 
 // Close settings when clicking outside
 document.addEventListener('click', e => {
-	let wrap = document.getElementById('settings-wrap');
-	if (!wrap.contains(e.target)) {
-		document.getElementById('settings-panel').classList.remove('open');
-		document.getElementById('btn-settings').classList.remove('active');
-	}
+        let wrap = document.getElementById('settings-wrap');
+        if (!wrap.contains(e.target)) {
+                document.getElementById('settings-panel').classList.remove('open');
+                document.getElementById('btn-settings').classList.remove('active');
+        }
 });
 
 function togglePlay() {
-	running = !running;
-	let btn = document.getElementById('btn-play');
-	if (running) {
-		btn.textContent = '⏸ Pause'; btn.classList.add('active'); scheduleStep();
-	} else {
-		btn.textContent = '▶ Play'; btn.classList.remove('active'); clearTimeout(timerId);
-	}
+        running = !running;
+        let btn = document.getElementById('btn-play');
+        let stepBtn = document.getElementById('btn-step');
+        if (running) {
+                btn.textContent = '⏸ Pause'; btn.classList.add('active'); scheduleStep();
+                stepBtn.disabled = true;
+        } else {
+                btn.textContent = '▶ Play'; btn.classList.remove('active'); clearTimeout(timerId);
+                stepBtn.disabled = false;
+        }
+}
+
+function stepOnce() {
+        if (!running) step();
 }
 
 function clampedGridDims() {
-	let c = Math.floor(canvas.width / userCellSize);
-	let r = Math.floor(canvas.height / userCellSize);
-	if (gridLimit > 0) { c = Math.min(c, gridLimit); r = Math.min(r, gridLimit); }
-	return [c, r];
+        let c = Math.floor(canvas.width / userCellSize);
+        let r = Math.floor(canvas.height / userCellSize);
+        if (gridLimit > 0) { c = Math.min(c, gridLimit); r = Math.min(r, gridLimit); }
+        return [c, r];
 }
 
 function restart() {
-	clearTimeout(timerId);
-	generation = 0; population = 0;
-	resizeCanvas();
-	let [c, r] = clampedGridDims();
-	initGrid(c, r);
-	countTypes();
-	updateStats();
-	updateSidePanel();
-	render();
-	if (running) scheduleStep();
+        clearTimeout(timerId);
+        selectedCell = null;
+        generation = 0; population = 0;
+        resizeCanvas();
+        let [c, r] = clampedGridDims();
+        initGrid(c, r);
+        countTypes();
+        updateStats();
+        updateSidePanel();
+        render();
+        if (running) scheduleStep();
 }
 
 function buildSpawnGrid() {
-	const spawnOrder = [
-		TYPE.BASIC, TYPE.IMMORTAL, TYPE.DISEASED, TYPE.PLAGUE,
-		TYPE.TRAVELER, TYPE.EXPLORER, TYPE.DOCTOR, TYPE.HUNTER, TYPE.BOMBER,
-	];
-	const container = document.getElementById('spawn-grid');
-	container.innerHTML = '';
-	for (let type of spawnOrder) {
-		let w = spawnWeights[type] ?? 0;
-		let color = CELL_COLORS[type];
-		let label = TYPE_LABELS[type] || type;
-		let row = document.createElement('div');
-		row.className = 'spawn-row';
-		row.innerHTML = `
-			<div class="spawn-dot" style="background:${color}"></div>
-			<div class="spawn-label">${label}</div>
-			<input type="range" min="0" max="100" value="${w}" data-type="${type}"
-				id="sw-range-${type}" oninput="onSpawnSlider(this)">
-			<input type="number" min="0" max="100" value="${w}" data-type="${type}"
-				id="sw-val-${type}" class="spawn-val${w === 0 ? ' zero' : ''}"
-				oninput="onSpawnNumber(this)">
-		`;
-		container.appendChild(row);
-	}
-	updateSpawnTotal();
+        const spawnOrder = [
+                TYPE.BASIC, TYPE.IMMORTAL, TYPE.DISEASED, TYPE.PLAGUE,
+                TYPE.TRAVELER, TYPE.EXPLORER, TYPE.DOCTOR, TYPE.HUNTER, TYPE.BOMBER,
+        ];
+        const container = document.getElementById('spawn-grid');
+        container.innerHTML = '';
+        for (let type of spawnOrder) {
+                let w = spawnWeights[type] ?? 0;
+                let color = CELL_COLORS[type];
+                let label = TYPE_LABELS[type] || type;
+                let row = document.createElement('div');
+                row.className = 'spawn-row';
+                row.innerHTML = `
+                        <div class="spawn-dot" style="background:${color}"></div>
+                        <div class="spawn-label">${label}</div>
+                        <input type="range" min="0" max="100" value="${w}" data-type="${type}"
+                                id="sw-range-${type}" oninput="onSpawnSlider(this)">
+                        <input type="number" min="0" max="100" value="${w}" data-type="${type}"
+                                id="sw-val-${type}" class="spawn-val${w === 0 ? ' zero' : ''}"
+                                oninput="onSpawnNumber(this)">
+                `;
+                container.appendChild(row);
+        }
+        updateSpawnTotal();
 }
 
 function onSpawnSlider(el) {
-	let type = el.dataset.type;
-	let v = parseInt(el.value);
-	spawnWeights[type] = v;
-	let numEl = document.getElementById('sw-val-' + type);
-	numEl.value = v;
-	numEl.className = 'spawn-val' + (v === 0 ? ' zero' : '');
-	updateSpawnTotal();
+        let type = el.dataset.type;
+        let v = parseInt(el.value);
+        spawnWeights[type] = v;
+        let numEl = document.getElementById('sw-val-' + type);
+        numEl.value = v;
+        numEl.className = 'spawn-val' + (v === 0 ? ' zero' : '');
+        updateSpawnTotal();
 }
 
 function onSpawnNumber(el) {
-	let type = el.dataset.type;
-	let v = Math.max(0, Math.min(100, parseInt(el.value) || 0));
-	spawnWeights[type] = v;
-	el.value = v;
-	el.className = 'spawn-val' + (v === 0 ? ' zero' : '');
-	document.getElementById('sw-range-' + type).value = v;
-	updateSpawnTotal();
+        let type = el.dataset.type;
+        let v = Math.max(0, Math.min(100, parseInt(el.value) || 0));
+        spawnWeights[type] = v;
+        el.value = v;
+        el.className = 'spawn-val' + (v === 0 ? ' zero' : '');
+        document.getElementById('sw-range-' + type).value = v;
+        updateSpawnTotal();
 }
 
 function updateSpawnTotal() {
-	let total = Object.values(spawnWeights).reduce((a, b) => a + b, 0);
-	let el = document.getElementById('spawn-total-val');
-	el.textContent = total;
-	el.style.color = total === 0 ? '#ff4444' : '#a0c4ff';
+        let total = Object.values(spawnWeights).reduce((a, b) => a + b, 0);
+        let el = document.getElementById('spawn-total-val');
+        el.textContent = total;
+        el.style.color = total === 0 ? '#ff4444' : '#a0c4ff';
 }
 
 function resetSpawnWeights() {
-	spawnWeights = { ...SPAWN_DEFAULTS };
-	buildSpawnGrid();
+        spawnWeights = { ...SPAWN_DEFAULTS };
+        buildSpawnGrid();
 }
 
 function applyAndRestart() {
-	basePercentLiving = Math.max(1, Math.min(50, parseInt(document.getElementById('inp-pop').value) || 10));
-	gridLimit = Math.max(0, parseInt(document.getElementById('inp-gridlimit').value) || 10);
-	userCellSize = Math.max(2, Math.min(24, parseInt(document.getElementById('inp-cellsize').value) || 8));
-	restart();
+        basePercentLiving = Math.max(1, Math.min(50, parseInt(document.getElementById('inp-pop').value) || 10));
+        gridLimit = Math.max(0, parseInt(document.getElementById('inp-gridlimit').value) || 10);
+        userCellSize = Math.max(2, Math.min(24, parseInt(document.getElementById('inp-cellsize').value) || 8));
+        restart();
 }
 
 function updateSpeed() {
-	let slider = document.getElementById('speedSlider');
-	intervalMs = parseInt(slider.value);
-	document.getElementById('speedLabel').value = intervalMs;
-	if (running) { clearTimeout(timerId); scheduleStep(); }
+        let slider = document.getElementById('speedSlider');
+        intervalMs = parseInt(slider.value);
+        document.getElementById('speedLabel').value = intervalMs;
+        if (running) { clearTimeout(timerId); scheduleStep(); }
 }
 
 function updateSpeedFromInput(el) {
-	let v = Math.max(50, Math.min(5000, parseInt(el.value) || 50));
-	intervalMs = v;
-	el.value = v;
-	document.getElementById('speedSlider').value = v;
-	if (running) { clearTimeout(timerId); scheduleStep(); }
+        let v = Math.max(50, Math.min(5000, parseInt(el.value) || 50));
+        intervalMs = v;
+        el.value = v;
+        document.getElementById('speedSlider').value = v;
+        if (running) { clearTimeout(timerId); scheduleStep(); }
 }
 
 function scheduleStep() {
-	timerId = setTimeout(() => { step(); if (running) scheduleStep(); }, intervalMs);
+        timerId = setTimeout(() => { step(); if (running) scheduleStep(); }, intervalMs);
 }
 
 // ── Mouse tooltip ─────────────────────────────────────────────────────────
 canvas.addEventListener('mousemove', e => {
-	let cellSize = Math.min(canvas.width / cols, canvas.height / rows);
-	let offsetX = (canvas.width - cellSize * cols) / 2;
-	let offsetY = (canvas.height - cellSize * rows) / 2;
-	let rect = canvas.getBoundingClientRect();
-	let c = Math.floor((e.clientX - rect.left - offsetX) / cellSize);
-	let r = Math.floor((e.clientY - rect.top - offsetY) / cellSize);
-	let tip = document.getElementById('tooltip');
-	let wrap = document.getElementById('canvas-wrap');
-	if (c >= 0 && c < cols && r >= 0 && r < rows) {
-		let cell = grid[c][r];
-		let natColor = cell.nationality >= 0 ? NATION_COLORS[cell.nationality] : null;
-		let natStr = cell.nationality >= 0 ? `<span style="color:${natColor}">Nation ${cell.nationality+1}</span>` : 'None';
-		let conds = cell.conditions.filter(x => x !== 'mature').join(', ') || 'none';
-		tip.style.display = 'block';
-		tip.style.left = (e.clientX - wrap.getBoundingClientRect().left + 14) + 'px';
-		tip.style.top  = (e.clientY - wrap.getBoundingClientRect().top - 8) + 'px';
-		tip.innerHTML = `<b style="color:${CELL_COLORS[cell.type]}">${TYPE_LABELS[cell.type] || cell.type}</b><br>Nation: ${natStr}<br>Age: ${cell.age}<br>Conditions: ${conds}`;
-	} else {
-		tip.style.display = 'none';
-	}
+        let cellSize = Math.min(canvas.width / cols, canvas.height / rows);
+        let offsetX = (canvas.width - cellSize * cols) / 2;
+        let offsetY = (canvas.height - cellSize * rows) / 2;
+        let rect = canvas.getBoundingClientRect();
+        let c = Math.floor((e.clientX - rect.left - offsetX) / cellSize);
+        let r = Math.floor((e.clientY - rect.top - offsetY) / cellSize);
+        let tip = document.getElementById('tooltip');
+        let wrap = document.getElementById('canvas-wrap');
+        if (c >= 0 && c < cols && r >= 0 && r < rows) {
+                let cell = grid[c][r];
+                let natColor = cell.nationality >= 0 ? NATION_COLORS[cell.nationality] : null;
+                let natStr = cell.nationality >= 0 ? `<span style="color:${natColor}">Nation ${cell.nationality+1}</span>` : 'None';
+                let conds = cell.conditions.filter(x => x !== 'mature').join(', ') || 'none';
+                tip.style.display = 'block';
+                tip.style.left = (e.clientX - wrap.getBoundingClientRect().left + 14) + 'px';
+                tip.style.top  = (e.clientY - wrap.getBoundingClientRect().top - 8) + 'px';
+                tip.innerHTML = `<b style="color:${CELL_COLORS[cell.type]}">${TYPE_LABELS[cell.type] || cell.type}</b><br>Nation: ${natStr}<br>Age: ${cell.age}<br>Conditions: ${conds}`;
+        } else {
+                tip.style.display = 'none';
+        }
 });
 canvas.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display = 'none'; });
+
+canvas.addEventListener('click', e => {
+        let cellSize = Math.min(canvas.width / cols, canvas.height / rows);
+        let offsetX = (canvas.width - cellSize * cols) / 2;
+        let offsetY = (canvas.height - cellSize * rows) / 2;
+        let rect = canvas.getBoundingClientRect();
+        let c = Math.floor((e.clientX - rect.left - offsetX) / cellSize);
+        let r = Math.floor((e.clientY - rect.top - offsetY) / cellSize);
+        if (c >= 0 && c < cols && r >= 0 && r < rows) {
+                let cell = grid[c][r];
+                selectedCell = (selectedCell === cell || !cell.alive) ? null : cell;
+                render();
+        }
+});
 
 // ── Cell type description tooltip ─────────────────────────────────────────
 const sidePanel = document.getElementById('side-panel');
 const typeTip   = document.getElementById('type-tip');
 
 sidePanel.addEventListener('mousemove', e => {
-	let row = e.target.closest('[data-type]');
-	if (!row) { typeTip.style.display = 'none'; return; }
-	let type  = row.dataset.type;
-	let desc  = TYPE_DESCRIPTIONS[type];
-	if (!desc) { typeTip.style.display = 'none'; return; }
-	typeTip.innerHTML = `<b style="color:${CELL_COLORS[type]}">${TYPE_LABELS[type]}</b>${desc}`;
-	typeTip.style.display = 'block';
-	let x = e.clientX - typeTip.offsetWidth - 14;
-	if (x < 6) x = e.clientX + 14;
-	let y = e.clientY - typeTip.offsetHeight / 2;
-	y = Math.max(6, Math.min(y, window.innerHeight - typeTip.offsetHeight - 6));
-	typeTip.style.left = x + 'px';
-	typeTip.style.top  = y + 'px';
+        let row = e.target.closest('[data-type]');
+        if (!row) { typeTip.style.display = 'none'; return; }
+        let type  = row.dataset.type;
+        let desc  = TYPE_DESCRIPTIONS[type];
+        if (!desc) { typeTip.style.display = 'none'; return; }
+        typeTip.innerHTML = `<b style="color:${CELL_COLORS[type]}">${TYPE_LABELS[type]}</b>${desc}`;
+        typeTip.style.display = 'block';
+        let x = e.clientX - typeTip.offsetWidth - 14;
+        if (x < 6) x = e.clientX + 14;
+        let y = e.clientY - typeTip.offsetHeight / 2;
+        y = Math.max(6, Math.min(y, window.innerHeight - typeTip.offsetHeight - 6));
+        typeTip.style.left = x + 'px';
+        typeTip.style.top  = y + 'px';
 });
 
 sidePanel.addEventListener('mouseleave', () => { typeTip.style.display = 'none'; });
 
 // ── Keyboard shortcuts ─────────────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-	if (e.key === ' ') { e.preventDefault(); togglePlay(); }
-	if (e.key === 'r' || e.key === 'R') restart();
+        if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+        if (e.key === 'r' || e.key === 'R') restart();
 });
 
 // ── Bootstrap ────────────────────────────────────────────────────────────
 function init() {
-	buildSpawnGrid();
-	resizeCanvas();
-	let slider = document.getElementById('speedSlider');
-	intervalMs = parseInt(slider.value);
-	document.getElementById('speedLabel').value = intervalMs;
-	let [c, r] = clampedGridDims();
-	initGrid(c, r);
-	countTypes();
-	updateStats();
-	updateSidePanel();
-	render();
-	scheduleStep();
+        buildSpawnGrid();
+        resizeCanvas();
+        let slider = document.getElementById('speedSlider');
+        intervalMs = parseInt(slider.value);
+        document.getElementById('speedLabel').value = intervalMs;
+        let [c, r] = clampedGridDims();
+        initGrid(c, r);
+        countTypes();
+        updateStats();
+        updateSidePanel();
+        render();
+        scheduleStep();
 }
 
 window.addEventListener('resize', () => { resizeCanvas(); render(); });
