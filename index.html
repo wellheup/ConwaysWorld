@@ -553,7 +553,7 @@ function createCell(col, row, type, alive) {
                 alive: alive === true,
                 age: 0, nationality: -1, conditions: [],
                 direction: randChoice(DIRS),
-                deathCountDown: 0, maxAloneTime: 3, specialPerformed: false,
+                deathCountDown: 0, maxAloneTime: 3, maxAge: Infinity, specialPerformed: false,
                 disease: null, countDown: 3, transmissionRate: 25,
                 currentPrey: null, vaccines: [], hood: null,
         };
@@ -741,6 +741,7 @@ function calcAliveNextGen(cell) {
         let type = cell.type, hood = cell.hood, alive = cell.alive;
         if (type === TYPE.TRAVELER || type === TYPE.EXPLORER || type === TYPE.DIPLOMAT ||
                         type === TYPE.HUNTER   || type === TYPE.WARRIOR) {
+                if (type === TYPE.WARRIOR && cell.age > cell.maxAge) return false;
                 return cell.deathCountDown <= cell.maxAloneTime;
         }
         if (type === TYPE.DOCTOR) {
@@ -753,7 +754,7 @@ function calcAliveNextGen(cell) {
                 return liveBasic(alive, hood.numNeighbors, 2, 3);
         }
         if (type === TYPE.BOMBER) return true;
-        if (type === TYPE.IMMORTAL) return hood.numNeighbors >= 1 || alive;
+        if (type === TYPE.IMMORTAL || type === TYPE.KING) return hood.numNeighbors >= 1 || alive;
         return liveBasic(alive, hood.numNeighbors, 2, 3);
 }
 
@@ -1052,6 +1053,7 @@ function replaceCell(oldCell, type, alive) {
                 nc.deathCountDown = 0;
                 nc.maxAloneTime = (type === TYPE.EXPLORER || type === TYPE.DIPLOMAT) ? 4 : 3;
         }
+        if (type === TYPE.WARRIOR) { nc.maxAge = 10; nc.deathCountDown = 0; }
         return nc;
 }
 
