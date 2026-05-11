@@ -754,7 +754,11 @@ function calcAliveNextGen(cell) {
                 return liveBasic(alive, hood.numNeighbors, 2, 3);
         }
         if (type === TYPE.BOMBER) return true;
-        if (type === TYPE.IMMORTAL || type === TYPE.KING) return hood.numNeighbors >= 1 || alive;
+        if (type === TYPE.IMMORTAL) return hood.numNeighbors >= 1 || alive;
+        if (type === TYPE.KING) {
+                let allyCells = Object.values(hood.dict).filter(nb => nb && nb.alive && nb.nationality === cell.nationality);
+                return allyCells.length > 0;
+        }
         return liveBasic(alive, hood.numNeighbors, 2, 3);
 }
 
