@@ -1075,13 +1075,25 @@ function addRandomLife() {
 }
 
 function updateNations() {
-        for (let n of nations) { n.citizens = []; n.diplomats = []; }
+        for (let n of nations) { n.citizens = []; n.diplomats = []; n.king = null; }
         for (let c = 0; c < cols; c++) {
                 for (let r = 0; r < rows; r++) {
                         let cell = grid[c][r];
                         if (cell.alive && cell.nationality >= 0 && cell.nationality < nations.length) {
-                                nations[cell.nationality].citizens.push(cell);
-                                if (cell.type === TYPE.DIPLOMAT) nations[cell.nationality].diplomats.push(cell);
+                                let nation = nations[cell.nationality];
+                                nation.citizens.push(cell);
+                                if (cell.type === TYPE.DIPLOMAT) nation.diplomats.push(cell);
+                                if (cell.type === TYPE.KING) {
+                                        if (nation.king === null) {
+                                                nation.king = cell;
+                                        } else {
+                                                // Extra king — demote back to basic
+                                                let nc = replaceCell(cell, TYPE.BASIC, true);
+                                                nc.hood = cell.hood;
+                                                grid[c][r] = nc;
+                                                nation.citizens[nation.citizens.length - 1] = nc;
+                                        }
+                                }
                         }
                 }
         }
@@ -1109,7 +1121,6 @@ function electDiplomat(nation) {
 }
 
 function crownKing(nation) {
-        if (nation.king && !nation.king.alive) { nation.king.conditions.push('cleanup'); nation.king = null; }
         if (spawnEnabled[TYPE.KING] === false) return;
         if (nation.king === null && nation.citizens.length > nation.diplomats.length && nation.citizens.length >= 5) {
                 let candidates = nation.citizens.filter(c => c.alive && !nation.diplomats.includes(c));
