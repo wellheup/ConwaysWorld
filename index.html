@@ -69,7 +69,7 @@
         }
         #speed-wrap input[type=range] { width: 70px; accent-color: #6080ff; }
         #speedLabel {
-                width: 62px;
+                width: 80px;
                 background: #1a1a2a;
                 border: 1px solid #3a3a5a;
                 color: #c0d0ff;
@@ -191,6 +191,16 @@
         }
         .spawn-val:focus { outline: none; border-color: #6080ff; }
         .spawn-val.zero { color: #555; }
+        .spawn-row.disabled .spawn-label,
+        .spawn-row.disabled .spawn-dot { opacity: 0.35; }
+        .spawn-row.disabled input[type=range],
+        .spawn-row.disabled input[type=number] { opacity: 0.3; pointer-events: none; }
+        .spawn-check {
+                flex-shrink: 0;
+                width: 13px; height: 13px;
+                accent-color: #6080ff;
+                cursor: pointer;
+        }
 
         /* apply button */
         #btn-apply {
@@ -600,6 +610,12 @@ const SPAWN_DEFAULTS = {
 };
 let spawnWeights = { ...SPAWN_DEFAULTS };
 
+const SPAWN_CHECKABLE = [
+        TYPE.IMMORTAL, TYPE.DISEASED, TYPE.PLAGUE, TYPE.TRAVELER,
+        TYPE.EXPLORER, TYPE.DOCTOR, TYPE.HUNTER, TYPE.BOMBER,
+];
+let spawnEnabled = Object.fromEntries(SPAWN_CHECKABLE.map(t => [t, true]));
+
 // ── Init ───────────────────────────────────────────────────────────────────
 function initGrid(c, r) {
         cols = c; rows = r;
@@ -615,10 +631,12 @@ function initGrid(c, r) {
 
 function buildFreqs() {
         let bp = basePercentLiving / 100;
-        let totalW = Object.values(spawnWeights).reduce((a, b) => a + b, 0) || 1;
+        let totalW = Object.entries(spawnWeights)
+                .filter(([t]) => spawnEnabled[t] !== false)
+                .reduce((a, [, b]) => a + b, 0) || 1;
         let freqs = [];
         for (let [type, w] of Object.entries(spawnWeights)) {
-                if (w > 0) freqs.push({ type, f: (w / totalW) * bp });
+                if (w > 0 && spawnEnabled[type] !== false) freqs.push({ type, f: (w / totalW) * bp });
         }
         freqs.push({ type: TYPE.DEAD, f: Math.max(0, 1 - bp) });
         return freqs;
@@ -1332,9 +1350,16 @@ function buildSpawnGrid() {
                 let w = spawnWeights[type] ?? 0;
                 let color = CELL_COLORS[type];
                 let label = TYPE_LABELS[type] || type;
+                let checkable = SPAWN_CHECKABLE.includes(type);
+                let enabled = !checkable || spawnEnabled[type] !== false;
                 let row = document.createElement('div');
-                row.className = 'spawn-row';
+                row.className = 'spawn-row' + (checkable && !enabled ? ' disabled' : '');
                 row.innerHTML = `
+                        ${checkable
+                                ? `<input type="checkbox" class="spawn-check" data-type="${type}"
+                                        id="sw-chk-${type}" ${enabled ? 'checked' : ''}
+                                        onchange="onSpawnCheck(this)">`
+                                : `<span style="width:13px;flex-shrink:0"></span>`}
                         <div class="spawn-dot" style="background:${color}"></div>
                         <div class="spawn-label">${label}</div>
                         <input type="range" min="0" max="100" value="${w}" data-type="${type}"
@@ -1345,6 +1370,15 @@ function buildSpawnGrid() {
                 `;
                 container.appendChild(row);
         }
+        updateSpawnTotal();
+}
+
+function onSpawnCheck(el) {
+        let type = el.dataset.type;
+        spawnEnabled[type] = el.checked;
+        let row = el.closest('.spawn-row');
+        if (el.checked) row.classList.remove('disabled');
+        else row.classList.add('disabled');
         updateSpawnTotal();
 }
 
@@ -1369,7 +1403,9 @@ function onSpawnNumber(el) {
 }
 
 function updateSpawnTotal() {
-        let total = Object.values(spawnWeights).reduce((a, b) => a + b, 0);
+        let total = Object.entries(spawnWeights)
+                .filter(([t]) => spawnEnabled[t] !== false)
+                .reduce((a, [, b]) => a + b, 0);
         let el = document.getElementById('spawn-total-val');
         el.textContent = total;
         el.style.color = total === 0 ? '#ff4444' : '#a0c4ff';
@@ -1377,6 +1413,7 @@ function updateSpawnTotal() {
 
 function resetSpawnWeights() {
         spawnWeights = { ...SPAWN_DEFAULTS };
+        spawnEnabled = Object.fromEntries(SPAWN_CHECKABLE.map(t => [t, true]));
         buildSpawnGrid();
 }
 
