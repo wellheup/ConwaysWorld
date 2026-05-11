@@ -1097,13 +1097,37 @@ function updateNations() {
                         }
                 }
         }
-        for (let n of nations) { electDiplomat(n); crownKing(n); }
+        for (let n of nations) { trimDiplomats(n); electDiplomat(n); crownKing(n); }
         let numNations = Math.min(
                 Math.floor(basePercentLiving / 100 * cols * rows / minCellsPerNation),
                 NATION_COLORS.length
         );
         for (let i = nations.length; i < numNations; i++)
                 nations.push({ id: i, citizens: [], diplomats: [], king: null });
+}
+
+function trimDiplomats(nation) {
+        if (nation.citizens.length === 0) return;
+        const cap = Math.floor(0.1 * nation.citizens.length);
+        if (nation.diplomats.length <= cap) return;
+        const availableTypes = Object.entries(spawnWeights)
+                .filter(([t, w]) => w > 0 && spawnEnabled[t] !== false && t !== TYPE.DIPLOMAT && t !== TYPE.DEAD)
+                .map(([t]) => t);
+        if (availableTypes.length === 0) availableTypes.push(TYPE.BASIC);
+        let excess = nation.diplomats.length - cap;
+        let shuffled = [...nation.diplomats].sort(() => Math.random() - 0.5);
+        for (let i = 0; i < excess && i < shuffled.length; i++) {
+                let dip = shuffled[i];
+                if (!dip.alive) continue;
+                let newType = randChoice(availableTypes);
+                let nc = replaceCell(dip, newType, true);
+                nc.hood = dip.hood;
+                grid[dip.col][dip.row] = nc;
+                let idx = nation.citizens.indexOf(dip);
+                if (idx >= 0) nation.citizens[idx] = nc;
+                let didx = nation.diplomats.indexOf(dip);
+                if (didx >= 0) nation.diplomats.splice(didx, 1);
+        }
 }
 
 function electDiplomat(nation) {
