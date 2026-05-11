@@ -1132,7 +1132,8 @@ function trimDiplomats(nation) {
 
 function electDiplomat(nation) {
         if (spawnEnabled[TYPE.DIPLOMAT] === false) return;
-        if (nation.diplomats.length < 0.1 * nation.citizens.length && nation.citizens.length >= 5) {
+        const dipCap = Math.floor(0.1 * nation.citizens.length);
+        if (nation.diplomats.length < dipCap && nation.citizens.length >= 5) {
                 let candidates = nation.citizens.filter(c => !nation.diplomats.includes(c) && c !== nation.king && c.alive);
                 if (candidates.length > 0) {
                         let elect = randChoice(candidates);
