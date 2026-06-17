@@ -131,6 +131,20 @@
                 font-size: 12px;
         }
         .param-group input[type=number]:focus { outline: none; border-color: #6080ff; }
+        .pop-group { grid-column: 1 / -1; }
+        .pop-row { display: flex; gap: 6px; align-items: center; }
+        .pop-row input[type=number] { flex: 1; min-width: 0; }
+        .param-group select {
+                background: #1a1a2a;
+                border: 1px solid #3a3a5a;
+                color: #c0d0ff;
+                border-radius: 4px;
+                padding: 4px 7px;
+                font-size: 12px;
+                flex-shrink: 0;
+                cursor: pointer;
+        }
+        .param-group select:focus { outline: none; border-color: #6080ff; }
 
         /* spawn weight rows */
         .spawn-section-header {
@@ -396,16 +410,26 @@
                         <div class="settings-title">World Parameters</div>
                         <div class="settings-grid">
                                 <div class="param-group">
-                                        <label>Initial pop %</label>
-                                        <input type="number" id="inp-pop" value="10" min="1" max="50" title="% of cells alive at start">
+                                        <label>Start size</label>
+                                        <input type="number" id="inp-startsize" value="10" min="5" max="500" title="Initial grid dimension (N×N)">
                                 </div>
                                 <div class="param-group">
-                                        <label>Grid limit</label>
-                                        <input type="number" id="inp-gridlimit" value="10" min="0" max="500" title="Max grid size (0 = unlimited)">
+                                        <label>Max size</label>
+                                        <input type="number" id="inp-gridlimit" value="50" min="0" max="500" title="Max grid explorers can expand to (0 = unlimited)">
                                 </div>
                                 <div class="param-group">
                                         <label>Cell size (px)</label>
                                         <input type="number" id="inp-cellsize" value="8" min="2" max="24" title="Pixel size of each cell">
+                                </div>
+                                <div class="param-group pop-group">
+                                        <label>Initial population</label>
+                                        <div class="pop-row">
+                                                <input type="number" id="inp-pop" value="10" min="1" title="Initial population — percentage or fixed cell count">
+                                                <select id="inp-pop-mode" title="Interpret the value as a % of the grid or a fixed number of cells">
+                                                        <option value="percent">% of grid</option>
+                                                        <option value="count">cells</option>
+                                                </select>
+                                        </div>
                                 </div>
                         </div>
                         <hr class="settings-divider">
@@ -588,7 +612,10 @@ let nations = [];
 let generation = 0, population = 0;
 let basePercentLiving = 10;
 let minCellsPerNation = 3;
-let gridLimit = 10;
+let startGridSize = 10;
+let gridLimit = 50;
+let popMode = 'percent';
+let popValue = 10;
 let userCellSize = 8;
 let running = true;
 let intervalMs = 650;
@@ -1427,7 +1454,8 @@ function stepOnce() {
 function clampedGridDims() {
         let c = Math.floor(canvas.width / userCellSize);
         let r = Math.floor(canvas.height / userCellSize);
-        if (gridLimit > 0) { c = Math.min(c, gridLimit); r = Math.min(r, gridLimit); }
+        c = Math.min(c, startGridSize);
+        r = Math.min(r, startGridSize);
         return [c, r];
 }
 
@@ -1524,9 +1552,17 @@ function resetSpawnWeights() {
 }
 
 function applyAndRestart() {
-        basePercentLiving = Math.max(1, Math.min(50, parseInt(document.getElementById('inp-pop').value) || 10));
-        gridLimit = Math.max(0, parseInt(document.getElementById('inp-gridlimit').value) || 10);
+        startGridSize = Math.max(5, Math.min(500, parseInt(document.getElementById('inp-startsize').value) || 10));
+        gridLimit = Math.max(0, parseInt(document.getElementById('inp-gridlimit').value) || 0);
         userCellSize = Math.max(2, Math.min(24, parseInt(document.getElementById('inp-cellsize').value) || 8));
+        popMode = document.getElementById('inp-pop-mode').value;
+        popValue = Math.max(1, parseInt(document.getElementById('inp-pop').value) || 10);
+        if (popMode === 'percent') {
+                basePercentLiving = Math.min(50, Math.max(1, popValue));
+        } else {
+                let total = startGridSize * startGridSize;
+                basePercentLiving = Math.min(50, Math.max(1, (popValue / total) * 100));
+        }
         restart();
 }
 
