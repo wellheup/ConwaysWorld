@@ -21,7 +21,7 @@ public class SimulationSettings
     public Dictionary<CellType, int> SpawnWeights { get; set; } = new()
     {
         { CellType.Basic,    50 },
-        { CellType.Immortal,  5 },
+        { CellType.Immortal,  2 },
         { CellType.Diseased, 15 },
         { CellType.Plague,    3 },
         { CellType.Traveler,  6 },

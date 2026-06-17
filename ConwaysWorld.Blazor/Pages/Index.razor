@@ -68,7 +68,7 @@
         <div class="cw-panel">
             <h3>Nations</h3>
             <div class="cw-nation-list">
-                @foreach (var n in _model.Nations.Values.OrderByDescending(n => n.CitizensList.Count).Take(10))
+                @foreach (var n in _model.Nations.Values.OrderByDescending(n => n.CitizensList.Count))
                 {
                     <div class="cw-nation-row">
                         <div class="cw-nation-swatch"

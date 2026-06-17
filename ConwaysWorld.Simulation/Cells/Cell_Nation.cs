@@ -10,24 +10,16 @@ public class Cell_Nation
     public static readonly List<string> NationColors = new()
     {
         "#bc00ff",
-        "#471415",
         "#a3181c",
         "#00f542",
-        "#617f1c",
         "#f50005",
-        "#473d14",
         "#17a33d",
-        "#a38517",
         "#299bae",
         "#00dbff",
         "#f5bf00",
-        "#232b75",
         "#ff7000",
         "#0019f5",
-        "#adff00",
-        "#7f4719",
         "#671f80",
-        "#1c2bb8",
         "#1c4724",
     };
 
@@ -66,7 +58,7 @@ public class Cell_Nation
 
     private void ElectDiplomat(Cell[,] cellGrid)
     {
-        if (DiplomatsList.Count >= 0.1f * CitizensList.Count || CitizensList.Count < 5)
+        if (DiplomatsList.Count >= 0.05f * CitizensList.Count || CitizensList.Count < 10)
             return;
 
         Cell? elect = null;

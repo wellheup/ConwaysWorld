@@ -116,8 +116,6 @@ canvas#sim-canvas {
 .cw-cell-count { margin-left: auto; color: #777; font-variant-numeric: tabular-nums; font-size: 11px; }
 
 .cw-nation-list {
-    overflow-y: auto;
-    max-height: 150px;
     padding: 4px 0;
 }
 
