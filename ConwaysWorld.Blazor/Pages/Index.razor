@@ -115,15 +115,19 @@
                         <input type="number" min="4" max="40" @bind="_cellSize" />
                     </div>
                     <div class="cw-field">
-                        <label>Population mode</label>
-                        <select @bind="_popMode">
-                            <option value="Percent">Percent</option>
-                            <option value="Count">Fixed count</option>
-                        </select>
-                    </div>
-                    <div class="cw-field">
-                        <label>@(_popMode == "Percent" ? "Initial % living" : "Initial cell count")</label>
-                        <input type="number" min="1" @bind="_popValue" />
+                        <label>Initial population</label>
+                        <div class="cw-pop-fields">
+                            <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
+                                   value="@_popPercent.ToString("F1")"
+                                   @onchange="OnPopPercentChange"
+                                   @onkeydown="@(e => { if (e.Key == "Enter") OnPopPercentChange(new ChangeEventArgs { Value = _popPercentStr }); })" />
+                            <span class="cw-pop-sep">%</span>
+                            <input type="number" class="cw-pop-input" min="0" max="@(_startCols * _startRows)"
+                                   value="@_popCount"
+                                   @onchange="OnPopCountChange"
+                                   @onkeydown="@(e => { if (e.Key == "Enter") OnPopCountChange(new ChangeEventArgs { Value = _popCount.ToString() }); })" />
+                            <span class="cw-pop-sep">/ @(_startCols * _startRows)</span>
+                        </div>
                     </div>
 
                     <h3 style="margin:10px 0 6px">Spawn Weights</h3>
@@ -167,8 +171,9 @@
     private int _maxGrid = 120;
     private int _maxNations = 20;
     private int _cellSize = 14;
-    private string _popMode = "Percent";
-    private int _popValue = 10;
+    private double _popPercent = 10.0;
+    private int _popCount = 160;
+    private string _popPercentStr = "10.0";
     private Dictionary<string, int> _spawnWeights = new();
 
     private static readonly string[] TypeNames = {
@@ -205,9 +210,30 @@
             MaxGridSize  = _maxGrid,
             MaxNations   = Math.Clamp(_maxNations, 1, 20),
             UserCellSize = _cellSize,
-            PopMode      = _popMode == "Percent" ? PopMode.Percent : PopMode.Count,
-            PopValue     = _popValue,
+            PopMode      = PopMode.Percent,
+            PopValue     = (int)Math.Round(_popPercent),
         };
+    }
+
+    private void OnPopPercentChange(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var pct))
+        {
+            _popPercent = Math.Clamp(pct, 0, 100);
+            _popPercentStr = _popPercent.ToString("F1");
+            _popCount = (int)Math.Round(_popPercent / 100.0 * _startCols * _startRows);
+        }
+    }
+
+    private void OnPopCountChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var cnt))
+        {
+            int total = _startCols * _startRows;
+            _popCount = Math.Clamp(cnt, 0, total);
+            _popPercent = total > 0 ? Math.Round(_popCount * 100.0 / total, 1) : 0;
+            _popPercentStr = _popPercent.ToString("F1");
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -326,8 +352,8 @@
             MaxGridSize  = _maxGrid,
             MaxNations   = Math.Clamp(_maxNations, 1, 20),
             UserCellSize = _cellSize,
-            PopMode      = _popMode == "Percent" ? PopMode.Percent : PopMode.Count,
-            PopValue     = _popValue,
+            PopMode      = PopMode.Percent,
+            PopValue     = (int)Math.Round(_popPercent),
         };
 
         foreach (var kv in _spawnWeights)

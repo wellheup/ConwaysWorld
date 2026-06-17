@@ -214,6 +214,28 @@ canvas#sim-canvas {
     min-width: 0;
 }
 
+.cw-pop-fields {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cw-pop-input {
+    width: 56px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    color: #ddd;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.cw-pop-sep {
+    color: #666;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
 .cw-apply-btn {
     width: 100%;
     padding: 6px;
