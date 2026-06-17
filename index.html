@@ -1607,7 +1607,7 @@ function scheduleStep() {
 }
 
 // ── Zoom & pan ─────────────────────────────────────────────────────────────
-canvas.style.cursor = 'grab';
+canvas.addEventListener('contextmenu', e => e.preventDefault());
 
 canvas.addEventListener('wheel', e => {
         e.preventDefault();
@@ -1624,18 +1624,17 @@ canvas.addEventListener('wheel', e => {
 }, { passive: false });
 
 canvas.addEventListener('mousedown', e => {
-        if (e.button !== 0) return;
+        if (e.button !== 2) return;
         isDragging = true;
-        dragMoved = false;
         dragStartX = e.clientX; dragStartY = e.clientY;
         dragStartTX = viewTranslateX; dragStartTY = viewTranslateY;
         canvas.style.cursor = 'grabbing';
 });
 
-window.addEventListener('mouseup', () => {
-        if (!isDragging) return;
+window.addEventListener('mouseup', e => {
+        if (!isDragging || e.button !== 2) return;
         isDragging = false;
-        canvas.style.cursor = 'grab';
+        canvas.style.cursor = '';
 });
 
 canvas.addEventListener('dblclick', () => { resetView(); render(); });
@@ -1643,10 +1642,8 @@ canvas.addEventListener('dblclick', () => { resetView(); render(); });
 // ── Mouse tooltip ─────────────────────────────────────────────────────────
 canvas.addEventListener('mousemove', e => {
         if (isDragging) {
-                let dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
-                if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragMoved = true;
-                viewTranslateX = dragStartTX + dx;
-                viewTranslateY = dragStartTY + dy;
+                viewTranslateX = dragStartTX + (e.clientX - dragStartX);
+                viewTranslateY = dragStartTY + (e.clientY - dragStartY);
                 render();
                 document.getElementById('tooltip').style.display = 'none';
                 return;
@@ -1678,7 +1675,6 @@ canvas.addEventListener('mousemove', e => {
 canvas.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display = 'none'; });
 
 canvas.addEventListener('click', e => {
-        if (dragMoved) { dragMoved = false; return; }
         let [c, r] = screenToGrid(e.clientX, e.clientY);
         if (c >= 0 && c < cols && r >= 0 && r < rows) {
                 let cell = grid[c][r];
