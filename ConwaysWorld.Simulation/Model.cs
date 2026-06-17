@@ -194,7 +194,8 @@ public class Model
                 if (cell.Conditions.Contains("immaculate"))
                     cell.Immaculate(CellGrid);
 
-                if (cell.IsAlive && cell.Conditions.Contains("exploring"))
+                if (cell.IsAlive && cell.CellType == CellType.Explorer &&
+                    (c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
                     needResize = true;
 
                 if (cell.IsAlive && cell.Age >= 1 && cell.Nationality < 0)

@@ -8,6 +8,11 @@ window.ConwaysInterop = (() => {
     let hoveredCell = null;
     let selectedCell = null;
 
+    // Cached cell data for redraws during pan/zoom while paused
+    let cachedCells = [];
+    let cachedNationColors = [];
+    let rafPending = false;
+
     const SPRITE_NAMES = [
         'Dead','Basic','Immortal','Diseased','Plague',
         'Traveler','Explorer','Doctor','Warrior','Hunter',
@@ -15,26 +20,20 @@ window.ConwaysInterop = (() => {
     ];
 
     const TYPE_COLORS = {
-        0: '#111',       // Dead
-        1: '#e8e8e8',    // Basic
-        2: '#e0c060',    // Immortal
-        3: '#7a2020',    // Diseased
-        4: '#c01010',    // Plague
-        5: '#4090d0',    // Traveler
-        6: '#20c0e0',    // Explorer
-        7: '#e050a0',    // Doctor
-        8: '#d08020',    // Warrior
-        9: '#c04040',    // Hunter
-        10: '#e0a000',   // Bomber
-        11: '#a060e0',   // Diplomat
-        12: '#f0d000',   // King
+        0: '#111',
+        1: '#e8e8e8',
+        2: '#e0c060',
+        3: '#7a2020',
+        4: '#c01010',
+        5: '#4090d0',
+        6: '#20c0e0',
+        7: '#e050a0',
+        8: '#d08020',
+        9: '#c04040',
+        10: '#e0a000',
+        11: '#a060e0',
+        12: '#f0d000',
     };
-
-    const TYPE_NAMES = [
-        'Dead','Basic','Immortal','Diseased','Plague',
-        'Traveler','Explorer','Doctor','Warrior','Hunter',
-        'Bomber','Diplomat','King'
-    ];
 
     const sprites = {};
 
@@ -80,8 +79,17 @@ window.ConwaysInterop = (() => {
         canvas.addEventListener('click', onClick);
         canvas.addEventListener('mouseleave', onMouseLeave);
         canvas.addEventListener('contextmenu', e => e.preventDefault());
-        window.addEventListener('resize', () => { fitCanvas(); });
+        window.addEventListener('resize', () => { fitCanvas(); scheduleRedraw(); });
         window.addEventListener('keydown', onKeyDown);
+    }
+
+    function scheduleRedraw() {
+        if (rafPending) return;
+        rafPending = true;
+        requestAnimationFrame(() => {
+            rafPending = false;
+            drawFrame();
+        });
     }
 
     function onKeyDown(e) {
@@ -103,6 +111,7 @@ window.ConwaysInterop = (() => {
         scale = Math.max(0.2, Math.min(10, scale * factor));
         tx = mx - (mx - tx) * factor;
         ty = my - (my - ty) * factor;
+        scheduleRedraw();
     }
 
     function onMouseDown(e) {
@@ -117,6 +126,7 @@ window.ConwaysInterop = (() => {
         if (isPanning) {
             tx = e.clientX - panStart.x;
             ty = e.clientY - panStart.y;
+            scheduleRedraw();
         }
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
@@ -146,12 +156,14 @@ window.ConwaysInterop = (() => {
     function onDblClick(e) {
         scale = 1;
         centerGrid();
+        scheduleRedraw();
     }
 
     function onClick(e) {
         const cell = screenToCell(e);
         if (cell) {
             selectedCell = cell;
+            scheduleRedraw();
             if (dotnetRef) dotnetRef.invokeMethodAsync('OnCellClick', cell.col, cell.row);
         }
     }
@@ -169,6 +181,13 @@ window.ConwaysInterop = (() => {
     function renderFrame(cells, nationColors, newCols, newRows) {
         if (!ctx) return;
         cols = newCols; rows = newRows;
+        cachedCells = cells;
+        cachedNationColors = nationColors;
+        drawFrame();
+    }
+
+    function drawFrame() {
+        if (!ctx) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.save();
@@ -176,6 +195,8 @@ window.ConwaysInterop = (() => {
         ctx.scale(scale, scale);
 
         const cs = cellSize;
+        const cells = cachedCells;
+        const nationColors = cachedNationColors;
 
         for (let i = 0; i < cells.length; i++) {
             const c = cells[i];
