@@ -578,7 +578,7 @@ function createCell(col, row, type, alive) {
                 alive: alive === true,
                 age: 0, nationality: -1, conditions: new Set(),
                 direction: randChoice(DIRS),
-                deathCountDown: 0, maxAloneTime: 3, maxAge: Infinity, specialPerformed: false,
+                deathCountDown: 0, crushCountDown: 0, maxAloneTime: 3, maxAge: Infinity, specialPerformed: false,
                 disease: null, countDown: 3, transmissionRate: 25,
                 currentPrey: null, vaccines: [], hood: null,
         };
@@ -773,6 +773,7 @@ function calcAliveNextGen(cell) {
         if (type === TYPE.TRAVELER || type === TYPE.EXPLORER || type === TYPE.DIPLOMAT ||
                         type === TYPE.HUNTER   || type === TYPE.WARRIOR) {
                 if (type === TYPE.WARRIOR && cell.age > cell.maxAge) return false;
+                if ((type === TYPE.TRAVELER || type === TYPE.EXPLORER) && cell.crushCountDown > 3) return false;
                 return cell.deathCountDown <= cell.maxAloneTime;
         }
         if (type === TYPE.DOCTOR) {
@@ -824,6 +825,8 @@ function cellLive(cell) {
         let t = cell.type;
         if (t === TYPE.TRAVELER || t === TYPE.EXPLORER || t === TYPE.DIPLOMAT || t === TYPE.HUNTER) {
                 cell.hood.numNeighbors === 0 ? cell.deathCountDown++ : (cell.deathCountDown = 0);
+                if (t === TYPE.TRAVELER || t === TYPE.EXPLORER)
+                        cell.hood.numNeighbors === 8 ? cell.crushCountDown++ : (cell.crushCountDown = 0);
                 cell.specialPerformed = false;
         }
         if (t === TYPE.WARRIOR) {
