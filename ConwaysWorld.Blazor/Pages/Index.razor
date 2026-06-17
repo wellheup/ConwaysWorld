@@ -51,94 +51,97 @@
             </div>
         </div>
 
-        <div class="cw-panel">
-            <h3>Cell Types</h3>
-            <div class="cw-cell-list">
-                @foreach (var entry in _typeCounts)
-                {
-                    <div class="cw-cell-row">
-                        <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg" alt="@entry.Name" />
-                        <span>@entry.Name</span>
-                        <span class="cw-cell-count">@entry.Count</span>
-                    </div>
-                }
-            </div>
+        <div class="cw-tab-bar">
+            <button class="cw-tab @(!_showSettings ? "cw-tab-active" : "")"
+                    @onclick="() => _showSettings = false">Stats</button>
+            <button class="cw-tab @(_showSettings ? "cw-tab-active" : "")"
+                    @onclick="() => _showSettings = true">⚙ Settings</button>
         </div>
 
-        <div class="cw-panel">
-            <h3>Nations</h3>
-            <div class="cw-nation-list">
-                @foreach (var n in _model.Nations.Values.OrderByDescending(n => n.CitizensList.Count))
-                {
-                    <div class="cw-nation-row">
-                        <div class="cw-nation-swatch"
-                             style="background:@Cell_Nation.NationColors[n.NationNum % Cell_Nation.NationColors.Count]">
+        <div class="cw-content-area">
+            @if (!_showSettings)
+            {
+                <div class="cw-panel cw-panel-grow">
+                    <h3>Cell Types</h3>
+                    <div class="cw-cell-list">
+                        @foreach (var entry in _typeCounts)
+                        {
+                            <div class="cw-cell-row">
+                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg" alt="@entry.Name" />
+                                <span>@entry.Name</span>
+                                <span class="cw-cell-count">@entry.Count</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="cw-panel">
+                    <h3>Nations</h3>
+                    <div class="cw-nation-list">
+                        @foreach (var n in _model.Nations.Values.OrderByDescending(n => n.CitizensList.Count))
+                        {
+                            <div class="cw-nation-row">
+                                <div class="cw-nation-swatch"
+                                     style="background:@Cell_Nation.NationColors[n.NationNum % Cell_Nation.NationColors.Count]">
+                                </div>
+                                <span>Nation @n.NationNum</span>
+                                <span style="margin-left:auto;color:#777">@n.CitizensList.Count</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="cw-settings-scroll">
+                    <div class="cw-field">
+                        <label>Start columns</label>
+                        <input type="number" min="5" max="300" @bind="_startCols" />
+                    </div>
+                    <div class="cw-field">
+                        <label>Start rows</label>
+                        <input type="number" min="5" max="300" @bind="_startRows" />
+                    </div>
+                    <div class="cw-field">
+                        <label>Max grid size (0 = unlimited)</label>
+                        <input type="number" min="0" max="500" @bind="_maxGrid" />
+                    </div>
+                    <div class="cw-field">
+                        <label>Max nations (1–20)</label>
+                        <input type="number" min="1" max="20" @bind="_maxNations" />
+                    </div>
+                    <div class="cw-field">
+                        <label>Cell size (px)</label>
+                        <input type="number" min="4" max="40" @bind="_cellSize" />
+                    </div>
+                    <div class="cw-field">
+                        <label>Population mode</label>
+                        <select @bind="_popMode">
+                            <option value="Percent">Percent</option>
+                            <option value="Count">Fixed count</option>
+                        </select>
+                    </div>
+                    <div class="cw-field">
+                        <label>@(_popMode == "Percent" ? "Initial % living" : "Initial cell count")</label>
+                        <input type="number" min="1" @bind="_popValue" />
+                    </div>
+
+                    <h3 style="margin:10px 0 6px">Spawn Weights</h3>
+                    @foreach (var kv in _spawnWeights)
+                    {
+                        <div class="cw-weight-row">
+                            <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(kv.Key).jpg" alt="@kv.Key" />
+                            <input type="range" min="0" max="100"
+                                   value="@kv.Value"
+                                   @onchange="@(e => OnWeightChange(kv.Key, e))" />
+                            <span>@kv.Value</span>
                         </div>
-                        <span>Nation @n.NationNum</span>
-                        <span style="margin-left:auto;color:#777">@n.CitizensList.Count</span>
-                    </div>
-                }
-            </div>
+                    }
+
+                    <button class="cw-apply-btn" @onclick="ApplyAndRestart">Apply & Restart</button>
+                </div>
+            }
         </div>
-
-        <div class="cw-panel">
-            <button class="cw-settings-toggle" @onclick="() => _showSettings = !_showSettings">
-                ⚙ Settings @(_showSettings ? "▲" : "▼")
-            </button>
-        </div>
-
-        @if (_showSettings)
-        {
-        <div class="cw-panel" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden">
-            <div class="cw-settings-scroll">
-                <div class="cw-field">
-                    <label>Start columns</label>
-                    <input type="number" min="5" max="300" @bind="_startCols" />
-                </div>
-                <div class="cw-field">
-                    <label>Start rows</label>
-                    <input type="number" min="5" max="300" @bind="_startRows" />
-                </div>
-                <div class="cw-field">
-                    <label>Max grid size (0 = unlimited)</label>
-                    <input type="number" min="0" max="500" @bind="_maxGrid" />
-                </div>
-                <div class="cw-field">
-                    <label>Max nations (1–20)</label>
-                    <input type="number" min="1" max="20" @bind="_maxNations" />
-                </div>
-                <div class="cw-field">
-                    <label>Cell size (px)</label>
-                    <input type="number" min="4" max="40" @bind="_cellSize" />
-                </div>
-                <div class="cw-field">
-                    <label>Population mode</label>
-                    <select @bind="_popMode">
-                        <option value="Percent">Percent</option>
-                        <option value="Count">Fixed count</option>
-                    </select>
-                </div>
-                <div class="cw-field">
-                    <label>@(_popMode == "Percent" ? "Initial % living" : "Initial cell count")</label>
-                    <input type="number" min="1" @bind="_popValue" />
-                </div>
-
-                <h3 style="margin:10px 0 6px">Spawn Weights</h3>
-                @foreach (var kv in _spawnWeights)
-                {
-                    <div class="cw-weight-row">
-                        <span>@kv.Key</span>
-                        <input type="range" min="0" max="100"
-                               value="@kv.Value"
-                               @onchange="@(e => OnWeightChange(kv.Key, e))" />
-                        <span>@kv.Value</span>
-                    </div>
-                }
-
-                <button class="cw-apply-btn" @onclick="ApplyAndRestart">Apply & Restart</button>
-            </div>
-        </div>
-        }
     </div>
 </div>
 
@@ -267,7 +270,7 @@
                     counts[(int)grid[col, row].CellType]++;
 
         _typeCounts = Enumerable.Range(1, TypeNames.Length - 1)
-            .Where(i => counts[i] > 0)
+            .Where(i => !_spawnWeights.TryGetValue(TypeNames[i], out var w) || w > 0)
             .Select(i => (TypeNames[i], TypeColors[i], counts[i]))
             .ToList();
     }

@@ -95,6 +95,44 @@ canvas#sim-canvas {
 .cw-stat span:first-child { font-size: 10px; color: #666; }
 .cw-stat span:last-child { font-size: 14px; color: #ccc; font-variant-numeric: tabular-nums; }
 
+.cw-tab-bar {
+    display: flex;
+    flex-shrink: 0;
+    border-bottom: 1px solid #222;
+}
+
+.cw-tab {
+    flex: 1;
+    padding: 6px 4px;
+    background: #111;
+    border: none;
+    border-right: 1px solid #222;
+    color: #666;
+    font-size: 11px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.cw-tab:last-child { border-right: none; }
+.cw-tab:hover { background: #1a1a1a; color: #aaa; }
+.cw-tab-active { color: #ccc !important; background: #181818 !important; border-bottom: 2px solid #4a8a5a; }
+
+.cw-content-area {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.cw-panel-grow {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 .cw-cell-list { overflow-y: auto; flex: 1; }
 
 .cw-cell-row {
@@ -119,7 +157,7 @@ canvas#sim-canvas {
 .cw-nation-list {
     padding: 4px 0;
     overflow-y: auto;
-    max-height: 260px;
+    max-height: 200px;
 }
 
 .cw-nation-row {
@@ -166,20 +204,10 @@ canvas#sim-canvas {
 
 .cw-weight-row {
     display: grid;
-    grid-template-columns: 80px 1fr 32px;
+    grid-template-columns: 22px 1fr 28px;
     align-items: center;
-    gap: 4px;
-    margin-bottom: 4px;
-    font-size: 11px;
-}
-
-.cw-weight-row input[type=number] {
-    background: #1a1a1a;
-    border: 1px solid #333;
-    color: #ddd;
-    padding: 2px 4px;
-    border-radius: 3px;
-    width: 100%;
+    gap: 5px;
+    margin-bottom: 5px;
     font-size: 11px;
 }
 
@@ -195,19 +223,6 @@ canvas#sim-canvas {
     margin-top: 6px;
 }
 .cw-apply-btn:hover { background: #2a5a3a; }
-
-.cw-settings-toggle {
-    width: 100%;
-    padding: 6px 10px;
-    background: #1a1a2a;
-    border: 1px solid #2a2a4a;
-    color: #aaa;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    text-align: left;
-}
-.cw-settings-toggle:hover { background: #222238; color: #ccc; }
 
 .cw-tooltip {
     position: absolute;
