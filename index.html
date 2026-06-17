@@ -920,7 +920,18 @@ function specialActions(cell) {
                         }
                         cell.specialPerformed = true;
                 }
-        } else if (type === TYPE.HUNTER) { huntCell(cell); }
+        } else if (type === TYPE.HUNTER) {
+                if (huntCell(cell)) {
+                        cell.idleTurns = 0;
+                } else {
+                        cell.idleTurns = (cell.idleTurns || 0) + 1;
+                        if (cell.idleTurns >= 3) {
+                                let nc = replaceCell(cell, TYPE.BASIC, true);
+                                nc.hood = cell.hood;
+                                grid[cell.col][cell.row] = nc;
+                        }
+                }
+        }
         else if (type === TYPE.WARRIOR) {
                 if (fightCell(cell)) {
                         cell.idleTurns = 0;
@@ -1027,7 +1038,7 @@ function makeArmy(cell) {
 }
 
 function huntCell(cell) {
-        if (!cell.hood) return;
+        if (!cell.hood) return false;
         let isPrey = nb => nb && [TYPE.IMMORTAL, TYPE.KING].includes(nb.type) && nb.alive;
         let target = cell.currentPrey;
         if (!target || !target.alive) {
@@ -1036,11 +1047,13 @@ function huntCell(cell) {
                 if (!target) target = cell.hood.dict[cell.direction];
         }
         let toSwap = target ? findNeighborInDir(cell, target) : (cell.hood.dict[cell.direction] || null);
-        if (!toSwap) return;
+        if (!toSwap) return false;
         if (isPrey(toSwap)) {
                 swapCells(cell, toSwap); cellDie(toSwap); toSwap.conditions.add('cleanup'); cell.currentPrey = null;
+                return true;
         } else {
                 swapCells(cell, toSwap);
+                return false;
         }
 }
 
@@ -1098,7 +1111,7 @@ function replaceCell(oldCell, type, alive) {
         if (type === TYPE.DISEASED) { nc.disease = randomCondition('d'); nc.countDown = 3; nc.transmissionRate = DISEASED_TRANSMISSION_RATE; }
         if (type === TYPE.PLAGUE)   { nc.disease = randomCondition('p'); nc.countDown = 3; nc.transmissionRate = Math.round(DISEASED_TRANSMISSION_RATE * 1.4); }
         if (type === TYPE.DOCTOR)   { nc.vaccines = []; }
-        if (type === TYPE.WARRIOR)  { nc.idleTurns = 0; }
+        if (type === TYPE.WARRIOR || type === TYPE.HUNTER) { nc.idleTurns = 0; }
         if (type === TYPE.TRAVELER || type === TYPE.EXPLORER || type === TYPE.DIPLOMAT) {
                 nc.direction = oldCell.direction || randChoice(DIRS);
                 nc.deathCountDown = 0;
