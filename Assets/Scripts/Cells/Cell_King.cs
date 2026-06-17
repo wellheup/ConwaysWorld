@@ -7,44 +7,44 @@ using UnityEngine;
 /// </summary>
 namespace ConwaysWorld
 {
-	public class Cell_King : Cell
-	{
-		public Cell_King(int column, int row, bool isAlive)
-		{
-			IsAlive = isAlive;
-			Column = column;
-			Row = row;
-			CellType = E_CellType.Cell_King;
-			Conditions = new List<string>();
-		}
+    public class Cell_King : Cell
+    {
+        public Cell_King(int column, int row, bool isAlive)
+        {
+            IsAlive = isAlive;
+            Column = column;
+            Row = row;
+            CellType = E_CellType.Cell_King;
+            Conditions = new List<string>();
+        }
 
-		public override void Live()
-		{
-			base.Live();
-		}
+        public override void Live()
+        {
+            base.Live();
+        }
 
-		public override void Die()
-		{
-			IsAlive = false;
-			Age = 0;
-			Nationality = -1;
-		}
+        public override void Die()
+        {
+            IsAlive = false;
+            Age = 0;
+            Nationality = -1;
+        }
 
-		public void MakeArmy()
-		{
-			foreach (Cell _ in CellNeighborhood.NeighborhoodDict.Values)
-			{
-				if (_.GetIsAlive() && _ != this && _.CellType == E_CellType.Cell_Basic)
-				{
-					_.Conditions.Add("toWar");
-				}
-			}
-		}
+        public void MakeArmy()
+        {
+            foreach (Cell _ in CellNeighborhood.NeighborhoodDict.Values)
+            {
+                if (_.GetIsAlive() && _ != this && _.CellType == E_CellType.Cell_Basic)
+                {
+                    _.Conditions.Add("toWar");
+                }
+            }
+        }
 
-		public override void SpecialActions(Cell[,] cellGrid)
-		{
-			MakeArmy();
-		}
+        public override void SpecialActions(Cell[,] cellGrid)
+        {
+            MakeArmy();
+        }
 
-	}
+    }
 }
