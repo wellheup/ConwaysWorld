@@ -8,6 +8,12 @@ window.ConwaysInterop = (() => {
     let hoveredCell = null;
     let selectedCell = null;
 
+    const SPRITE_NAMES = [
+        'Dead','Basic','Immortal','Diseased','Plague',
+        'Traveler','Explorer','Doctor','Warrior','Hunter',
+        'Bomber','Diplomat','King'
+    ];
+
     const TYPE_COLORS = {
         0: '#111',       // Dead
         1: '#e8e8e8',    // Basic
@@ -30,12 +36,25 @@ window.ConwaysInterop = (() => {
         'Bomber','Diplomat','King'
     ];
 
-    function init(canvasId, c, r, cs, ref) {
+    const sprites = {};
+
+    function loadSprites() {
+        const promises = SPRITE_NAMES.map((name, i) => new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => { sprites[i] = img; resolve(); };
+            img.onerror = () => resolve();
+            img.src = `Assets/Sprites/Cell_${name}.jpg`;
+        }));
+        return Promise.all(promises);
+    }
+
+    async function init(canvasId, c, r, cs, ref) {
         canvas = document.getElementById(canvasId);
         ctx = canvas.getContext('2d');
         cols = c; rows = r; cellSize = cs;
         dotnetRef = ref;
 
+        await loadSprites();
         fitCanvas();
         bindEvents();
     }
@@ -59,6 +78,7 @@ window.ConwaysInterop = (() => {
         canvas.addEventListener('mouseup', onMouseUp);
         canvas.addEventListener('dblclick', onDblClick);
         canvas.addEventListener('click', onClick);
+        canvas.addEventListener('mouseleave', onMouseLeave);
         canvas.addEventListener('contextmenu', e => e.preventDefault());
         window.addEventListener('resize', () => { fitCanvas(); });
         window.addEventListener('keydown', onKeyDown);
@@ -98,11 +118,22 @@ window.ConwaysInterop = (() => {
             tx = e.clientX - panStart.x;
             ty = e.clientY - panStart.y;
         }
+        const rect = canvas.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
         const cell = screenToCell(e);
         if (cell && (hoveredCell === null || cell.col !== hoveredCell.col || cell.row !== hoveredCell.row)) {
             hoveredCell = cell;
-            if (dotnetRef) dotnetRef.invokeMethodAsync('OnHover', cell.col, cell.row);
+            if (dotnetRef) dotnetRef.invokeMethodAsync('OnHover', cell.col, cell.row, mx, my);
+        } else if (!cell && hoveredCell !== null) {
+            hoveredCell = null;
+            if (dotnetRef) dotnetRef.invokeMethodAsync('OnHover', -1, -1, 0, 0);
         }
+    }
+
+    function onMouseLeave() {
+        hoveredCell = null;
+        if (dotnetRef) dotnetRef.invokeMethodAsync('OnHover', -1, -1, 0, 0);
     }
 
     function onMouseUp(e) {
@@ -145,8 +176,6 @@ window.ConwaysInterop = (() => {
         ctx.scale(scale, scale);
 
         const cs = cellSize;
-        const inner = Math.max(2, Math.floor(cs * 0.45));
-        const off = Math.floor((cs - inner) / 2);
 
         for (let i = 0; i < cells.length; i++) {
             const c = cells[i];
@@ -154,20 +183,27 @@ window.ConwaysInterop = (() => {
 
             const px = c.col * cs;
             const py = c.row * cs;
+            const w = cs - 1;
 
             const nationColor = (c.nat >= 0 && c.nat < nationColors.length)
                 ? nationColors[c.nat] : '#222';
 
             ctx.fillStyle = nationColor;
-            ctx.fillRect(px, py, cs - 1, cs - 1);
+            ctx.fillRect(px, py, w, w);
 
-            ctx.fillStyle = TYPE_COLORS[c.type] ?? '#fff';
-            ctx.fillRect(px + off, py + off, inner, inner);
+            if (sprites[c.type]) {
+                ctx.drawImage(sprites[c.type], px, py, w, w);
+            } else {
+                const inner = Math.max(2, Math.floor(cs * 0.45));
+                const off = Math.floor((cs - inner) / 2);
+                ctx.fillStyle = TYPE_COLORS[c.type] ?? '#fff';
+                ctx.fillRect(px + off, py + off, inner, inner);
+            }
 
             if (selectedCell && selectedCell.col === c.col && selectedCell.row === c.row) {
                 ctx.strokeStyle = '#fff';
                 ctx.lineWidth = 1 / scale;
-                ctx.strokeRect(px + 0.5, py + 0.5, cs - 2, cs - 2);
+                ctx.strokeRect(px + 0.5, py + 0.5, w - 1, w - 1);
             }
         }
 

@@ -195,8 +195,21 @@ canvas#sim-canvas {
 }
 .cw-apply-btn:hover { background: #2a5a3a; }
 
+.cw-settings-toggle {
+    width: 100%;
+    padding: 6px 10px;
+    background: #1a1a2a;
+    border: 1px solid #2a2a4a;
+    color: #aaa;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    text-align: left;
+}
+.cw-settings-toggle:hover { background: #222238; color: #ccc; }
+
 .cw-tooltip {
-    position: fixed;
+    position: absolute;
     background: rgba(10,10,10,0.92);
     border: 1px solid #333;
     border-radius: 4px;

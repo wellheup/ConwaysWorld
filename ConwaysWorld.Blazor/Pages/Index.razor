@@ -81,8 +81,15 @@
             </div>
         </div>
 
+        <div class="cw-panel">
+            <button class="cw-settings-toggle" @onclick="() => _showSettings = !_showSettings">
+                ⚙ Settings @(_showSettings ? "▲" : "▼")
+            </button>
+        </div>
+
+        @if (_showSettings)
+        {
         <div class="cw-panel" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden">
-            <h3>Settings</h3>
             <div class="cw-settings-scroll">
                 <div class="cw-field">
                     <label>Start columns</label>
@@ -127,6 +134,7 @@
                 <button class="cw-apply-btn" @onclick="ApplyAndRestart">Apply & Restart</button>
             </div>
         </div>
+        }
     </div>
 </div>
 
@@ -136,6 +144,7 @@
     private System.Timers.Timer _timer = null!;
     private DotNetObjectReference<Index>? _dotNetRef;
     private bool _running = false;
+    private bool _showSettings = false;
     private int _intervalMs = 200;
     private bool _canvasReady = false;
 
@@ -322,7 +331,7 @@
     }
 
     [JSInvokable]
-    public void OnHover(int col, int row)
+    public void OnHover(int col, int row, double mouseX, double mouseY)
     {
         if (col < 0 || row < 0 || col >= _model.Columns || row >= _model.Rows)
         {
@@ -331,6 +340,12 @@
             return;
         }
         var cell = _model.CellGrid[col, row];
+        if (!cell.IsAlive)
+        {
+            _tooltip = null;
+            InvokeAsync(StateHasChanged);
+            return;
+        }
         var conds = string.Join(", ", cell.Conditions
             .Where(c => !c.StartsWith("vax_") && c != "mature" && c != "immaculate")
             .Take(3));
@@ -339,6 +354,8 @@
             cell.Nationality,
             cell.Age,
             conds);
+        _tooltipX = mouseX + 14;
+        _tooltipY = mouseY + 14;
         InvokeAsync(StateHasChanged);
     }
 

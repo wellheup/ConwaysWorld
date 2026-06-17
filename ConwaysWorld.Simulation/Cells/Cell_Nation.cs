@@ -95,7 +95,7 @@ public class Cell_Nation
         }
 
         if (King != null) return;
-        if (CitizensList.Count <= DiplomatsList.Count) return;
+        if (CitizensList.Count < 5 || CitizensList.Count <= DiplomatsList.Count) return;
 
         Cell? newKing = null;
         for (int attempt = 0; attempt < 5; attempt++)
