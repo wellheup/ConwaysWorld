@@ -57,7 +57,7 @@
                 @foreach (var entry in _typeCounts)
                 {
                     <div class="cw-cell-row">
-                        <div class="cw-cell-swatch" style="background:@entry.Color"></div>
+                        <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg" alt="@entry.Name" />
                         <span>@entry.Name</span>
                         <span class="cw-cell-count">@entry.Count</span>
                     </div>
