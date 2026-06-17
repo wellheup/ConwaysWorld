@@ -837,7 +837,7 @@ function updateConditions() {
                         }
                         if (cell.conditions.has('immune'))
                                 for (let _x of [...cell.conditions]) { if (_x.startsWith('d_') || _x.startsWith('p_')) cell.conditions.delete(_x); }
-                        if (cell.type !== TYPE.DOCTOR) {
+                        if (cell.type !== TYPE.DOCTOR && cell.type !== TYPE.IMMORTAL) {
                                 for (let cond of [...cell.conditions]) {
                                         if (cond.startsWith('d_') && cell.alive && cell.type !== TYPE.DISEASED) {
                                                 let nc = replaceCell(cell, TYPE.DISEASED, true);
@@ -954,7 +954,7 @@ function spreadDisease(cell) {
         for (let dir of DIRS) {
                 if (randInt(1, 101) < rate) {
                         let nb = cell.hood.dict[dir];
-                        if (nb && !nb.conditions.has('immune')) nb.conditions.add(cell.disease);
+                        if (nb && !nb.conditions.has('immune') && nb.type !== TYPE.IMMORTAL) nb.conditions.add(cell.disease);
                 }
         }
 }
