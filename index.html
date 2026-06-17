@@ -872,11 +872,11 @@ function updateConditions() {
                                 for (let _x of [...cell.conditions]) { if (_x.startsWith('d_') || _x.startsWith('p_')) cell.conditions.delete(_x); }
                         if (cell.type !== TYPE.DOCTOR && cell.type !== TYPE.IMMORTAL) {
                                 for (let cond of [...cell.conditions]) {
-                                        if (cond.startsWith('d_') && cell.alive && cell.type !== TYPE.DISEASED) {
+                                        if (cond.startsWith('d_') && cell.alive && cell.type !== TYPE.DISEASED && !cell.conditions.has('vax_' + cond)) {
                                                 let nc = replaceCell(cell, TYPE.DISEASED, true);
                                                 nc.disease = cond; nc.conditions.add(cond); nc.hood = cell.hood;
                                                 grid[c][r] = cell = nc;
-                                        } else if (cond.startsWith('p_') && cell.alive && cell.type !== TYPE.PLAGUE) {
+                                        } else if (cond.startsWith('p_') && cell.alive && cell.type !== TYPE.PLAGUE && !cell.conditions.has('vax_' + cond)) {
                                                 let nc = replaceCell(cell, TYPE.PLAGUE, true);
                                                 nc.disease = cond; nc.conditions.add(cond); nc.hood = cell.hood;
                                                 grid[c][r] = cell = nc; break;
@@ -987,7 +987,7 @@ function spreadDisease(cell) {
         for (let dir of DIRS) {
                 if (randInt(1, 101) < rate) {
                         let nb = cell.hood.dict[dir];
-                        if (nb && !nb.conditions.has('immune') && nb.type !== TYPE.IMMORTAL) nb.conditions.add(cell.disease);
+                        if (nb && !nb.conditions.has('immune') && nb.type !== TYPE.IMMORTAL && !nb.conditions.has('vax_' + cell.disease)) nb.conditions.add(cell.disease);
                 }
         }
 }
@@ -1007,15 +1007,16 @@ function seekDisease(cell) {
 }
 
 function cureDisease(cell) {
-        let cured = false;
+        let acted = false;
         for (let dir of DIRS) {
                 let nb = cell.hood.dict[dir];
                 if (nb && nb.alive && nb !== cell) {
                         for (let vaccine of cell.vaccines) {
-                                let before = nb.conditions.size;
-                                nb.conditions.delete(vaccine);
-                                if (nb.conditions.size < before) {
-                                        cured = true;
+                                let vaxKey = 'vax_' + vaccine;
+                                if (!nb.conditions.has(vaxKey)) {
+                                        nb.conditions.delete(vaccine);
+                                        nb.conditions.add(vaxKey);
+                                        acted = true;
                                         if (nb.type === TYPE.DISEASED || nb.type === TYPE.PLAGUE) {
                                                 let nc = replaceCell(nb, TYPE.BASIC, true);
                                                 nc.hood = nb.hood;
@@ -1026,7 +1027,7 @@ function cureDisease(cell) {
                 }
         }
         cell.hood = buildNeighborhood(grid, cols, rows, cell.col, cell.row);
-        return cured;
+        return acted;
 }
 
 function detonateCell(cell) {
