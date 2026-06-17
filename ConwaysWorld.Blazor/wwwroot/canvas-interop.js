@@ -192,7 +192,7 @@ window.ConwaysInterop = (() => {
             ctx.fillRect(px, py, w, w);
 
             if (sprites[c.type]) {
-                ctx.drawImage(sprites[c.type], px, py, w, w);
+                ctx.drawImage(sprites[c.type], px + 1, py + 1, w - 2, w - 2);
             } else {
                 const inner = Math.max(2, Math.floor(cs * 0.45));
                 const off = Math.floor((cs - inner) / 2);
