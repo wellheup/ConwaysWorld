@@ -119,21 +119,11 @@ canvas#sim-canvas {
 
 .cw-content-area {
     flex: 1;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
+    overflow-y: auto;
     min-height: 0;
 }
 
-.cw-panel-grow {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.cw-cell-list { overflow-y: auto; flex: 1; }
+.cw-cell-list { overflow: visible; }
 
 .cw-cell-row {
     display: flex;
