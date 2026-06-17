@@ -147,6 +147,10 @@ namespace ConwaysWorld
 	- TODO: spy (similar to diplomat, but instead of moving directly toward target, must move through living neighbors)
 	- TODO: god? (effects every living cell on the board in some way)
 	- TODO: natural disasters? opportunity for largest island?
+	- TODO: add coup event where 3 warriors spawn and try to kill a king
+	- TODO: add a behavior to diplomats to instigate a rebellion event where, if a nation is large enough, and significantly larger than others (if there are any), it will become a revolutionary cell
+	- TODO: revolutionary cells spawn a bunch of rebels and warriors for a new nation, which they become king of
+	- TODO: rebel cells are like diplomats with higher conversion rates but shorter lifespans but are hunted by other nations warriors and hunters
 - TODO: add an increased chance to spawn doctors near diseases
 - TODO: make minimum allowable grid size 5x5
 - TODO: utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
@@ -154,7 +158,6 @@ namespace ConwaysWorld
 - TODO: make each update frame fade between the 2 more smoothly
 - TODO: the system would be more stable and  likely faster if each cellType has its own phase of the update, so there is a heirarchical order to cell special actions
 - TODO: make doctors more aggressive. Maybe make range a modifiable number in ConwaysWorld?
-- TODO: report on number of nations and their size
 
 Visuals
 - add symbols for each type of cell
