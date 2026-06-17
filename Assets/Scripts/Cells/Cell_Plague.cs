@@ -9,7 +9,7 @@ namespace ConwaysWorld
         // plague(diseased cell that spreads disease with higher infection rate than diseased to all touching cells)
         public Cell_Plague(int column, int row, bool isAlive) : base(column, row, isAlive)
         {
-            TransmissionRate = 75;
+            TransmissionRate = 50;
             CellType = E_CellType.Cell_Plague;
             Disease = RandomCondition('p');
         }

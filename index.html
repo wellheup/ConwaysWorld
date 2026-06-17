@@ -975,9 +975,19 @@ function detonateCell(cell) {
 }
 
 function makeArmy(cell) {
+        const nation = nations.find(n => n.id === cell.nationality);
+        if (!nation) return;
+        const cap = Math.floor(nation.citizens.length * 0.5);
+        const currentWarriors = nation.citizens.filter(c => c.alive && c.type === TYPE.WARRIOR).length;
+        const pendingWarriors = nation.citizens.filter(c => c.alive && c.conditions.has('toWar')).length;
+        let slots = cap - currentWarriors - pendingWarriors;
         for (let dir of DIRS) {
+                if (slots <= 0) break;
                 let nb = cell.hood.dict[dir];
-                if (nb && nb.alive && nb.type === TYPE.BASIC) nb.conditions.add('toWar');
+                if (nb && nb.alive && nb.type === TYPE.BASIC && nb.nationality === cell.nationality) {
+                        nb.conditions.add('toWar');
+                        slots--;
+                }
         }
 }
 
