@@ -620,6 +620,9 @@ let userCellSize = 8;
 let running = true;
 let intervalMs = 650;
 let selectedCell = null;
+let viewScale = 1, viewTranslateX = 0, viewTranslateY = 0;
+let isDragging = false, dragMoved = false;
+let dragStartX = 0, dragStartY = 0, dragStartTX = 0, dragStartTY = 0;
 let timerId = null;
 // per-type counts updated each step
 let typeCounts = {};
@@ -1276,6 +1279,9 @@ function resizeCanvas() {
 
 function render() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(viewTranslateX, viewTranslateY);
+        ctx.scale(viewScale, viewScale);
         let cellSize = Math.min(canvas.width / cols, canvas.height / rows);
         let offsetX = (canvas.width - cellSize * cols) / 2;
         let offsetY = (canvas.height - cellSize * rows) / 2;
@@ -1325,7 +1331,6 @@ function render() {
                 } else {
                         let sx = offsetX + selectedCell.col * cellSize;
                         let sy = offsetY + selectedCell.row * cellSize;
-                        ctx.save();
                         ctx.strokeStyle = '#ffffff';
                         ctx.lineWidth = 2.5;
                         ctx.strokeRect(sx + 1, sy + 1, cellSize - 2, cellSize - 2);
@@ -1333,9 +1338,10 @@ function render() {
                         ctx.lineWidth = 1.5;
                         ctx.setLineDash([3, 3]);
                         ctx.strokeRect(sx + 1, sy + 1, cellSize - 2, cellSize - 2);
-                        ctx.restore();
+                        ctx.setLineDash([]);
                 }
         }
+        ctx.restore();
 }
 
 // ── Stats header bar ───────────────────────────────────────────────────────
@@ -1459,9 +1465,24 @@ function clampedGridDims() {
         return [c, r];
 }
 
+function resetView() {
+        viewScale = 1; viewTranslateX = 0; viewTranslateY = 0;
+}
+
+function screenToGrid(clientX, clientY) {
+        let rect = canvas.getBoundingClientRect();
+        let sx = (clientX - rect.left - viewTranslateX) / viewScale;
+        let sy = (clientY - rect.top - viewTranslateY) / viewScale;
+        let cellSize = Math.min(canvas.width / cols, canvas.height / rows);
+        let offsetX = (canvas.width - cellSize * cols) / 2;
+        let offsetY = (canvas.height - cellSize * rows) / 2;
+        return [Math.floor((sx - offsetX) / cellSize), Math.floor((sy - offsetY) / cellSize)];
+}
+
 function restart() {
         clearTimeout(timerId);
         selectedCell = null;
+        resetView();
         generation = 0; population = 0;
         resizeCanvas();
         let [c, r] = clampedGridDims();
@@ -1585,14 +1606,52 @@ function scheduleStep() {
         timerId = setTimeout(() => { step(); if (running) scheduleStep(); }, intervalMs);
 }
 
+// ── Zoom & pan ─────────────────────────────────────────────────────────────
+canvas.style.cursor = 'grab';
+
+canvas.addEventListener('wheel', e => {
+        e.preventDefault();
+        let factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+        let rect = canvas.getBoundingClientRect();
+        let mx = e.clientX - rect.left;
+        let my = e.clientY - rect.top;
+        let newScale = Math.max(0.3, Math.min(30, viewScale * factor));
+        let f = newScale / viewScale;
+        viewTranslateX = mx + (viewTranslateX - mx) * f;
+        viewTranslateY = my + (viewTranslateY - my) * f;
+        viewScale = newScale;
+        render();
+}, { passive: false });
+
+canvas.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        isDragging = true;
+        dragMoved = false;
+        dragStartX = e.clientX; dragStartY = e.clientY;
+        dragStartTX = viewTranslateX; dragStartTY = viewTranslateY;
+        canvas.style.cursor = 'grabbing';
+});
+
+window.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        canvas.style.cursor = 'grab';
+});
+
+canvas.addEventListener('dblclick', () => { resetView(); render(); });
+
 // ── Mouse tooltip ─────────────────────────────────────────────────────────
 canvas.addEventListener('mousemove', e => {
-        let cellSize = Math.min(canvas.width / cols, canvas.height / rows);
-        let offsetX = (canvas.width - cellSize * cols) / 2;
-        let offsetY = (canvas.height - cellSize * rows) / 2;
-        let rect = canvas.getBoundingClientRect();
-        let c = Math.floor((e.clientX - rect.left - offsetX) / cellSize);
-        let r = Math.floor((e.clientY - rect.top - offsetY) / cellSize);
+        if (isDragging) {
+                let dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
+                if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragMoved = true;
+                viewTranslateX = dragStartTX + dx;
+                viewTranslateY = dragStartTY + dy;
+                render();
+                document.getElementById('tooltip').style.display = 'none';
+                return;
+        }
+        let [c, r] = screenToGrid(e.clientX, e.clientY);
         let tip = document.getElementById('tooltip');
         let wrap = document.getElementById('canvas-wrap');
         if (c >= 0 && c < cols && r >= 0 && r < rows) {
@@ -1607,9 +1666,9 @@ canvas.addEventListener('mousemove', e => {
                 let cursorY = e.clientY - wrapRect.top;
                 let tipW = tip.offsetWidth;
                 if (wrapRect.width - cursorX - 14 < tipW) {
-                    tip.style.left = (cursorX - tipW - 10) + 'px';
+                        tip.style.left = (cursorX - tipW - 10) + 'px';
                 } else {
-                    tip.style.left = (cursorX + 14) + 'px';
+                        tip.style.left = (cursorX + 14) + 'px';
                 }
                 tip.style.top = (cursorY - 8) + 'px';
         } else {
@@ -1619,12 +1678,8 @@ canvas.addEventListener('mousemove', e => {
 canvas.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display = 'none'; });
 
 canvas.addEventListener('click', e => {
-        let cellSize = Math.min(canvas.width / cols, canvas.height / rows);
-        let offsetX = (canvas.width - cellSize * cols) / 2;
-        let offsetY = (canvas.height - cellSize * rows) / 2;
-        let rect = canvas.getBoundingClientRect();
-        let c = Math.floor((e.clientX - rect.left - offsetX) / cellSize);
-        let r = Math.floor((e.clientY - rect.top - offsetY) / cellSize);
+        if (dragMoved) { dragMoved = false; return; }
+        let [c, r] = screenToGrid(e.clientX, e.clientY);
         if (c >= 0 && c < cols && r >= 0 && r < rows) {
                 let cell = grid[c][r];
                 selectedCell = (selectedCell === cell || !cell.alive) ? null : cell;
