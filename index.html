@@ -917,7 +917,18 @@ function specialActions(cell) {
                         cell.specialPerformed = true;
                 }
         } else if (type === TYPE.HUNTER) { huntCell(cell); }
-        else if (type === TYPE.WARRIOR) { fightCell(cell); }
+        else if (type === TYPE.WARRIOR) {
+                if (fightCell(cell)) {
+                        cell.idleTurns = 0;
+                } else {
+                        cell.idleTurns = (cell.idleTurns || 0) + 1;
+                        if (cell.idleTurns >= 3) {
+                                let nc = replaceCell(cell, TYPE.BASIC, true);
+                                nc.hood = cell.hood;
+                                grid[cell.col][cell.row] = nc;
+                        }
+                }
+        }
         else if (type === TYPE.KING)    { makeArmy(cell); }
         else if (type === TYPE.BOMBER)  { detonateCell(cell); }
 }
@@ -1032,7 +1043,8 @@ function huntCell(cell) {
 function fightCell(cell) {
         let isEnemy = nb => nb && nb.nationality !== cell.nationality && [TYPE.DISEASED, TYPE.PLAGUE].includes(nb.type) && nb.alive;
         let target = selectNearbyCellByRule(cell, isEnemy, 2);
-        if (target) { swapCells(cell, target); cellDie(target); target.conditions.add('cleanup'); }
+        if (target) { swapCells(cell, target); cellDie(target); target.conditions.add('cleanup'); return true; }
+        return false;
 }
 
 function swapCells(a, b) {
@@ -1082,6 +1094,7 @@ function replaceCell(oldCell, type, alive) {
         if (type === TYPE.DISEASED) { nc.disease = randomCondition('d'); nc.countDown = 3; nc.transmissionRate = DISEASED_TRANSMISSION_RATE; }
         if (type === TYPE.PLAGUE)   { nc.disease = randomCondition('p'); nc.countDown = 3; nc.transmissionRate = Math.round(DISEASED_TRANSMISSION_RATE * 1.4); }
         if (type === TYPE.DOCTOR)   { nc.vaccines = []; }
+        if (type === TYPE.WARRIOR)  { nc.idleTurns = 0; }
         if (type === TYPE.TRAVELER || type === TYPE.EXPLORER || type === TYPE.DIPLOMAT) {
                 nc.direction = oldCell.direction || randChoice(DIRS);
                 nc.deathCountDown = 0;
@@ -1127,7 +1140,7 @@ function updateNations() {
                         }
                 }
         }
-        for (let n of nations) { trimWarriors(n); trimDiplomats(n); electDiplomat(n); crownKing(n); }
+        for (let n of nations) { trimDiplomats(n); electDiplomat(n); crownKing(n); }
         let numNations = Math.min(
                 Math.floor(basePercentLiving / 100 * cols * rows / minCellsPerNation),
                 NATION_COLORS.length
@@ -1157,24 +1170,6 @@ function trimDiplomats(nation) {
                 if (idx >= 0) nation.citizens[idx] = nc;
                 let didx = nation.diplomats.indexOf(dip);
                 if (didx >= 0) nation.diplomats.splice(didx, 1);
-        }
-}
-
-function trimWarriors(nation) {
-        if (nation.citizens.length === 0) return;
-        const cap = Math.floor(0.5 * nation.citizens.length);
-        const warriors = nation.citizens.filter(c => c.alive && c.type === TYPE.WARRIOR);
-        if (warriors.length <= cap) return;
-        let excess = warriors.length - cap;
-        let shuffled = [...warriors].sort(() => Math.random() - 0.5);
-        for (let i = 0; i < excess && i < shuffled.length; i++) {
-                let w = shuffled[i];
-                if (!w.alive) continue;
-                let nc = replaceCell(w, TYPE.BASIC, true);
-                nc.hood = w.hood;
-                grid[w.col][w.row] = nc;
-                let idx = nation.citizens.indexOf(w);
-                if (idx >= 0) nation.citizens[idx] = nc;
         }
 }
 
