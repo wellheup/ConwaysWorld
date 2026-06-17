@@ -7,7 +7,7 @@ namespace ConwaysWorld
 	public class Cell_Diseased : Cell
 	{
 		protected int CountDown = 3,
-			TransmissionRate = 25;
+			TransmissionRate = 10;
 		public string Disease;
 
 		public Cell_Diseased(int column, int row, bool isAlive)

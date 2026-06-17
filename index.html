@@ -515,7 +515,7 @@ const TYPE_DESCRIPTIONS = {
         [TYPE.BASIC]:    'Follows standard Conway rules. Lives with 2–3 neighbours, dies from isolation or overcrowding. Occasionally born immune to disease, or in rare cases immaculate.',
         [TYPE.IMMORTAL]: 'Lives as long as it has at least one neighbour. Only dies when completely isolated. Cannot be killed by disease, but can be hunted.',
         [TYPE.DISEASED]: 'Carries a disease that spreads to adjacent cells at a 25% rate per step. Has a 3-turn countdown before it dies from its own infection.',
-        [TYPE.PLAGUE]:   'A more aggressive disease carrier. Spreads infection at 50% rate and progresses faster than Diseased. Poses a greater threat to surrounding cells.',
+        [TYPE.PLAGUE]:   'A more aggressive disease carrier. Spreads infection at 35% rate (1.4× Diseased) and progresses faster than Diseased. Poses a greater threat to surrounding cells.',
         [TYPE.TRAVELER]: 'Moves one cell in a fixed random direction each turn instead of staying in place. Follows Conway life/death rules at its new position.',
         [TYPE.EXPLORER]: 'Like a Traveler, but can trigger the grid to expand when it reaches an edge. Helps the simulation grow beyond its starting bounds.',
         [TYPE.DOCTOR]:   'Cures diseased neighbours each turn and is completely immune to infection. Carries a stock of vaccines to neutralise disease on contact.',
@@ -546,6 +546,7 @@ function randomCondition(prefix) {
 }
 
 const DIRS = ['southWest','west','northWest','south','north','southEast','east','northEast'];
+const DISEASED_TRANSMISSION_RATE = 25; // Plague is always Math.round(this * 1.4)
 
 function createCell(col, row, type, alive) {
         return {
@@ -923,7 +924,7 @@ function specialActions(cell) {
 
 function spreadDisease(cell) {
         if (!cell.disease) return;
-        let rate = cell.type === TYPE.PLAGUE ? 50 : 25;
+        let rate = cell.transmissionRate;
         for (let dir of DIRS) {
                 if (randInt(1, 101) < rate) {
                         let nb = cell.hood.dict[dir];
@@ -1069,8 +1070,8 @@ function replaceCell(oldCell, type, alive) {
         let nc = createCell(oldCell.col, oldCell.row, type, alive);
         nc.conditions = new Set(oldCell.conditions);
         nc.nationality = alive ? oldCell.nationality : -1;
-        if (type === TYPE.DISEASED) { nc.disease = randomCondition('d'); nc.countDown = 3; nc.transmissionRate = 25; }
-        if (type === TYPE.PLAGUE)   { nc.disease = randomCondition('p'); nc.countDown = 3; nc.transmissionRate = 50; }
+        if (type === TYPE.DISEASED) { nc.disease = randomCondition('d'); nc.countDown = 3; nc.transmissionRate = DISEASED_TRANSMISSION_RATE; }
+        if (type === TYPE.PLAGUE)   { nc.disease = randomCondition('p'); nc.countDown = 3; nc.transmissionRate = Math.round(DISEASED_TRANSMISSION_RATE * 1.4); }
         if (type === TYPE.DOCTOR)   { nc.vaccines = []; }
         if (type === TYPE.TRAVELER || type === TYPE.EXPLORER || type === TYPE.DIPLOMAT) {
                 nc.direction = oldCell.direction || randChoice(DIRS);

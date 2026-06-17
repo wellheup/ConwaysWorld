@@ -10,7 +10,7 @@ namespace ConwaysWorld
 		public Cell_Plague(int column, int row, bool isAlive)
 			: base(column, row, isAlive)
 		{
-			TransmissionRate = 50;
+			TransmissionRate = 25;
 			CellType = E_CellType.Cell_Plague;
 			Disease = RandomCondition('p');
 		}
