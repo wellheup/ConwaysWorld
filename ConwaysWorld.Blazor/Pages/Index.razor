@@ -1,0 +1,380 @@
+@page "/"
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<PageTitle>Conway's World</PageTitle>
+
+<div class="cw-toolbar">
+    <button class="@(_running ? "active" : "")" @onclick="TogglePlay">
+        @(_running ? "⏸ Pause" : "▶ Play")
+    </button>
+    <button @onclick="StepOnce">Step</button>
+    <button @onclick="Restart">↺ Restart</button>
+    <label>Speed</label>
+    <input type="range" min="50" max="2000" step="50"
+           value="@_intervalMs"
+           @onchange="OnSpeedChange" />
+    <span style="color:#888;font-size:11px;min-width:40px">@(_intervalMs)ms</span>
+
+    <span style="margin-left:auto;color:#666;font-size:11px">
+        Gen @_model.Generation &nbsp;|&nbsp;
+        Pop @_model.CurrentPopulation &nbsp;|&nbsp;
+        Grid @_model.Columns×@_model.Rows
+    </span>
+</div>
+
+<div class="cw-body">
+    <div class="cw-canvas-wrap" id="canvas-wrap">
+        <canvas id="sim-canvas"></canvas>
+        @if (_tooltip != null)
+        {
+            <div class="cw-tooltip" style="left:@(_tooltipX)px;top:@(_tooltipY)px">
+                <div class="tt-type">@_tooltip.TypeName</div>
+                <div class="tt-row">Nation @(_tooltip.Nation >= 0 ? _tooltip.Nation.ToString() : "—")</div>
+                <div class="tt-row">Age @_tooltip.Age</div>
+                @if (_tooltip.Conditions.Length > 0)
+                {
+                    <div class="tt-row" style="font-size:10px;color:#777">@_tooltip.Conditions</div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="cw-sidebar">
+        <div class="cw-panel">
+            <h3>Population</h3>
+            <div class="cw-stats-grid">
+                <div class="cw-stat"><span>Generation</span><span>@_model.Generation</span></div>
+                <div class="cw-stat"><span>Population</span><span>@_model.CurrentPopulation</span></div>
+                <div class="cw-stat"><span>Grid</span><span>@_model.Columns×@_model.Rows</span></div>
+                <div class="cw-stat"><span>Nations</span><span>@_model.Nations.Count</span></div>
+            </div>
+        </div>
+
+        <div class="cw-panel">
+            <h3>Cell Types</h3>
+            <div class="cw-cell-list">
+                @foreach (var entry in _typeCounts)
+                {
+                    <div class="cw-cell-row">
+                        <div class="cw-cell-swatch" style="background:@entry.Color"></div>
+                        <span>@entry.Name</span>
+                        <span class="cw-cell-count">@entry.Count</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="cw-panel">
+            <h3>Nations</h3>
+            <div class="cw-nation-list">
+                @foreach (var n in _model.Nations.Values.OrderByDescending(n => n.CitizensList.Count).Take(10))
+                {
+                    <div class="cw-nation-row">
+                        <div class="cw-nation-swatch"
+                             style="background:@Cell_Nation.NationColors[n.NationNum % Cell_Nation.NationColors.Count]">
+                        </div>
+                        <span>Nation @n.NationNum</span>
+                        <span style="margin-left:auto;color:#777">@n.CitizensList.Count</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="cw-panel" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden">
+            <h3>Settings</h3>
+            <div class="cw-settings-scroll">
+                <div class="cw-field">
+                    <label>Start columns</label>
+                    <input type="number" min="5" max="300" @bind="_startCols" />
+                </div>
+                <div class="cw-field">
+                    <label>Start rows</label>
+                    <input type="number" min="5" max="300" @bind="_startRows" />
+                </div>
+                <div class="cw-field">
+                    <label>Max grid size (0 = unlimited)</label>
+                    <input type="number" min="0" max="500" @bind="_maxGrid" />
+                </div>
+                <div class="cw-field">
+                    <label>Cell size (px)</label>
+                    <input type="number" min="4" max="40" @bind="_cellSize" />
+                </div>
+                <div class="cw-field">
+                    <label>Population mode</label>
+                    <select @bind="_popMode">
+                        <option value="Percent">Percent</option>
+                        <option value="Count">Fixed count</option>
+                    </select>
+                </div>
+                <div class="cw-field">
+                    <label>@(_popMode == "Percent" ? "Initial % living" : "Initial cell count")</label>
+                    <input type="number" min="1" @bind="_popValue" />
+                </div>
+
+                <h3 style="margin:10px 0 6px">Spawn Weights</h3>
+                @foreach (var kv in _spawnWeights)
+                {
+                    <div class="cw-weight-row">
+                        <span>@kv.Key</span>
+                        <input type="range" min="0" max="100"
+                               value="@kv.Value"
+                               @onchange="@(e => OnWeightChange(kv.Key, e))" />
+                        <span>@kv.Value</span>
+                    </div>
+                }
+
+                <button class="cw-apply-btn" @onclick="ApplyAndRestart">Apply & Restart</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private Model _model = null!;
+    private SimulationSettings _settings = new();
+    private System.Timers.Timer _timer = null!;
+    private DotNetObjectReference<Index>? _dotNetRef;
+    private bool _running = false;
+    private int _intervalMs = 200;
+    private bool _canvasReady = false;
+
+    private List<(string Name, string Color, int Count)> _typeCounts = new();
+
+    private record TooltipData(string TypeName, int Nation, int Age, string Conditions);
+    private TooltipData? _tooltip;
+    private double _tooltipX = 0, _tooltipY = 0;
+
+    private int _startCols = 40;
+    private int _startRows = 40;
+    private int _maxGrid = 120;
+    private int _cellSize = 14;
+    private string _popMode = "Percent";
+    private int _popValue = 10;
+    private Dictionary<string, int> _spawnWeights = new();
+
+    private static readonly string[] TypeNames = {
+        "Dead","Basic","Immortal","Diseased","Plague",
+        "Traveler","Explorer","Doctor","Warrior","Hunter",
+        "Bomber","Diplomat","King"
+    };
+
+    private static readonly string[] TypeColors = {
+        "#111","#e8e8e8","#e0c060","#7a2020","#c01010",
+        "#4090d0","#20c0e0","#e050a0","#d08020","#c04040",
+        "#e0a000","#a060e0","#f0d000"
+    };
+
+    protected override void OnInitialized()
+    {
+        InitSettings();
+        _model = new Model(_settings);
+
+        _spawnWeights = _settings.SpawnWeights
+            .ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
+
+        _timer = new System.Timers.Timer(_intervalMs);
+        _timer.Elapsed += async (_, _) => await OnTimerTick();
+        _timer.AutoReset = true;
+    }
+
+    private void InitSettings()
+    {
+        _settings = new SimulationSettings
+        {
+            StartColumns = _startCols,
+            StartRows    = _startRows,
+            MaxGridSize  = _maxGrid,
+            UserCellSize = _cellSize,
+            PopMode      = _popMode == "Percent" ? PopMode.Percent : PopMode.Count,
+            PopValue     = _popValue,
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("ConwaysInterop.init",
+                "sim-canvas",
+                _model.Columns,
+                _model.Rows,
+                _settings.UserCellSize,
+                _dotNetRef);
+            _canvasReady = true;
+            await RenderFrame();
+            UpdateTypeCounts();
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnTimerTick()
+    {
+        _model.Step();
+        await InvokeAsync(async () =>
+        {
+            await RenderFrame();
+            UpdateTypeCounts();
+            StateHasChanged();
+        });
+    }
+
+    private async Task RenderFrame()
+    {
+        if (!_canvasReady) return;
+
+        var grid = _model.CellGrid;
+        int c = _model.Columns, r = _model.Rows;
+        var cells = new List<object>(c * r);
+
+        for (int col = 0; col < c; col++)
+        {
+            for (int row = 0; row < r; row++)
+            {
+                var cell = grid[col, row];
+                if (!cell.IsAlive) continue;
+                cells.Add(new { col, row, type = (int)cell.CellType, nat = cell.Nationality, alive = cell.IsAlive });
+            }
+        }
+
+        var nationColors = Cell_Nation.NationColors;
+        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r);
+    }
+
+    private void UpdateTypeCounts()
+    {
+        var counts = new int[TypeNames.Length];
+        var grid = _model.CellGrid;
+        for (int col = 0; col < _model.Columns; col++)
+            for (int row = 0; row < _model.Rows; row++)
+                if (grid[col, row].IsAlive)
+                    counts[(int)grid[col, row].CellType]++;
+
+        _typeCounts = Enumerable.Range(1, TypeNames.Length - 1)
+            .Where(i => counts[i] > 0)
+            .Select(i => (TypeNames[i], TypeColors[i], counts[i]))
+            .ToList();
+    }
+
+    private async Task TogglePlay()
+    {
+        _running = !_running;
+        if (_running) _timer.Start(); else _timer.Stop();
+        await Task.CompletedTask;
+    }
+
+    private async Task StepOnce()
+    {
+        _model.Step();
+        await RenderFrame();
+        UpdateTypeCounts();
+    }
+
+    private async Task Restart()
+    {
+        _timer.Stop();
+        _running = false;
+        _model.Restart();
+        await RenderFrame();
+        UpdateTypeCounts();
+    }
+
+    private void OnSpeedChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            _intervalMs = v;
+            _timer.Interval = v;
+        }
+    }
+
+    private void OnWeightChange(string typeName, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+            _spawnWeights[typeName] = v;
+    }
+
+    private void ApplyAndRestart()
+    {
+        _timer.Stop();
+        _running = false;
+
+        _settings = new SimulationSettings
+        {
+            StartColumns = _startCols,
+            StartRows    = _startRows,
+            MaxGridSize  = _maxGrid,
+            UserCellSize = _cellSize,
+            PopMode      = _popMode == "Percent" ? PopMode.Percent : PopMode.Count,
+            PopValue     = _popValue,
+        };
+
+        foreach (var kv in _spawnWeights)
+        {
+            if (Enum.TryParse<CellType>(kv.Key, out var ct))
+                _settings.SpawnWeights[ct] = kv.Value;
+        }
+
+        _model = new Model(_settings);
+        _ = RenderFrame();
+        UpdateTypeCounts();
+    }
+
+    [JSInvokable]
+    public void OnHover(int col, int row)
+    {
+        if (col < 0 || row < 0 || col >= _model.Columns || row >= _model.Rows)
+        {
+            _tooltip = null;
+            InvokeAsync(StateHasChanged);
+            return;
+        }
+        var cell = _model.CellGrid[col, row];
+        var conds = string.Join(", ", cell.Conditions
+            .Where(c => !c.StartsWith("vax_") && c != "mature" && c != "immaculate")
+            .Take(3));
+        _tooltip = new TooltipData(
+            cell.CellType.ToString(),
+            cell.Nationality,
+            cell.Age,
+            conds);
+        InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public void OnCellClick(int col, int row)
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public void OnKeyTogglePlay()
+    {
+        _running = !_running;
+        if (_running) _timer.Start(); else _timer.Stop();
+        InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public void OnKeyRestart()
+    {
+        _timer.Stop();
+        _running = false;
+        _model.Restart();
+        _ = InvokeAsync(async () =>
+        {
+            await RenderFrame();
+            UpdateTypeCounts();
+            StateHasChanged();
+        });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _timer.Stop();
+        _timer.Dispose();
+        _dotNetRef?.Dispose();
+        await Task.CompletedTask;
+    }
+}

@@ -2,60 +2,90 @@
 
 ## Overview
 
-A web-based JavaScript port of Conway's World, a sophisticated implementation of Conway's Game of Life originally built in Unity/C#. The game features extended cellular automata rules with specialized "Nations" and many unique cell types.
+A web-based implementation of Conway's World — a sophisticated Conway's Game of Life variant with 13 specialized cell types and a Nations system. The simulation logic is written in pure C# (Blazor WebAssembly), making it directly portable back to Unity.
 
 ## Architecture
 
-This is a **single-page static web app** served by a minimal Node.js HTTP server.
+```
+ConwaysWorld.Simulation/   ← Pure C# simulation library (no Unity, no Blazor deps)
+  Cells/                   ← All 13 cell type implementations
+  Model.cs                 ← Simulation step orchestration
+  Cell_Nation.cs           ← Nations: census, diplomat election, king crowning
+  SimulationSettings.cs    ← All configurable parameters
 
-- **`index.html`** — The entire game: HTML, CSS, and JavaScript simulation logic all in one file.
-- **`server.js`** — A minimal Node.js HTTP server serving static files on port 5000.
-- **`Assets/`** — Original Unity C# source code (reference only; not executed).
+ConwaysWorld.Blazor/       ← Blazor WebAssembly frontend
+  Pages/Index.razor        ← Main page: canvas, sidebar, toolbar, settings
+  wwwroot/canvas-interop.js ← JS: canvas rendering, zoom/pan, keyboard shortcuts
+  wwwroot/css/app.css      ← All styles
+
+Assets/Scripts/            ← Original Unity C# source (reference only, not compiled)
+index.html                 ← Original JS implementation (preserved as reference)
+server.js                  ← Original Node.js server (preserved as reference)
+```
 
 ## Running the App
 
+The app is served by the Blazor WASM dev server:
+
 ```
-node server.js
+dotnet run --project ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj --urls http://0.0.0.0:5000
 ```
 
-Serves the game at `http://0.0.0.0:5000`.
+Or just use the **Start application** workflow in Replit.
 
-## Game Features
+## Cell Types
 
-### Cell Types (ported from C# source)
-- **Basic** — Standard Conway's Game of Life cells
-- **Immortal** — Lives unless isolated
-- **Diseased** — Spreads disease to neighbors (25% transmission rate, 3-turn countdown)
-- **Plague** — More aggressive disease (50% transmission, faster spread)
-- **Traveler** — Moves in a random direction each turn
-- **Explorer** — Like Traveler, can trigger grid expansion
-- **Doctor** — Cures diseased neighbors, immune to infection
-- **Warrior** — Hunts diseased cells from other nations
-- **Hunter** — Seeks and kills Immortals and Kings
-- **Bomber** — Explodes after 2 turns, killing all cells in range
-- **Diplomat** — Spawned by large nations to convert enemy cells
-- **King** — Crowns itself from large nations, turns neighbors into Warriors
+| Type | Behavior |
+|------|----------|
+| Basic | Standard Conway cells; 1/4 chance immune; 1/100 immaculate |
+| Immortal | Lives forever unless isolated for >8 steps; immune to disease |
+| Diseased | Spreads d_ strain; dies after 3-step countdown |
+| Plague | Like Diseased but 40% higher transmission rate |
+| Traveler | Moves each step; dies if isolated >3 steps or surrounded >3 steps |
+| Explorer | Like Traveler, triggers grid expansion at edges |
+| Doctor | Cures nearby disease; stamps vax_ markers; survives while active |
+| Warrior | Fights foreign Diseased/Plague; demotes to Basic after 3 idle steps |
+| Hunter | Hunts Immortals and Kings; demotes to Basic after 3 idle steps |
+| Bomber | Detonates at age 2, killing all cells in 2-cell radius |
+| Diplomat | Elected from large nations; travels to foreign nations and converts cells |
+| King | Crowned from large nations; turns neighboring Basics into Warriors |
 
-### Nations System
-- Up to 20 color-coded nations
-- Cells inherit nearby nation affiliations
-- Nations elect Diplomats and crown Kings when they grow large enough
-- Cell type colors shown inside nation-color background squares
+## Key JS Improvements Preserved in C# Port
 
-### Controls
-- **Space** — Play/Pause
-- **R** — Restart simulation
-- **Speed slider** — Adjust simulation speed
-- **Mouse hover** — Tooltip showing cell type, nation, age, conditions
+- **Warrior/Hunter idle demotion** — demote to Basic after 3 idle steps
+- **Doctor vax_ vaccination** — `vax_<strain>` markers prevent re-infection; doctor only earns survival credit for new vaccinations
+- **Plague transmission** — 40% higher than Diseased (`Math.Round(base * 1.4)`)
+- **Immortal disease immunity** — immune to both spread and conversion
+- **CrushCountDown** — Traveler/Explorer die if fully surrounded for >3 steps
+- **Conditions as HashSet** — O(1) lookup vs original List
+- **Separate start/max grid size** — `StartColumns/Rows` vs `MaxGridSize`
+- **Pop mode** — percent of grid or fixed cell count
 
-## Key Technical Notes
+## Controls
 
-- Grid wraps around edges (toroidal topology)
-- Neighborhoods are computed fresh each step before any updates
-- Special actions (movement, combat, disease spread) run after life/death updates
-- The `updateConditions` pass handles disease infection conversion and "toWar" recruitment
-- Nations take a census each generation to track citizens, elect diplomats, and crown kings
+| Input | Action |
+|-------|--------|
+| Space | Play / Pause |
+| R | Restart |
+| Scroll wheel | Zoom in/out |
+| Right-click drag | Pan |
+| Double-click | Reset zoom/pan |
+| Left-click | Select cell |
+| Hover | Tooltip: type, nation, age, conditions |
+
+## Unity Portability
+
+`ConwaysWorld.Simulation` uses only `System.*` — no Unity, Blazor, or ASP.NET deps. To use it in Unity:
+
+1. Copy the `ConwaysWorld.Simulation/` folder into your Unity project's `Assets/Scripts/`
+2. Replace `SimRandom.*` calls with `UnityEngine.Random.*` equivalents
+3. Wire `Model.Step()` into `MonoBehaviour.Update()` or `InvokeRepeating`
 
 ## Deployment
 
-Configured for **autoscale** deployment via `node server.js` on port 5000.
+Configured for **autoscale** deployment via `dotnet run` on port 5000.
+
+## User Preferences
+
+- Keep original `index.html` and `server.js` as reference files (do not delete or modify)
+- Simulation library must remain pure C# with no framework dependencies

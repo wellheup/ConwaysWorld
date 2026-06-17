@@ -1,0 +1,3 @@
+- [Blazor WASM setup quirks](blazor-wasm-setup.md) — dotnet 7 only; template scaffold doesn't create .csproj when parent has one; run command needs --urls flag
+- [Conway simulation step order](conways-step-order.md) — UpdateNeighborhoods must run twice per Step (before AliveNext and before SpecialActions) or movement cells use stale neighborhoods
+- [Breed method grid update](conways-breed-grid.md) — Cell.Breed() must take Cell[,] parameter and write back to grid; local list assignment doesn't update the grid
