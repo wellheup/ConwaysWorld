@@ -895,7 +895,7 @@ function specialActions(cell) {
         if (!cell.alive || !cell.hood) return;
         let type = cell.type;
         if (type === TYPE.DISEASED || type === TYPE.PLAGUE) { spreadDisease(cell); }
-        else if (type === TYPE.DOCTOR) { cureDisease(cell); seekDisease(cell); }
+        else if (type === TYPE.DOCTOR) { cureDisease(cell); seekDisease(cell); cell.specialPerformed = true; }
         else if (type === TYPE.TRAVELER) {
                 if (!cell.specialPerformed) { swapCells(cell, cell.hood.dict[cell.direction]); cell.specialPerformed = true; }
         } else if (type === TYPE.EXPLORER) {
