@@ -792,9 +792,13 @@ function cellLive(cell) {
         cell.age++;
         if (cell.type === TYPE.DEAD) cell.type = TYPE.BASIC;
         let t = cell.type;
-        if (t === TYPE.TRAVELER || t === TYPE.EXPLORER || t === TYPE.DIPLOMAT ||
-                        t === TYPE.HUNTER   || t === TYPE.WARRIOR) {
+        if (t === TYPE.TRAVELER || t === TYPE.EXPLORER || t === TYPE.DIPLOMAT || t === TYPE.HUNTER) {
                 cell.hood.numNeighbors === 0 ? cell.deathCountDown++ : (cell.deathCountDown = 0);
+                cell.specialPerformed = false;
+        }
+        if (t === TYPE.WARRIOR) {
+                const nonWarriorNeighbors = Object.values(cell.hood.dict).filter(nb => nb && nb.alive && nb.type !== TYPE.WARRIOR).length;
+                nonWarriorNeighbors === 0 ? cell.deathCountDown++ : (cell.deathCountDown = 0);
                 cell.specialPerformed = false;
         }
         if (cell.age > 3) cell.conditions.add('mature');
@@ -1010,7 +1014,7 @@ function makeArmy(cell) {
                         if (gc.conditions.has('toWar')) pendingWarriors++;
                 }
         }
-        const cap = Math.floor(liveCount * 0.5);
+        const cap = Math.floor(liveCount * 0.2);
         let slots = cap - currentWarriors - pendingWarriors;
         for (let dir of DIRS) {
                 if (slots <= 0) break;
