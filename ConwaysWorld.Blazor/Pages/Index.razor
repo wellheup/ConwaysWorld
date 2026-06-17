@@ -104,6 +104,10 @@
                     <input type="number" min="0" max="500" @bind="_maxGrid" />
                 </div>
                 <div class="cw-field">
+                    <label>Max nations (1–20)</label>
+                    <input type="number" min="1" max="20" @bind="_maxNations" />
+                </div>
+                <div class="cw-field">
                     <label>Cell size (px)</label>
                     <input type="number" min="4" max="40" @bind="_cellSize" />
                 </div>
@@ -157,6 +161,7 @@
     private int _startCols = 40;
     private int _startRows = 40;
     private int _maxGrid = 120;
+    private int _maxNations = 20;
     private int _cellSize = 14;
     private string _popMode = "Percent";
     private int _popValue = 10;
@@ -194,6 +199,7 @@
             StartColumns = _startCols,
             StartRows    = _startRows,
             MaxGridSize  = _maxGrid,
+            MaxNations   = Math.Clamp(_maxNations, 1, 20),
             UserCellSize = _cellSize,
             PopMode      = _popMode == "Percent" ? PopMode.Percent : PopMode.Count,
             PopValue     = _popValue,
@@ -314,6 +320,7 @@
             StartColumns = _startCols,
             StartRows    = _startRows,
             MaxGridSize  = _maxGrid,
+            MaxNations   = Math.Clamp(_maxNations, 1, 20),
             UserCellSize = _cellSize,
             PopMode      = _popMode == "Percent" ? PopMode.Percent : PopMode.Count,
             PopValue     = _popValue,

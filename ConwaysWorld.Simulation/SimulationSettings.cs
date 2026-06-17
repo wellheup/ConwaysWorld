@@ -15,6 +15,7 @@ public class SimulationSettings
     public int PopValue { get; set; } = 10;
 
     public int MinCellsPerNation { get; set; } = 3;
+    public int MaxNations { get; set; } = 20;
 
     public float MinLifePercent { get; set; } = 0.05f;
 

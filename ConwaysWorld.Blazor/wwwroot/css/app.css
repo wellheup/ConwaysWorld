@@ -118,6 +118,8 @@ canvas#sim-canvas {
 
 .cw-nation-list {
     padding: 4px 0;
+    overflow-y: auto;
+    max-height: 260px;
 }
 
 .cw-nation-row {

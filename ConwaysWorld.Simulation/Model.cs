@@ -64,7 +64,8 @@ public class Model
         Nations = new Dictionary<int, Cell_Nation>();
         float basePct = _settings.BasePercentLiving;
         float numNations = basePct * _columns * _rows / _settings.MinCellsPerNation;
-        int count = (int)Math.Min(numNations, Cell_Nation.NationColors.Count);
+        int cap = Math.Min(_settings.MaxNations, Cell_Nation.NationColors.Count);
+        int count = (int)Math.Min(numNations, cap);
         for (int i = 0; i < count; i++)
             Nations[i] = new Cell_Nation(i);
     }
@@ -261,7 +262,8 @@ public class Model
 
         float basePct = _settings.BasePercentLiving;
         float numNations = basePct * _columns * _rows / _settings.MinCellsPerNation;
-        int target = (int)Math.Min(numNations, Cell_Nation.NationColors.Count);
+        int cap2 = Math.Min(_settings.MaxNations, Cell_Nation.NationColors.Count);
+        int target = (int)Math.Min(numNations, cap2);
         for (int i = Nations.Count; i < target; i++)
             Nations[i] = new Cell_Nation(i);
     }
