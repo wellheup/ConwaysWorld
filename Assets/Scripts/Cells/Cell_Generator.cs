@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+
 namespace ConwaysWorld
 {
 	public class Cell_Generator
@@ -51,12 +52,48 @@ namespace ConwaysWorld
 		private void InitializeFrequencies()
 		{
 			// This assumes a 0 - 1 range, with TypeSpawnFrequency being the percent chance of a CellType occuring.
-			_spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Immortal, TypeSpawnFrequency = 0.025f * BasePercentLiving / 100 });
-			_spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Diseased, TypeSpawnFrequency = 0.2f * BasePercentLiving / 100 });
-			_spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Traveler, TypeSpawnFrequency = 0.05f * BasePercentLiving / 100 });
-			_spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Doctor, TypeSpawnFrequency = 0.05f * BasePercentLiving / 100 });
-			_spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Hunter, TypeSpawnFrequency = 0.05f * BasePercentLiving / 100 });
-			_spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Bomber, TypeSpawnFrequency = 0.1f * BasePercentLiving / 100 });
+			_spawnFrequencies.Add(
+				new CellSpawnFrequency()
+				{
+					Type = E_CellType.Cell_Immortal,
+					TypeSpawnFrequency = 0.025f * BasePercentLiving / 100,
+				}
+			);
+			_spawnFrequencies.Add(
+				new CellSpawnFrequency()
+				{
+					Type = E_CellType.Cell_Diseased,
+					TypeSpawnFrequency = 0.2f * BasePercentLiving / 100,
+				}
+			);
+			_spawnFrequencies.Add(
+				new CellSpawnFrequency()
+				{
+					Type = E_CellType.Cell_Traveler,
+					TypeSpawnFrequency = 0.05f * BasePercentLiving / 100,
+				}
+			);
+			_spawnFrequencies.Add(
+				new CellSpawnFrequency()
+				{
+					Type = E_CellType.Cell_Doctor,
+					TypeSpawnFrequency = 0.05f * BasePercentLiving / 100,
+				}
+			);
+			_spawnFrequencies.Add(
+				new CellSpawnFrequency()
+				{
+					Type = E_CellType.Cell_Hunter,
+					TypeSpawnFrequency = 0.05f * BasePercentLiving / 100,
+				}
+			);
+			_spawnFrequencies.Add(
+				new CellSpawnFrequency()
+				{
+					Type = E_CellType.Cell_Bomber,
+					TypeSpawnFrequency = 0.1f * BasePercentLiving / 100,
+				}
+			);
 
 			float remainingPercentOfLiving = BasePercentLiving / 100f;
 			for (int i = 0; i < _spawnFrequencies.Count; i++)
@@ -65,10 +102,18 @@ namespace ConwaysWorld
 			}
 
 			// Fill in the remaining amount of the living cells with basic living
-			_spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Basic, TypeSpawnFrequency = remainingPercentOfLiving });
+			_spawnFrequencies.Add(
+				new CellSpawnFrequency() { Type = E_CellType.Cell_Basic, TypeSpawnFrequency = remainingPercentOfLiving }
+			);
 
 			// Everything left is dead cells
-			_spawnFrequencies.Add(new CellSpawnFrequency() { Type = E_CellType.Cell_Dead, TypeSpawnFrequency = (100f - BasePercentLiving) / 100 });
+			_spawnFrequencies.Add(
+				new CellSpawnFrequency()
+				{
+					Type = E_CellType.Cell_Dead,
+					TypeSpawnFrequency = (100f - BasePercentLiving) / 100,
+				}
+			);
 
 			float testSpawnFrequency = 0;
 			for (int k = 0; k < _spawnFrequencies.Count; k++)
@@ -107,7 +152,7 @@ namespace ConwaysWorld
 			{
 				case E_CellType.Cell_Basic:
 					cell = new Cell_Basic(column, row, true);
-					if (UnityEngine.Random.Range(1, 5) == 1)// 1/4 chance disease immunity
+					if (UnityEngine.Random.Range(1, 5) == 1) // 1/4 chance disease immunity
 						cell.Conditions.Add("immune");
 					if (UnityEngine.Random.Range(1, 101) == 1) //1/100 chance immaculate
 						cell.Conditions.Add("immaculate");
@@ -155,5 +200,4 @@ namespace ConwaysWorld
 			return cell;
 		}
 	}
-
 }

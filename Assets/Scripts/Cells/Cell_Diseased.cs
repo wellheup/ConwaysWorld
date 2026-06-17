@@ -1,13 +1,15 @@
+using System.Collections.Generic;
 using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
-using System.Collections.Generic;
 
 namespace ConwaysWorld
 {
 	public class Cell_Diseased : Cell
 	{
-		protected int CountDown = 3, TransmissionRate = 25;
+		protected int CountDown = 3,
+			TransmissionRate = 25;
 		public string Disease;
+
 		public Cell_Diseased(int column, int row, bool isAlive)
 		{
 			IsAlive = isAlive;
@@ -70,7 +72,10 @@ namespace ConwaysWorld
 				// mark neighbors as infected
 				for (int i = 0; i < Cell_Neighborhood.NeighborHoodKeys.Length; i++)
 				{
-					if (UnityEngine.Random.Range(1, 101) < TransmissionRate && Cell_Neighborhood.NeighborHoodKeys[i] != "center")
+					if (
+						UnityEngine.Random.Range(1, 101) < TransmissionRate
+						&& Cell_Neighborhood.NeighborHoodKeys[i] != "center"
+					)
 					{
 						int nCellCol = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Column;
 						int nCellRow = CellNeighborhood.NeighborhoodDict[Cell_Neighborhood.NeighborHoodKeys[i]].Row;

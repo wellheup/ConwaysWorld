@@ -1,8 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
-using System;
 
 namespace ConwaysWorld
 {
@@ -24,7 +24,14 @@ namespace ConwaysWorld
 			GridLimit;
 		public bool UseThreeGroup = false;
 
-		public Model(int columns, int rows, int basePercentLiving, int minLifePercent, int gridLimit, int minCellsPerNation)
+		public Model(
+			int columns,
+			int rows,
+			int basePercentLiving,
+			int minLifePercent,
+			int gridLimit,
+			int minCellsPerNation
+		)
 		{
 			Columns = columns;
 			Rows = rows;
@@ -103,7 +110,10 @@ namespace ConwaysWorld
 
 		public void AddRandomLife(int percentOfGrid)
 		{
-			if (CurrentPopulation > 0 && CurrentPopulation / (CellGrid.GetLength(0) * CellGrid.GetLength(1)) <= MinLifePercent / 100)
+			if (
+				CurrentPopulation > 0
+				&& CurrentPopulation / (CellGrid.GetLength(0) * CellGrid.GetLength(1)) <= MinLifePercent / 100
+			)
 			{
 				int numNewLives = CellGrid.GetLength(0) * CellGrid.GetLength(1) * percentOfGrid / 100;
 				int counter = 0;
@@ -169,7 +179,8 @@ namespace ConwaysWorld
 							// is alive and stays alive
 							// Debug.Log("Cell " + column + ", " + row + " stay alive ");
 							CellGrid[column, row].Live();
-							if (CellGrid[column, row].Nationality != -1) Nations[CellGrid[column, row].Nationality].CitizensList.Add(CellGrid[column, row]);
+							if (CellGrid[column, row].Nationality != -1)
+								Nations[CellGrid[column, row].Nationality].CitizensList.Add(CellGrid[column, row]);
 						}
 						else
 						{
@@ -207,9 +218,13 @@ namespace ConwaysWorld
 					// Chain of ifs for different conditions
 					if (CellGrid[column, row].Conditions.Contains("cleanup"))
 					{
-						CellGrid[column, row] = Cell.ReplaceCell(CellGrid[column, row], Cell_Generator.E_CellType.Cell_Basic, false);
+						CellGrid[column, row] = Cell.ReplaceCell(
+							CellGrid[column, row],
+							Cell_Generator.E_CellType.Cell_Basic,
+							false
+						);
 					}
-					if (CellGrid[column, row].Conditions.Contains("immune"))//manage immune, not sure if it works...
+					if (CellGrid[column, row].Conditions.Contains("immune")) //manage immune, not sure if it works...
 					{
 						CellGrid[column, row].Conditions.RemoveAll(item => item.Contains("d_"));
 						CellGrid[column, row].Conditions.RemoveAll(item => item.Contains("p_"));
@@ -220,12 +235,20 @@ namespace ConwaysWorld
 						for (int i = 0; i < conditions.Count; i++)
 						{
 							if (conditions[i].Contains("d_"))
-							{//manage infected
-								CellGrid[column, row] = Cell_Diseased.Infect(CellGrid[column, row], conditions[i], Cell_Generator.E_CellType.Cell_Diseased);
+							{ //manage infected
+								CellGrid[column, row] = Cell_Diseased.Infect(
+									CellGrid[column, row],
+									conditions[i],
+									Cell_Generator.E_CellType.Cell_Diseased
+								);
 							}
 							else if (conditions[i].Contains("p_"))
-							{//manage plague
-								CellGrid[column, row] = Cell_Diseased.Infect(CellGrid[column, row], conditions[i], Cell_Generator.E_CellType.Cell_Plague);
+							{ //manage plague
+								CellGrid[column, row] = Cell_Diseased.Infect(
+									CellGrid[column, row],
+									conditions[i],
+									Cell_Generator.E_CellType.Cell_Plague
+								);
 								break;
 							}
 						}
@@ -234,22 +257,29 @@ namespace ConwaysWorld
 					{
 						CellGrid[column, row].Breed();
 					}
-					if (CellGrid[column, row].Conditions.Contains("immaculate"))//manage immaculate birth
+					if (CellGrid[column, row].Conditions.Contains("immaculate")) //manage immaculate birth
 					{
 						CellGrid[column, row].Immaculate(CellGrid);
 					}
-					if (CellGrid[column, row].GetIsAlive() && CellGrid[column, row].Conditions.Contains("exploring"))//manage grid expansion
+					if (CellGrid[column, row].GetIsAlive() && CellGrid[column, row].Conditions.Contains("exploring")) //manage grid expansion
 					{
 						_resize = true;
 					}
-					if (CellGrid[column, row].Age >= 1 && CellGrid[column, row].Nationality == -1)//make edge case cells choose nationality
+					if (CellGrid[column, row].Age >= 1 && CellGrid[column, row].Nationality == -1) //make edge case cells choose nationality
 					{
 						CellGrid[column, row].Nationality = UnityEngine.Random.Range(0, Nations.Count);
 					}
-					if (CellGrid[column, row].Conditions.Contains("toWar") && CellGrid[column, row].GetIsAlive() && CellGrid[column, row].CellType == Cell_Generator.E_CellType.Cell_Basic)
+					if (
+						CellGrid[column, row].Conditions.Contains("toWar")
+						&& CellGrid[column, row].GetIsAlive()
+						&& CellGrid[column, row].CellType == Cell_Generator.E_CellType.Cell_Basic
+					)
 					{
-
-						CellGrid[column, row] = Cell.ReplaceCell(CellGrid[column, row], Cell_Generator.E_CellType.Cell_Warrior, true);
+						CellGrid[column, row] = Cell.ReplaceCell(
+							CellGrid[column, row],
+							Cell_Generator.E_CellType.Cell_Warrior,
+							true
+						);
 						CellGrid[column, row].Conditions.RemoveAll(item => item.Contains("toWar"));
 					}
 				}
@@ -295,7 +325,10 @@ namespace ConwaysWorld
 				nation.Census(CellGrid);
 			}
 			float numNations = BasePercentLiving / 100f * Columns * Rows / MinCellsPerNation;
-			numNations = (float)(BasePercentLiving / 100f * Columns * Rows / MinCellsPerNation) < Cell_Nation.Nation_Colors.Count ? (float)(BasePercentLiving / 100f * Columns * Rows / MinCellsPerNation) : Cell_Nation.Nation_Colors.Count;
+			numNations =
+				(float)(BasePercentLiving / 100f * Columns * Rows / MinCellsPerNation) < Cell_Nation.Nation_Colors.Count
+					? (float)(BasePercentLiving / 100f * Columns * Rows / MinCellsPerNation)
+					: Cell_Nation.Nation_Colors.Count;
 			for (int i = Nations.Count; i < numNations; i++)
 			{
 				Nations.Add(i, new Cell_Nation(i));
@@ -314,7 +347,5 @@ namespace ConwaysWorld
 
 			return CurrentPopulation;
 		}
-
 	}
 }
-

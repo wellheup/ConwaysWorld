@@ -5,7 +5,9 @@ namespace ConwaysWorld
 	public class ConwaysWorld : MonoBehaviour
 	{
 		public GameObject viewObject_Prefab;
-		[SerializeField] private BaseTile _baseTilePrefab;
+
+		[SerializeField]
+		private BaseTile _baseTilePrefab;
 		private View FrontEnd;
 		public Model BackEnd;
 
@@ -62,7 +64,13 @@ namespace ConwaysWorld
 				CurrentPopulation = BackEnd.UpdateCellsGrid();
 				Generation++;
 				if (IsRendering)
-					FrontEnd.RenderWorldState(BackEnd.CellGrid, AttemptsAtLife, Generation, CurrentPopulation, IsPrintingWorldStats);
+					FrontEnd.RenderWorldState(
+						BackEnd.CellGrid,
+						AttemptsAtLife,
+						Generation,
+						CurrentPopulation,
+						IsPrintingWorldStats
+					);
 
 				if (IsRestartAtZero && CurrentPopulation == 0)
 				{
@@ -115,12 +123,12 @@ namespace ConwaysWorld
 }
 /*
 - TODO: maybe cells should be more likely to survive death for every neighbor of the same nation?
-- TODO: move nation colors to View    
+- TODO: move nation colors to View
 	- TODO: move cell colors to View
 - TODO: grid size limits don't seem to work...
 - TODO: the currentPopulation count is off because it gets updated by special moves and such before the grid is rendered
 
-- TODO: make MinLivingNeighbors and MaxLivingNeighbors for cells accessible and alterable in ConwaysWorld object    
+- TODO: make MinLivingNeighbors and MaxLivingNeighbors for cells accessible and alterable in ConwaysWorld object
 - TODO: add class and method descriptions using /// notation (vscode should suggest a template)
 - TODO: add a Cell_Grid type to contain all grid-based functions
 - TODO: move more of conditions updates to SpecialActions()?
@@ -151,16 +159,16 @@ namespace ConwaysWorld
 Visuals
 - add symbols for each type of cell
 	- generated some placeholder ones with https://deepai.org/machine-learning-model/logo-generator
-	- replace individual JPGS 
+	- replace individual JPGS
 	- TODO: change sprites to sprite atlas
 	- TODO: animate changes between updates so that cells slowly fade in/out during that time
-	- TODO: instead of updating the whole grid in 1 tick, visualize per cell and watch it snake through the grid 
+	- TODO: instead of updating the whole grid in 1 tick, visualize per cell and watch it snake through the grid
 	Cell descriptions:
 		Cell_Basic -- lives and dies
 		Cell_Immortal -tree- lives forever unless it gets too lonely
 		Cell_Diseased -skull- spreads deadly disease
 		Cell_Plague -super skull?- spreads extra deadly disease
-		Cell_Traveler -??- picks a direction and goes, unless it gets too lonely 
+		Cell_Traveler -??- picks a direction and goes, unless it gets too lonely
 		Cell_Explorer -explorer hat- picks a direction and goes, unless it gets too lonely, can also expand the grid
 		Cell_Voyager -spyglass- picks a nation other than its own and travels to it, trying to collect all of the nations
 		Cell_Doctor -needle?- vaccinates diseased and plague-ridden cells

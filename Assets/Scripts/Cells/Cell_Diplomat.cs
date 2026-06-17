@@ -1,7 +1,7 @@
-
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
+
 /// <summary>
 /// diplomat (when a nation is large enough, it spawns and attempts to spread its nation to the nearest other nation)
 /// </summary>
@@ -9,7 +9,8 @@ namespace ConwaysWorld
 {
 	public class Cell_Diplomat : Cell_Traveler
 	{
-		public Cell_Diplomat(int column, int row, bool isAlive) : base(column, row, isAlive)
+		public Cell_Diplomat(int column, int row, bool isAlive)
+			: base(column, row, isAlive)
 		{
 			CellType = E_CellType.Cell_Diplomat;
 			MaxAloneTime = 4;
@@ -34,7 +35,9 @@ namespace ConwaysWorld
 
 		private bool IsCellValidConversionTarget(Cell otherCell)
 		{
-			return this.Nationality != otherCell.Nationality && otherCell.GetIsAlive() && otherCell.GetType() != typeof(Cell_King);
+			return this.Nationality != otherCell.Nationality
+				&& otherCell.GetIsAlive()
+				&& otherCell.GetType() != typeof(Cell_King);
 		}
 
 		public override void SpecialActions(Cell[,] cellGrid)
@@ -45,7 +48,8 @@ namespace ConwaysWorld
 				Cell cellToSwap = FindNeighborInDirOfCell(cellGrid, targetCell);
 				if (cellToSwap != null)
 				{
-					if (IsCellValidConversionTarget(cellToSwap)) cellToSwap.Nationality = Nationality;
+					if (IsCellValidConversionTarget(cellToSwap))
+						cellToSwap.Nationality = Nationality;
 					SwapCells(this, cellToSwap, cellGrid);
 				}
 				else

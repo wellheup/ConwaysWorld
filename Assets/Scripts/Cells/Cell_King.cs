@@ -1,6 +1,6 @@
-using static ConwaysWorld.Cell_Generator;
 using System.Collections.Generic;
 using UnityEngine;
+using static ConwaysWorld.Cell_Generator;
 
 /// <summary>
 /// king (makes basic_cells in neighborhood into warriors)
@@ -45,6 +45,5 @@ namespace ConwaysWorld
 		{
 			MakeArmy();
 		}
-
 	}
 }

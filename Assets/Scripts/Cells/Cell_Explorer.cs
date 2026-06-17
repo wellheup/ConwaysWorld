@@ -1,8 +1,8 @@
-
 using System;
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
+
 /// <summary>
 /// explorer (picks a UnityEngine.Random direction to move each turn, expands grid when going over edges, can last 3 cycles without neighbors)
 /// </summary>
@@ -11,7 +11,9 @@ namespace ConwaysWorld
 	public class Cell_Explorer : Cell_Traveler
 	{
 		bool HasExplored = false;
-		public Cell_Explorer(int column, int row, bool isAlive) : base(column, row, isAlive)
+
+		public Cell_Explorer(int column, int row, bool isAlive)
+			: base(column, row, isAlive)
 		{
 			CellType = E_CellType.Cell_Explorer;
 			MaxAloneTime = 4;

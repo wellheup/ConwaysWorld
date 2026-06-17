@@ -1,14 +1,15 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
+
 namespace ConwaysWorld
 {
-
 	public class Cell_Immortal : Cell
 	{
 		private int DeathCounter = 0;
 		private int MaxAloneTime = 8;
-		public Cell_Immortal(int column, int row, bool isAlive = true)// : base(column, row, isAlive)
+
+		public Cell_Immortal(int column, int row, bool isAlive = true) // : base(column, row, isAlive)
 		{
 			this.IsAlive = isAlive;
 			Column = column;

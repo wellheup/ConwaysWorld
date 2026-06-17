@@ -1,22 +1,24 @@
-using UnityEngine;
-using static ConwaysWorld.Cell_Generator;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
+using static ConwaysWorld.Cell_Generator;
 
 namespace ConwaysWorld
 {
 	/// <summary>
-	/// hunter searches for the nearest prey at spawn, selecting only cellTypes from a list of preys within a range. Travels toward that prey 
+	/// hunter searches for the nearest prey at spawn, selecting only cellTypes from a list of preys within a range. Travels toward that prey
 	/// upon reaching adjacentcy to the prey, the prey cell dies and the hunter seeks a new prey
 	/// </summary>
 	/// <remarks>
-	/// 
+	///
 	/// </remarks>
 	public class Cell_Hunter : Cell_Traveler
 	{
 		List<E_CellType> PreyTypes;
 		Cell CurrentPrey;
-		public Cell_Hunter(int column, int row, bool isAlive) : base(column, row, isAlive)
+
+		public Cell_Hunter(int column, int row, bool isAlive)
+			: base(column, row, isAlive)
 		{
 			IsAlive = isAlive;
 			Column = column;

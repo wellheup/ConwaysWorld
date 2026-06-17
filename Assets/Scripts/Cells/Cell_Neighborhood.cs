@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+
 namespace ConwaysWorld
 {
-
 	public class Cell_Neighborhood
 	{
 		public int NumNeighbors { get; }
@@ -14,14 +14,16 @@ namespace ConwaysWorld
 		{
 			get
 			{
-				if (NeighborhoodDict == null) return null;
+				if (NeighborhoodDict == null)
+					return null;
 
 				var neighbors = new Dictionary<string, Cell>(NeighborhoodDict);
 				neighbors.Remove("center");
 				return neighbors;
 			}
 		}
-		public static string[] NeighborHoodKeys = new string[] {
+		public static string[] NeighborHoodKeys = new string[]
+		{
 			"southWest",
 			"west",
 			"northWest",
@@ -30,7 +32,7 @@ namespace ConwaysWorld
 			"southEast",
 			"east",
 			"northEast",
-			"center"
+			"center",
 		}; //used to traverse dictionary in center-last order
 
 		public Cell_Neighborhood(Cell[,] cellGrid, int column, int row)
@@ -60,7 +62,10 @@ namespace ConwaysWorld
 						{
 							NumNeighbors++;
 						}
-						NeighborhoodDict.Add(NeighborHoodKeys[neighborhoodKeyIndex++], cellGrid[neighborColumn, neighborRow]);
+						NeighborhoodDict.Add(
+							NeighborHoodKeys[neighborhoodKeyIndex++],
+							cellGrid[neighborColumn, neighborRow]
+						);
 					}
 				}
 			}

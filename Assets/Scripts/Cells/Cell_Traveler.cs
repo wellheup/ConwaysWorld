@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
-using System.Collections.Generic;
 
 namespace ConwaysWorld
 {
@@ -8,7 +8,7 @@ namespace ConwaysWorld
 	/// traveler (swaps places with UnityEngine.Random neighbor each turn)
 	/// </summary>
 	/// <remarks>
-	/// 
+	///
 	/// </remarks>
 	public class Cell_Traveler : Cell
 	{
@@ -17,7 +17,7 @@ namespace ConwaysWorld
 		protected string Direction;
 		protected bool SpecialPerformed = false;
 
-		public Cell_Traveler(int column, int row, bool isAlive)// : base(column, row, isAlive)
+		public Cell_Traveler(int column, int row, bool isAlive) // : base(column, row, isAlive)
 		{
 			IsAlive = isAlive;
 			Column = column;
@@ -54,7 +54,9 @@ namespace ConwaysWorld
 			string direction = "center";
 			while (direction == "center")
 			{
-				direction = Cell_Neighborhood.NeighborHoodKeys[UnityEngine.Random.Range(0, Cell_Neighborhood.NeighborHoodKeys.Length)];
+				direction = Cell_Neighborhood.NeighborHoodKeys[
+					UnityEngine.Random.Range(0, Cell_Neighborhood.NeighborHoodKeys.Length)
+				];
 			}
 			return direction;
 		}

@@ -1,28 +1,34 @@
-using UnityEngine;
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.AddressableAssets;
+using UnityEngine.Assertions;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using static ConwaysWorld.Cell_Generator;
-using System;
-using UnityEngine.Assertions;
 
 namespace ConwaysWorld
 {
-
 	public class View : MonoBehaviour
 	{
 		private Cell[,] _cellGrid;
 		private BaseTile[,] _displayGrid;
-		private float _baseTileSize, _canvasWidth, _canvasHeight, _tileScaleMod = 1;
+		private float _baseTileSize,
+			_canvasWidth,
+			_canvasHeight,
+			_tileScaleMod = 1;
 		public bool IsRendering = false;
-		private int AttemptsAtLife = 0, Generation = 0, CurrentPopulation = 0;
+		private int AttemptsAtLife = 0,
+			Generation = 0,
+			CurrentPopulation = 0;
 
 		private Queue<string> _debugMsgs;
 
-		[SerializeField] private BaseTile _baseTilePrefab;
-		[SerializeField] private Transform _gridContainer;
-		private Dictionary<E_CellType, Sprite> _cellSprites;
+		[SerializeField]
+		private BaseTile _baseTilePrefab;
 
+		[SerializeField]
+		private Transform _gridContainer;
+		private Dictionary<E_CellType, Sprite> _cellSprites;
 
 		public void InitiateDisplayGrid(Cell[,] cellGrid, float canvasWidth, float canvasHeight)
 		{
@@ -36,32 +42,34 @@ namespace ConwaysWorld
 			foreach (E_CellType i in Enum.GetValues(typeof(E_CellType)))
 			{
 				_cellSprites.Add(i, null);
-				Addressables.LoadAssetAsync<Sprite>($"Assets/Sprites/{(i == E_CellType.Cell ? E_CellType.Cell_Basic : i)}.jpg").Completed +=
-					(spriteAsyncOpHandle) =>
+				Addressables
+					.LoadAssetAsync<Sprite>($"Assets/Sprites/{(i == E_CellType.Cell ? E_CellType.Cell_Basic : i)}.jpg")
+					.Completed += (spriteAsyncOpHandle) =>
+				{
+					if (spriteAsyncOpHandle.Status == AsyncOperationStatus.Succeeded)
 					{
-						if (spriteAsyncOpHandle.Status == AsyncOperationStatus.Succeeded)
-						{
-							_cellSprites[i] = spriteAsyncOpHandle.Result;
-						}
-						else
-						{
-							Debug.Log($"Failed to load {i}.jpg in View");
-						}
-					};
+						_cellSprites[i] = spriteAsyncOpHandle.Result;
+					}
+					else
+					{
+						Debug.Log($"Failed to load {i}.jpg in View");
+					}
+				};
 			}
 			// revert dead sprite to basic color to mitigate busy visuals...
-			Addressables.LoadAssetAsync<Sprite>($"Assets/Sprites/BlankBaseTileSprite.png").Completed +=
-					(spriteAsyncOpHandle) =>
-					{
-						if (spriteAsyncOpHandle.Status == AsyncOperationStatus.Succeeded)
-						{
-							_cellSprites[E_CellType.Cell_Dead] = spriteAsyncOpHandle.Result;
-						}
-						else
-						{
-							Debug.Log($"Failed to load BlankBaseTileSprite.png in View");
-						}
-					};
+			Addressables.LoadAssetAsync<Sprite>($"Assets/Sprites/BlankBaseTileSprite.png").Completed += (
+				spriteAsyncOpHandle
+			) =>
+			{
+				if (spriteAsyncOpHandle.Status == AsyncOperationStatus.Succeeded)
+				{
+					_cellSprites[E_CellType.Cell_Dead] = spriteAsyncOpHandle.Result;
+				}
+				else
+				{
+					Debug.Log($"Failed to load BlankBaseTileSprite.png in View");
+				}
+			};
 
 			FillDisplayGrid(false);
 		}
@@ -107,7 +115,7 @@ namespace ConwaysWorld
 			if (updateTileSize)
 				_tileScaleMod = Mathf.Min(_canvasHeight / rows, _canvasWidth / columns) / 100;
 
-			float currentTileSize = _baseTileSize * _tileScaleMod;// scale to fit canvas, 0-1 scale
+			float currentTileSize = _baseTileSize * _tileScaleMod; // scale to fit canvas, 0-1 scale
 			_displayGrid = new BaseTile[columns, rows];
 			_gridContainer.GetComponent<RectTransform>().anchorMin = new Vector2(0.0f, 0.0f);
 			_gridContainer.GetComponent<RectTransform>().anchorMax = new Vector2(0.0f, 0.0f);
@@ -121,7 +129,11 @@ namespace ConwaysWorld
 				for (int y = 0; y < _cellGrid.GetLength(1); y++)
 				{
 					BaseTile newTile = Instantiate(_baseTilePrefab, _gridContainer);
-					newTile.GetComponent<RectTransform>().localScale = new Vector3(_tileScaleMod, _tileScaleMod, _tileScaleMod);
+					newTile.GetComponent<RectTransform>().localScale = new Vector3(
+						_tileScaleMod,
+						_tileScaleMod,
+						_tileScaleMod
+					);
 					newTile.transform.localPosition = new Vector3(xPos, yPos, 0);
 					newTile.name = cellNum++ + " (" + x + ", " + y + ")";
 					_displayGrid[x, y] = newTile;
@@ -158,7 +170,9 @@ namespace ConwaysWorld
 					}
 					catch (Exception e)
 					{
-						Debug.Log($"_displayGrid[{x}, {y}].Borders[{i}].color = Cell_Nation.Nation_Colors[{cell.Nationality}]");
+						Debug.Log(
+							$"_displayGrid[{x}, {y}].Borders[{i}].color = Cell_Nation.Nation_Colors[{cell.Nationality}]"
+						);
 						_displayGrid[x, y].Borders[i].color = Cell_Nation.Nation_Colors[cell.Nationality];
 						throw e;
 					}
@@ -182,7 +196,13 @@ namespace ConwaysWorld
 			// }
 		}
 
-		public void RenderWorldState(Cell[,] cellGrid, int attemptsAtLife, int generation, int currentPopulation, bool IsPrintWorldStats)
+		public void RenderWorldState(
+			Cell[,] cellGrid,
+			int attemptsAtLife,
+			int generation,
+			int currentPopulation,
+			bool IsPrintWorldStats
+		)
 		{
 			AttemptsAtLife = attemptsAtLife;
 			Generation = generation;
@@ -199,19 +219,27 @@ namespace ConwaysWorld
 				for (int y = 0; y < cellGrid.GetLength(1); y++)
 				{
 					string lifeStatus = "???";
-					_displayGrid[x, y].name = $"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} [{_cellGrid[x, y].Nationality}]";
+					_displayGrid[x, y].name =
+						$"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} [{_cellGrid[x, y].Nationality}]";
 					UpdateCellBorders(_cellGrid[x, y], x, y);
 					if (_cellGrid[x, y].GetIsAlive())
 					{
 						lifeStatus = "Alive";
-						_displayGrid[x, y].name = $"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} [{_cellGrid[x, y].Nationality}]";
-						_displayGrid[x, y].Image.color = _cellGrid[x, y].Nationality != -1 ? Color.Lerp(Cell_Nation.Nation_Colors[_cellGrid[x, y].Nationality], Color.white, 0.70f) : Color.white; //tint 70% toward white from nation color
-						_displayGrid[x, y].Image.sprite = _cellSprites[_cellGrid[x, y].CellType] ? _cellSprites[_cellGrid[x, y].CellType] : _cellSprites[E_CellType.Cell_Dead];
+						_displayGrid[x, y].name =
+							$"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} [{_cellGrid[x, y].Nationality}]";
+						_displayGrid[x, y].Image.color =
+							_cellGrid[x, y].Nationality != -1
+								? Color.Lerp(Cell_Nation.Nation_Colors[_cellGrid[x, y].Nationality], Color.white, 0.70f)
+								: Color.white; //tint 70% toward white from nation color
+						_displayGrid[x, y].Image.sprite = _cellSprites[_cellGrid[x, y].CellType]
+							? _cellSprites[_cellGrid[x, y].CellType]
+							: _cellSprites[E_CellType.Cell_Dead];
 					}
 					else
 					{
 						lifeStatus = "Dead";
-						_displayGrid[x, y].name = $"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} {_cellGrid[x, y].Age}yrs [{_cellGrid[x, y].Nationality}]";
+						_displayGrid[x, y].name =
+							$"{cellNum++} ({x}, {y}) {lifeStatus} {_cellGrid[x, y].CellType} {_cellGrid[x, y].Age}yrs [{_cellGrid[x, y].Nationality}]";
 						_displayGrid[x, y].Image.color = Color.white;
 						_displayGrid[x, y].Image.sprite = _cellSprites[E_CellType.Cell_Dead];
 					}
@@ -223,20 +251,15 @@ namespace ConwaysWorld
 				}
 			}
 
-			if (IsPrintWorldStats) PrintWorldStats(AttemptsAtLife, Generation, CurrentPopulation);
+			if (IsPrintWorldStats)
+				PrintWorldStats(AttemptsAtLife, Generation, CurrentPopulation);
 			PrintDebugMsgs();
 		}
 
 		// Start is called before the first frame update
-		void Start()
-		{
-
-		}
+		void Start() { }
 
 		// Update is called once per frame
-		void Update()
-		{
-
-		}
+		void Update() { }
 	}
 }

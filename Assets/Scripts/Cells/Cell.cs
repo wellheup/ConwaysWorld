@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
+
 namespace ConwaysWorld
 {
-
 	public abstract class Cell
 	{
 		public Cell_Neighborhood CellNeighborhood;
@@ -55,7 +55,11 @@ namespace ConwaysWorld
 			{
 				return false; // Die due to underpopulation
 			}
-			else if (IsAlive && CellNeighborhood.NumNeighbors >= MinLivingNeighbors && CellNeighborhood.NumNeighbors <= MaxLivingNeighbors)
+			else if (
+				IsAlive
+				&& CellNeighborhood.NumNeighbors >= MinLivingNeighbors
+				&& CellNeighborhood.NumNeighbors <= MaxLivingNeighbors
+			)
 			{
 				return true; // Live on
 			}
@@ -79,10 +83,7 @@ namespace ConwaysWorld
 
 		public virtual void SpecialActions(Cell[,] cellGrid)
 		{
-			if (IsAlive)
-			{
-
-			}
+			if (IsAlive) { }
 		}
 
 		public static Cell ReplaceCell(Cell oldCell, E_CellType cellType, bool isAlive)
@@ -138,7 +139,8 @@ namespace ConwaysWorld
 
 		public static void SwapCells(Cell originCell, Cell dest, Cell[,] cellGrid)
 		{
-			int oldCol = originCell.Column, oldRow = originCell.Row;
+			int oldCol = originCell.Column,
+				oldRow = originCell.Row;
 
 			cellGrid[dest.Column, dest.Row] = originCell;
 			cellGrid[originCell.Column, originCell.Row] = dest;
@@ -240,11 +242,10 @@ namespace ConwaysWorld
 			}
 		}
 
-		protected Cell SelectNearbyCellByRule(Cell[,] cellGrid,
-			Func<Cell, bool> searchRule,
-			int excludedRangeMax) //maxRange must be > 0 if this is to work...
+		protected Cell SelectNearbyCellByRule(Cell[,] cellGrid, Func<Cell, bool> searchRule, int excludedRangeMax) //maxRange must be > 0 if this is to work...
 		{
-			if (excludedRangeMax <= 1) CellThrowException("you passed an unreasonable range into SelectNearbyCellByRule");
+			if (excludedRangeMax <= 1)
+				CellThrowException("you passed an unreasonable range into SelectNearbyCellByRule");
 			List<Cell> nearestOthers = new();
 			int range = 1;
 			while (nearestOthers.Count == 0 && range < excludedRangeMax)
@@ -292,10 +293,7 @@ namespace ConwaysWorld
 			return null;
 		}
 
-		protected List<Cell> GetAllCellsInRangeByRule(
-			Cell[,] cellGrid,
-			Func<Cell, bool> searchRule,
-			int maxRange)
+		protected List<Cell> GetAllCellsInRangeByRule(Cell[,] cellGrid, Func<Cell, bool> searchRule, int maxRange)
 		{
 			List<Cell> cellsInRange = new();
 			for (int columnOffset = -1; columnOffset <= maxRange; columnOffset++)
@@ -305,7 +303,10 @@ namespace ConwaysWorld
 					int neighborColumn = (Column + columnOffset + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
 					int neighborRow = (Row + rowOffset + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
 
-					if (cellGrid[neighborColumn, neighborRow] != this && searchRule(cellGrid[neighborColumn, neighborRow]))
+					if (
+						cellGrid[neighborColumn, neighborRow] != this
+						&& searchRule(cellGrid[neighborColumn, neighborRow])
+					)
 					{
 						cellsInRange.Add(cellGrid[neighborColumn, neighborRow]);
 					}
@@ -320,13 +321,19 @@ namespace ConwaysWorld
 			{
 				int innerDist = Math.Abs(Column - target.Column);
 				int outerDist = Math.Abs(cellGrid.GetLength(0) - innerDist);
-				int targetDir = Column == target.Column ? 0 : Column < target.Column ? 1 : -1;
+				int targetDir =
+					Column == target.Column ? 0
+					: Column < target.Column ? 1
+					: -1;
 				int fastestDir = innerDist <= outerDist ? 1 : -1;
 				int nearestCol = (Column + targetDir * fastestDir + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
 
 				innerDist = Math.Abs(Row - target.Row);
 				outerDist = Math.Abs(cellGrid.GetLength(0) - innerDist);
-				targetDir = Row == target.Row ? 0 : Row < target.Row ? 1 : -1;
+				targetDir =
+					Row == target.Row ? 0
+					: Row < target.Row ? 1
+					: -1;
 				fastestDir = innerDist <= outerDist ? 1 : -1;
 				int nearestRow = (Row + targetDir * fastestDir + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
 

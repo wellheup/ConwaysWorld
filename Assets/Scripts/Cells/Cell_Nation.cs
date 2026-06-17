@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
 namespace ConwaysWorld
 {
 	/// <summary>
-	/// keeps track of a list of cells supposedly in thenation but does not track life or death. 
+	/// keeps track of a list of cells supposedly in thenation but does not track life or death.
 	/// </summary>
 	/// <remarks>
 	/// a census should be taken for each nation each turn to see if those cells are still this nation or not
@@ -15,29 +16,30 @@ namespace ConwaysWorld
 		public Cell King = null;
 		public List<Cell> CitizensList;
 		public List<Cell> DiplomatsList;
-		public static List<Color> Nation_Colors { get; set; } = new()
-		{
-			new(0.74f, 0.00f, 1.00f, 1.00f),
-			new(0.28f, 0.08f, 0.09f, 1.00f),
-			new(0.64f, 0.09f, 0.11f, 1.00f),
-			new(0.00f, 0.96f, 0.26f, 1.00f),
-			new(0.38f, 0.50f, 0.11f, 1.00f),
-			new(0.96f, 0.00f, 0.02f, 1.00f),
-			new(0.28f, 0.24f, 0.08f, 1.00f),
-			new(0.09f, 0.64f, 0.24f, 1.00f),
-			new(0.64f, 0.52f, 0.09f, 1.00f),
-			new(0.16f, 0.61f, 0.68f, 1.00f),
-			new(0.00f, 0.86f, 1.00f, 1.00f),
-			new(0.96f, 0.75f, 0.00f, 1.00f),
-			new(0.14f, 0.17f, 0.46f, 1.00f),
-			new(1.00f, 0.44f, 0.00f, 1.00f),
-			new(0.00f, 0.10f, 0.96f, 1.00f),
-			new(0.68f, 1.00f, 0.00f, 1.00f),
-			new(0.50f, 0.28f, 0.11f, 1.00f),
-			new(0.40f, 0.11f, 0.50f, 1.00f),
-			new(0.11f, 0.17f, 0.72f, 1.00f),
-			new(0.09f, 0.28f, 0.14f, 1.00f)
-		};
+		public static List<Color> Nation_Colors { get; set; } =
+			new()
+			{
+				new(0.74f, 0.00f, 1.00f, 1.00f),
+				new(0.28f, 0.08f, 0.09f, 1.00f),
+				new(0.64f, 0.09f, 0.11f, 1.00f),
+				new(0.00f, 0.96f, 0.26f, 1.00f),
+				new(0.38f, 0.50f, 0.11f, 1.00f),
+				new(0.96f, 0.00f, 0.02f, 1.00f),
+				new(0.28f, 0.24f, 0.08f, 1.00f),
+				new(0.09f, 0.64f, 0.24f, 1.00f),
+				new(0.64f, 0.52f, 0.09f, 1.00f),
+				new(0.16f, 0.61f, 0.68f, 1.00f),
+				new(0.00f, 0.86f, 1.00f, 1.00f),
+				new(0.96f, 0.75f, 0.00f, 1.00f),
+				new(0.14f, 0.17f, 0.46f, 1.00f),
+				new(1.00f, 0.44f, 0.00f, 1.00f),
+				new(0.00f, 0.10f, 0.96f, 1.00f),
+				new(0.68f, 1.00f, 0.00f, 1.00f),
+				new(0.50f, 0.28f, 0.11f, 1.00f),
+				new(0.40f, 0.11f, 0.50f, 1.00f),
+				new(0.11f, 0.17f, 0.72f, 1.00f),
+				new(0.09f, 0.28f, 0.14f, 1.00f),
+			};
 
 		public Cell_Nation(int nationNum)
 		{
@@ -80,14 +82,20 @@ namespace ConwaysWorld
 			if (DiplomatsList.Count < .1f * CitizensList.Count && CitizensList.Count >= 5)
 			{
 				Cell diplomatElect = null;
-				int maxTries = 5, attempt = 0;
+				int maxTries = 5,
+					attempt = 0;
 				//select a cell whom is not a diplomat already
 				while (attempt < maxTries && (diplomatElect == King || DiplomatsList.Contains(diplomatElect)))
 				{
 					diplomatElect = CitizensList[UnityEngine.Random.Range(0, CitizensList.Count)];
 					attempt++;
 				}
-				if (diplomatElect != null && diplomatElect != King && diplomatElect.GetIsAlive() && !DiplomatsList.Contains(diplomatElect))
+				if (
+					diplomatElect != null
+					&& diplomatElect != King
+					&& diplomatElect.GetIsAlive()
+					&& !DiplomatsList.Contains(diplomatElect)
+				)
 				{
 					diplomatElect = Cell.ReplaceCell(diplomatElect, Cell_Generator.E_CellType.Cell_Diplomat, true);
 					cellGrid[diplomatElect.Column, diplomatElect.Row] = diplomatElect;
@@ -109,7 +117,8 @@ namespace ConwaysWorld
 				if (King == null)
 				{
 					Cell newKing = null;
-					int maxTries = 5, attempt = 0;
+					int maxTries = 5,
+						attempt = 0;
 
 					while (attempt < maxTries && (newKing == null || newKing.GetIsAlive() == false))
 					{

@@ -1,6 +1,6 @@
-using static ConwaysWorld.Cell_Generator;
 using System.Collections.Generic;
 using UnityEngine;
+using static ConwaysWorld.Cell_Generator;
 
 /// <summary>
 /// bomber (kills all cells in 2 cell radius)
@@ -29,7 +29,14 @@ namespace ConwaysWorld
 		{
 			if (Age >= 2)
 			{
-				List<Cell> cellsInRange = GetAllCellsInRangeByRule(cellGrid, (Cell x) => { return x.GetIsAlive(); }, 2);
+				List<Cell> cellsInRange = GetAllCellsInRangeByRule(
+					cellGrid,
+					(Cell x) =>
+					{
+						return x.GetIsAlive();
+					},
+					2
+				);
 				foreach (Cell _ in cellsInRange)
 				{
 					_.Die();

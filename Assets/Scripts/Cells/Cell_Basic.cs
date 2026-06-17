@@ -1,6 +1,6 @@
-using static ConwaysWorld.Cell_Generator;
 using System.Collections.Generic;
 using UnityEngine;
+using static ConwaysWorld.Cell_Generator;
 
 namespace ConwaysWorld
 {

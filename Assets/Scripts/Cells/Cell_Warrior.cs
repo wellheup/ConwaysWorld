@@ -1,6 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
 using static ConwaysWorld.Cell_Generator;
-using System.Collections.Generic;
+
 namespace ConwaysWorld
 {
 	/// [summary>
@@ -8,12 +9,14 @@ namespace ConwaysWorld
 	/// 2 warrior cells flip a coin for the victor
 	/// [/summary>
 	/// [remarks>
-	/// 
+	///
 	/// [/remarks>
 	public class Cell_Warrior : Cell_Hunter
 	{
 		List<E_CellType> PreyTypes;
-		public Cell_Warrior(int column, int row, bool isAlive) : base(column, row, isAlive)
+
+		public Cell_Warrior(int column, int row, bool isAlive)
+			: base(column, row, isAlive)
 		{
 			IsAlive = isAlive;
 			Column = column;
@@ -32,7 +35,9 @@ namespace ConwaysWorld
 
 		private bool IsCellEnemy(Cell otherCell)
 		{
-			return otherCell.Nationality != Nationality && PreyTypes.Contains(otherCell.CellType) && otherCell.GetIsAlive();
+			return otherCell.Nationality != Nationality
+				&& PreyTypes.Contains(otherCell.CellType)
+				&& otherCell.GetIsAlive();
 		}
 
 		private bool IsCombatWinner(Cell targetCell)
@@ -55,8 +60,10 @@ namespace ConwaysWorld
 				if (neighbor.Nationality == cell.Nationality)
 				{
 					power++;
-					if (neighbor.GetType() == typeof(Cell_Warrior)) power++;
-					if (neighbor.GetType() == typeof(Cell_King)) power += 2;
+					if (neighbor.GetType() == typeof(Cell_Warrior))
+						power++;
+					if (neighbor.GetType() == typeof(Cell_King))
+						power += 2;
 				}
 			}
 			return power;
@@ -69,7 +76,9 @@ namespace ConwaysWorld
 			{
 				if (targetCell.GetType() == typeof(Cell_Warrior) && !IsCombatWinner(targetCell)) //if cell loses combat to another warrior
 				{
-					CellThrowExceptionInRender($"({Column}, {Row}) {this.GetType()}[{Nationality}] targeted ({targetCell.Column}, {targetCell.Row}){targetCell.GetType()}[{targetCell.Nationality}] and died!");
+					CellThrowExceptionInRender(
+						$"({Column}, {Row}) {this.GetType()}[{Nationality}] targeted ({targetCell.Column}, {targetCell.Row}){targetCell.GetType()}[{targetCell.Nationality}] and died!"
+					);
 					Die();
 					Conditions.Add("cleanup");
 				}
