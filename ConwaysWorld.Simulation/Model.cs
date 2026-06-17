@@ -47,7 +47,16 @@ public class Model
 
         InitializeNations();
         UpdateNeighborhoodsGrid();
+        CountInitialPopulation();
         UpdateNations();
+    }
+
+    private void CountInitialPopulation()
+    {
+        _currentPopulation = 0;
+        for (int c = 0; c < _columns; c++)
+            for (int r = 0; r < _rows; r++)
+                if (CellGrid[c, r].IsAlive) _currentPopulation++;
     }
 
     private void InitializeNations()
