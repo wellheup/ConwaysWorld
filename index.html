@@ -895,7 +895,7 @@ function specialActions(cell) {
         if (!cell.alive || !cell.hood) return;
         let type = cell.type;
         if (type === TYPE.DISEASED || type === TYPE.PLAGUE) { spreadDisease(cell); }
-        else if (type === TYPE.DOCTOR) { cureDisease(cell); seekDisease(cell); cell.specialPerformed = true; }
+        else if (type === TYPE.DOCTOR) { if (cureDisease(cell) || seekDisease(cell)) cell.specialPerformed = true; }
         else if (type === TYPE.TRAVELER) {
                 if (!cell.specialPerformed) { swapCells(cell, cell.hood.dict[cell.direction]); cell.specialPerformed = true; }
         } else if (type === TYPE.EXPLORER) {
@@ -934,31 +934,40 @@ function spreadDisease(cell) {
 }
 
 function seekDisease(cell) {
+        let learned = false;
         for (let dir of [...DIRS, 'center']) {
                 let nb = cell.hood.dict[dir];
                 if (!nb) continue;
                 for (let cond of nb.conditions)
-                        if ((cond.startsWith('d_') || cond.startsWith('p_')) && !cell.vaccines.includes(cond))
+                        if ((cond.startsWith('d_') || cond.startsWith('p_')) && !cell.vaccines.includes(cond)) {
                                 cell.vaccines.push(cond);
+                                learned = true;
+                        }
         }
+        return learned;
 }
 
 function cureDisease(cell) {
+        let cured = false;
         for (let dir of DIRS) {
                 let nb = cell.hood.dict[dir];
                 if (nb && nb.alive && nb !== cell) {
                         for (let vaccine of cell.vaccines) {
                                 let before = nb.conditions.size;
                                 nb.conditions.delete(vaccine);
-                                if (nb.conditions.size < before && (nb.type === TYPE.DISEASED || nb.type === TYPE.PLAGUE)) {
-                                        let nc = replaceCell(nb, TYPE.BASIC, true);
-                                        nc.hood = nb.hood;
-                                        grid[nb.col][nb.row] = nc;
+                                if (nb.conditions.size < before) {
+                                        cured = true;
+                                        if (nb.type === TYPE.DISEASED || nb.type === TYPE.PLAGUE) {
+                                                let nc = replaceCell(nb, TYPE.BASIC, true);
+                                                nc.hood = nb.hood;
+                                                grid[nb.col][nb.row] = nc;
+                                        }
                                 }
                         }
                 }
         }
         cell.hood = buildNeighborhood(grid, cols, rows, cell.col, cell.row);
+        return cured;
 }
 
 function detonateCell(cell) {
