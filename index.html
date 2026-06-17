@@ -977,9 +977,19 @@ function detonateCell(cell) {
 function makeArmy(cell) {
         const nation = nations.find(n => n.id === cell.nationality);
         if (!nation) return;
-        const cap = Math.floor(nation.citizens.length * 0.5);
-        const currentWarriors = nation.citizens.filter(c => c.alive && c.type === TYPE.WARRIOR).length;
-        const pendingWarriors = nation.citizens.filter(c => c.alive && c.conditions.has('toWar')).length;
+        // Scan the live grid for an accurate count — nation.citizens is rebuilt at
+        // the end of each step, so it holds stale references after replaceCell runs.
+        let liveCount = 0, currentWarriors = 0, pendingWarriors = 0;
+        for (let c = 0; c < cols; c++) {
+                for (let r = 0; r < rows; r++) {
+                        const gc = grid[c][r];
+                        if (!gc.alive || gc.nationality !== cell.nationality) continue;
+                        liveCount++;
+                        if (gc.type === TYPE.WARRIOR) currentWarriors++;
+                        if (gc.conditions.has('toWar')) pendingWarriors++;
+                }
+        }
+        const cap = Math.floor(liveCount * 0.5);
         let slots = cap - currentWarriors - pendingWarriors;
         for (let dir of DIRS) {
                 if (slots <= 0) break;
