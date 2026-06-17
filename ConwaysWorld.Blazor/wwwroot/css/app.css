@@ -77,7 +77,8 @@ canvas#sim-canvas {
     padding: 8px 10px;
 }
 
-.cw-panel h3 {
+.cw-panel h3,
+.cw-settings-scroll h3 {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 1px;
