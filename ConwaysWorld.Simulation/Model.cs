@@ -30,6 +30,15 @@ public class Model
         /// <summary>All active nations keyed by their nation index.</summary>
         public Dictionary<int, Cell_Nation> Nations = new();
 
+        // ── Event log ─────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Events generated during the most recent <see cref="Step"/> call.
+        /// Cleared at the start of each step.  Consumers should read this list immediately
+        /// after <see cref="Step"/> returns and before the next call.
+        /// </summary>
+        public List<string> PendingEvents { get; } = new();
+
         // ── Private state ─────────────────────────────────────────────────────────────
 
         private readonly SimulationSettings _settings;
@@ -107,6 +116,7 @@ public class Model
         /// <returns>The living cell count after the step.</returns>
         public int Step()
         {
+                PendingEvents.Clear();
                 UpdateNeighborhoodsGrid();
                 UpdateAliveNextGenGrid();
                 UpdateCellLives();
@@ -312,14 +322,37 @@ public class Model
         }
 
         /// <summary>
-        /// Runs <see cref="Cell_Nation.Census"/> for each existing nation, then creates new
-        /// nation slots if the current population supports more nations than currently exist
-        /// (up to <see cref="SimulationSettings.MaxNations"/>).
+        /// Runs <see cref="Cell_Nation.Census"/> for each existing nation, fires
+        /// king-crowned and king-fallen events into <see cref="PendingEvents"/>,
+        /// then creates new nation slots if the current population supports more
+        /// nations than currently exist (up to <see cref="SimulationSettings.MaxNations"/>).
         /// </summary>
         public void UpdateNations()
         {
+                // Snapshot king references before census so we can detect changes.
+                // By this point UpdateCellLives() has already run, so King.IsAlive
+                // reflects whether the king survived this step.
+                var prevKings = Nations.ToDictionary(kv => kv.Key, kv => kv.Value.King);
+                var prevCounts = Nations.ToDictionary(kv => kv.Key, kv => kv.Value.CitizensList.Count);
+
                 foreach (var nation in Nations.Values)
                         nation.Census(CellGrid);
+
+                foreach (var kv in Nations)
+                {
+                        prevKings.TryGetValue(kv.Key, out var oldKing);
+                        prevCounts.TryGetValue(kv.Key, out var oldCount);
+                        var newKing = kv.Value.King;
+
+                        if (oldKing != null && !oldKing.IsAlive)
+                                PendingEvents.Add($"king_fallen:Nation {kv.Key}: The King has fallen!");
+
+                        if (newKing != null && newKing != oldKing)
+                                PendingEvents.Add($"king_crowned:Nation {kv.Key}: A new King is crowned!");
+
+                        if (kv.Value.CitizensList.Count == 0 && oldCount > 0)
+                                PendingEvents.Add($"kingdom_destroyed:Nation {kv.Key}: Kingdom destroyed!");
+                }
 
                 float basePct = _settings.BasePercentLiving;
                 float numNations = basePct * _columns * _rows / _settings.MinCellsPerNation;

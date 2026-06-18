@@ -24,20 +24,29 @@
 </div>
 
 <div class="cw-body">
-    <div class="cw-canvas-wrap" id="canvas-wrap">
-        <canvas id="sim-canvas"></canvas>
-        @if (_tooltip != null)
-        {
-            <div class="cw-tooltip" style="left:@(_tooltipX)px;top:@(_tooltipY)px">
-                <div class="tt-type">@_tooltip.TypeName</div>
-                <div class="tt-row">Nation @(_tooltip.Nation >= 0 ? _tooltip.Nation.ToString() : "—")</div>
-                <div class="tt-row">Age @_tooltip.Age</div>
-                @if (_tooltip.Conditions.Length > 0)
-                {
-                    <div class="tt-row" style="font-size:10px;color:#777">@_tooltip.Conditions</div>
-                }
-            </div>
-        }
+    <div class="cw-main">
+        <div class="cw-canvas-wrap" id="canvas-wrap">
+            <canvas id="sim-canvas"></canvas>
+            @if (_tooltip != null)
+            {
+                <div class="cw-tooltip" style="left:@(_tooltipX)px;top:@(_tooltipY)px">
+                    <div class="tt-type">@_tooltip.TypeName</div>
+                    <div class="tt-row">Nation @(_tooltip.Nation >= 0 ? _tooltip.Nation.ToString() : "—")</div>
+                    <div class="tt-row">Age @_tooltip.Age</div>
+                    @if (_tooltip.Conditions.Length > 0)
+                    {
+                        <div class="tt-row" style="font-size:10px;color:#777">@_tooltip.Conditions</div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="cw-event-log">
+            @foreach (var ev in _eventLog)
+            {
+                <div class="cw-event-entry @ev.CssClass">@ev.Message</div>
+            }
+        </div>
     </div>
 
     <div class="cw-sidebar">
@@ -166,6 +175,10 @@
     private TooltipData? _tooltip;
     private double _tooltipX = 0, _tooltipY = 0;
 
+    private record SimEvent(string Message, string CssClass);
+    private List<SimEvent> _eventLog = new();
+    private const int MaxEventLog = 60;
+
     private int _startCols = 40;
     private int _startRows = 40;
     private int _maxGrid = 120;
@@ -254,11 +267,36 @@
         }
     }
 
+    private SimEvent ParseEvent(string raw)
+    {
+        if (raw.StartsWith("king_crowned:"))
+            return new SimEvent(raw["king_crowned:".Length..], "ev-crown");
+        if (raw.StartsWith("king_fallen:"))
+            return new SimEvent(raw["king_fallen:".Length..], "ev-fallen");
+        if (raw.StartsWith("kingdom_destroyed:"))
+            return new SimEvent(raw["kingdom_destroyed:".Length..], "ev-destroy");
+        return new SimEvent(raw, "");
+    }
+
+    private void CollectEvents()
+    {
+        foreach (var raw in _model.PendingEvents)
+        {
+            var ev = ParseEvent(raw);
+            var msg = new SimEvent($"Gen {_model.Generation}  {ev.Message}", ev.CssClass);
+            _eventLog.Insert(0, msg);
+        }
+        if (_eventLog.Count > MaxEventLog)
+            _eventLog.RemoveRange(MaxEventLog, _eventLog.Count - MaxEventLog);
+    }
+
     private async Task OnTimerTick()
     {
         _model.Step();
+        var hadEvents = _model.PendingEvents.Count > 0;
         await InvokeAsync(async () =>
         {
+            if (hadEvents) CollectEvents();
             await RenderFrame();
             UpdateTypeCounts();
             StateHasChanged();
@@ -312,6 +350,7 @@
     private async Task StepOnce()
     {
         _model.Step();
+        CollectEvents();
         await RenderFrame();
         UpdateTypeCounts();
     }
@@ -320,6 +359,7 @@
     {
         _timer.Stop();
         _running = false;
+        _eventLog.Clear();
         _model.Restart();
         await RenderFrame();
         UpdateTypeCounts();

@@ -3,6 +3,7 @@ window.ConwaysInterop = (() => {
     let cellSize = 14;
     let cols = 0, rows = 0;
     let scale = 1, tx = 0, ty = 0;
+    let userHasTransformed = false;
     let isPanning = false, panStart = { x: 0, y: 0 };
     let dotnetRef = null;
     let hoveredCell = null;
@@ -62,6 +63,17 @@ window.ConwaysInterop = (() => {
         const wrap = canvas.parentElement;
         canvas.width = wrap.clientWidth;
         canvas.height = wrap.clientHeight;
+        if (!userHasTransformed) fitToWindow();
+        else centerGrid();
+    }
+
+    function fitToWindow() {
+        if (!cols || !rows) return;
+        const fitScale = Math.min(
+            canvas.width  / (cols * cellSize),
+            canvas.height / (rows * cellSize)
+        ) * 0.97;
+        scale = Math.max(0.1, fitScale);
         centerGrid();
     }
 
@@ -104,6 +116,7 @@ window.ConwaysInterop = (() => {
 
     function onWheel(e) {
         e.preventDefault();
+        userHasTransformed = true;
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
@@ -116,6 +129,7 @@ window.ConwaysInterop = (() => {
 
     function onMouseDown(e) {
         if (e.button === 2) {
+            userHasTransformed = true;
             isPanning = true;
             panStart = { x: e.clientX - tx, y: e.clientY - ty };
             canvas.style.cursor = 'grabbing';
@@ -154,8 +168,8 @@ window.ConwaysInterop = (() => {
     }
 
     function onDblClick(e) {
-        scale = 1;
-        centerGrid();
+        userHasTransformed = false;
+        fitToWindow();
         scheduleRedraw();
     }
 
@@ -180,9 +194,11 @@ window.ConwaysInterop = (() => {
 
     function renderFrame(cells, nationColors, newCols, newRows) {
         if (!ctx) return;
+        const gridChanged = (newCols !== cols || newRows !== rows);
         cols = newCols; rows = newRows;
         cachedCells = cells;
         cachedNationColors = nationColors;
+        if (gridChanged && !userHasTransformed) fitToWindow();
         drawFrame();
     }
 
