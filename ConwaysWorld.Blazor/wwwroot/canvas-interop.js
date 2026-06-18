@@ -230,6 +230,10 @@ window.ConwaysInterop = (() => {
             }
         }
 
+        ctx.strokeStyle = '#999999';
+        ctx.lineWidth = 2 / scale;
+        ctx.strokeRect(0, 0, cols * cs, rows * cs);
+
         ctx.restore();
     }
 
