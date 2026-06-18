@@ -1,3 +1,5 @@
 - [Blazor WASM setup quirks](blazor-wasm-setup.md) — dotnet 7 only; template scaffold doesn't create .csproj when parent has one; run command needs --urls flag
 - [Conway simulation step order](conways-step-order.md) — UpdateNeighborhoods must run twice per Step (before AliveNext and before SpecialActions) or movement cells use stale neighborhoods
 - [Breed method grid update](conways-breed-grid.md) — Cell.Breed() must take Cell[,] parameter and write back to grid; local list assignment doesn't update the grid
+- [Simulation library conventions](sim-library-conventions.md) — tab indentation, XML doc comments on all public members; pure C# no framework deps.
+- [Unity cleanup complete](unity-cleanup.md) — all Unity files removed (Assets/, ProjectSettings/, obj/, bin/, ConwaysWorld.csproj, README.txt); index.html + server.js kept as JS reference per user preference.
