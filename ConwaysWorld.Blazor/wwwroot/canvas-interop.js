@@ -190,6 +190,8 @@ window.ConwaysInterop = (() => {
         if (!ctx) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.save();
         ctx.translate(tx, ty);
         ctx.scale(scale, scale);

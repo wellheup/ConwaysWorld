@@ -52,7 +52,7 @@ html, body {
     flex: 1;
     position: relative;
     overflow: hidden;
-    background: #0d0d0d;
+    background: #ffffff;
     cursor: crosshair;
 }
 
