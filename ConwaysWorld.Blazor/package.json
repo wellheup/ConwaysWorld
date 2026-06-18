@@ -1,0 +1,7 @@
+{
+  "name": "conways-world-blazor",
+  "private": true,
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}
