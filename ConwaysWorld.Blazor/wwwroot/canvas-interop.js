@@ -309,10 +309,11 @@ window.ConwaysInterop = (() => {
                 const animDuration = stepIntervalMs * 0.65;
                 const startTime = performance.now();
 
-                const movingSet = new Map();
+                const movingSet = new Set();
                 for (let i = 0; i < moves.length; i++) {
                     const m = moves[i];
-                    movingSet.set(m.toCol + ',' + m.toRow, m);
+                    movingSet.add(m.fromCol + ',' + m.fromRow);
+                    movingSet.add(m.toCol + ',' + m.toRow);
                 }
 
                 isAnimating = true;
