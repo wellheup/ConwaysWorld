@@ -218,6 +218,28 @@ window.ConwaysInterop = (() => {
         }
     }
 
+    function drawCellScaled(col, row, cs, type, nat, nationColors, sizeFactor) {
+        if (sizeFactor <= 0) return;
+        const fullW = cs - 1;
+        const w = fullW * sizeFactor;
+        if (w < 1) return;
+        const offset = (fullW - w) / 2;
+        const px = col * cs + offset;
+        const py = row * cs + offset;
+        const nationColor = (nat >= 0 && nat < nationColors.length) ? nationColors[nat] : '#222';
+        ctx.fillStyle = nationColor;
+        ctx.fillRect(px, py, w, w);
+        if (sprites[type]) {
+            const inner = Math.max(1, w - 2);
+            ctx.drawImage(sprites[type], px + 1, py + 1, inner, inner);
+        } else {
+            const inner = Math.max(1, cs * 0.45 * sizeFactor);
+            const innerOff = (w - inner) / 2;
+            ctx.fillStyle = TYPE_COLORS[type] ?? '#fff';
+            ctx.fillRect(px + innerOff, py + innerOff, inner, inner);
+        }
+    }
+
     function drawFrame() {
         if (!ctx) return;
 
@@ -253,7 +275,7 @@ window.ConwaysInterop = (() => {
         return a + (b - a) * t;
     }
 
-    function drawFrameAnimated(t, movingSet, moves, nationColors) {
+    function drawFrameAnimated(t, excludeSet, moves, births, deaths, nationColors) {
         if (!ctx) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -268,7 +290,7 @@ window.ConwaysInterop = (() => {
         for (let i = 0; i < cachedCells.length; i++) {
             const c = cachedCells[i];
             if (!c.alive) continue;
-            if (movingSet.has(c.col + ',' + c.row)) continue;
+            if (excludeSet.has(c.col + ',' + c.row)) continue;
             drawCell(c.col * cs, c.row * cs, cs, c.type, c.nat, nationColors, c.col, c.row);
         }
 
@@ -286,6 +308,16 @@ window.ConwaysInterop = (() => {
             drawCell(px, py, cs, m.type, m.nat, nationColors, -1, -1);
         }
 
+        for (let i = 0; i < deaths.length; i++) {
+            const d = deaths[i];
+            drawCellScaled(d.col, d.row, cs, d.type, d.nat, nationColors, 1 - t);
+        }
+
+        for (let i = 0; i < births.length; i++) {
+            const b = births[i];
+            drawCellScaled(b.col, b.row, cs, b.type, b.nat, nationColors, t);
+        }
+
         ctx.strokeStyle = '#999999';
         ctx.lineWidth = 2 / scale;
         ctx.strokeRect(0, 0, cols * cs, rows * cs);
@@ -293,7 +325,7 @@ window.ConwaysInterop = (() => {
         ctx.restore();
     }
 
-    function renderFrame(cells, nationColors, newCols, newRows, moves, animationEnabled, stepIntervalMs) {
+    function renderFrame(cells, nationColors, newCols, newRows, moves, births, deaths, animationEnabled, stepIntervalMs) {
         if (!ctx) return Promise.resolve();
 
         const gridChanged = (newCols !== cols || newRows !== rows);
@@ -302,18 +334,30 @@ window.ConwaysInterop = (() => {
         cachedNationColors = nationColors;
         if (gridChanged && !userHasTransformed) fitToWindow();
 
-        const shouldAnimate = animationEnabled && moves && moves.length > 0 && !gridChanged;
+        const hasMoves   = moves  && moves.length  > 0;
+        const hasBirths  = births && births.length  > 0;
+        const hasDeaths  = deaths && deaths.length  > 0;
+        const shouldAnimate = animationEnabled && !gridChanged && (hasMoves || hasBirths || hasDeaths);
 
         if (shouldAnimate) {
             return new Promise(resolve => {
                 const animDuration = stepIntervalMs * 0.65;
                 const startTime = performance.now();
 
-                const movingSet = new Set();
-                for (let i = 0; i < moves.length; i++) {
-                    const m = moves[i];
-                    movingSet.add(m.fromCol + ',' + m.fromRow);
-                    movingSet.add(m.toCol + ',' + m.toRow);
+                const excludeSet = new Set();
+                if (hasMoves) {
+                    for (let i = 0; i < moves.length; i++) {
+                        excludeSet.add(moves[i].fromCol + ',' + moves[i].fromRow);
+                        excludeSet.add(moves[i].toCol  + ',' + moves[i].toRow);
+                    }
+                }
+                if (hasBirths) {
+                    for (let i = 0; i < births.length; i++)
+                        excludeSet.add(births[i].col + ',' + births[i].row);
+                }
+                if (hasDeaths) {
+                    for (let i = 0; i < deaths.length; i++)
+                        excludeSet.add(deaths[i].col + ',' + deaths[i].row);
                 }
 
                 isAnimating = true;
@@ -323,7 +367,7 @@ window.ConwaysInterop = (() => {
                     const rawT = Math.min(1.0, elapsed / animDuration);
                     const t = easeInOut(rawT);
 
-                    drawFrameAnimated(t, movingSet, moves, nationColors);
+                    drawFrameAnimated(t, excludeSet, moves || [], births || [], deaths || [], nationColors);
 
                     if (rawT < 1.0) {
                         requestAnimationFrame(frame);

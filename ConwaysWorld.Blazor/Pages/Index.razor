@@ -189,6 +189,8 @@
     private bool _animationEnabled = true;
     private bool _canvasReady = false;
 
+    private Dictionary<(int col, int row), (int type, int nat)> _prevCellMap = new();
+
     private List<(string Name, string Color, int Count)> _typeCounts = new();
 
     private record TooltipData(string TypeName, int Nation, int Age, string Conditions);
@@ -350,6 +352,7 @@
                 _dotNetRef);
             _canvasReady = true;
             await RenderFrame();
+            CapturePrevCells();
             UpdateTypeCounts();
             StateHasChanged();
         }
@@ -378,9 +381,23 @@
             _eventLog.RemoveRange(MaxEventLog, _eventLog.Count - MaxEventLog);
     }
 
+    private void CapturePrevCells()
+    {
+        _prevCellMap.Clear();
+        var grid = _model.CellGrid;
+        for (int c = 0; c < _model.Columns; c++)
+            for (int r = 0; r < _model.Rows; r++)
+            {
+                var cell = grid[c, r];
+                if (cell.IsAlive)
+                    _prevCellMap[(c, r)] = ((int)cell.CellType, cell.Nationality);
+            }
+    }
+
     private async Task OnTimerTick()
     {
         if (!_running) return;
+        CapturePrevCells();
         _model.Step();
         var hadEvents = _model.PendingEvents.Count > 0;
         await InvokeAsync(async () =>
@@ -402,21 +419,54 @@
         var cells = new List<object>(c * r);
 
         for (int col = 0; col < c; col++)
-        {
             for (int row = 0; row < r; row++)
             {
                 var cell = grid[col, row];
                 if (!cell.IsAlive) continue;
                 cells.Add(new { col, row, type = (int)cell.CellType, nat = cell.Nationality, alive = cell.IsAlive });
             }
-        }
 
         var moves = _model.PendingMoves
             .Select(m => new { fromCol = m.FromCol, fromRow = m.FromRow, toCol = m.ToCol, toRow = m.ToRow, type = m.CellType, nat = m.Nationality })
             .ToList<object>();
 
+        var births = new List<object>();
+        var deaths = new List<object>();
+
+        if (_prevCellMap.Count > 0)
+        {
+            var moveSrcSet = _model.PendingMoves.Select(m => (m.FromCol, m.FromRow)).ToHashSet();
+            var moveDstSet = _model.PendingMoves.Select(m => (m.ToCol, m.ToRow)).ToHashSet();
+
+            foreach (var kv in _prevCellMap)
+            {
+                var (col, row) = kv.Key;
+                var (type, nat) = kv.Value;
+                if (col < c && row < r
+                    && !grid[col, row].IsAlive
+                    && !moveSrcSet.Contains((col, row))
+                    && !moveDstSet.Contains((col, row)))
+                {
+                    deaths.Add(new { col, row, type, nat });
+                }
+            }
+
+            for (int col = 0; col < c; col++)
+                for (int row = 0; row < r; row++)
+                {
+                    var cell = grid[col, row];
+                    if (cell.IsAlive
+                        && !_prevCellMap.ContainsKey((col, row))
+                        && !moveSrcSet.Contains((col, row))
+                        && !moveDstSet.Contains((col, row)))
+                    {
+                        births.Add(new { col, row, type = (int)cell.CellType, nat = cell.Nationality });
+                    }
+                }
+        }
+
         var nationColors = Cell_Nation.NationColors;
-        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r, moves, _animationEnabled, _intervalMs);
+        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r, moves, births, deaths, _animationEnabled, _intervalMs);
     }
 
     private void UpdateTypeCounts()
@@ -443,6 +493,7 @@
 
     private async Task StepOnce()
     {
+        CapturePrevCells();
         _model.Step();
         CollectEvents();
         await RenderFrame();
@@ -455,7 +506,9 @@
         _running = false;
         _eventLog.Clear();
         _model.Restart();
+        _prevCellMap.Clear();
         await RenderFrame();
+        CapturePrevCells();
         UpdateTypeCounts();
     }
 
@@ -490,7 +543,9 @@
         }
         catch { }
 
+        _prevCellMap.Clear();
         await RenderFrame();
+        CapturePrevCells();
         UpdateTypeCounts();
     }
 
@@ -524,7 +579,9 @@
         }
         catch { }
 
+        _prevCellMap.Clear();
         await RenderFrame();
+        CapturePrevCells();
         UpdateTypeCounts();
     }
 
@@ -577,9 +634,11 @@
         _timer.Stop();
         _running = false;
         _model.Restart();
+        _prevCellMap.Clear();
         _ = InvokeAsync(async () =>
         {
             await RenderFrame();
+            CapturePrevCells();
             UpdateTypeCounts();
             StateHasChanged();
         });
