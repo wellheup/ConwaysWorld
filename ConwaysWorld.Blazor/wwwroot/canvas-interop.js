@@ -240,6 +240,19 @@ window.ConwaysInterop = (() => {
         }
     }
 
+    function drawCellScaledRotated(col, row, cs, type, nat, nationColors, sizeFactor, angleDeg) {
+        if (sizeFactor <= 0) return;
+        if (!angleDeg) { drawCellScaled(col, row, cs, type, nat, nationColors, sizeFactor); return; }
+        const cx = (col + 0.5) * cs;
+        const cy = (row + 0.5) * cs;
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angleDeg * Math.PI / 180);
+        ctx.translate(-cx, -cy);
+        drawCellScaled(col, row, cs, type, nat, nationColors, sizeFactor);
+        ctx.restore();
+    }
+
     function drawFrame() {
         if (!ctx) return;
 
@@ -275,7 +288,7 @@ window.ConwaysInterop = (() => {
         return a + (b - a) * t;
     }
 
-    function drawFrameAnimated(t, excludeSet, moves, births, deaths, nationColors) {
+    function drawFrameAnimated(t, excludeSet, moves, births, deaths, epicDeaths, coronations, nationColors) {
         if (!ctx) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -318,6 +331,24 @@ window.ConwaysInterop = (() => {
             drawCellScaled(b.col, b.row, cs, b.type, b.nat, nationColors, t);
         }
 
+        for (let i = 0; i < epicDeaths.length; i++) {
+            const d = epicDeaths[i];
+            let sf;
+            if (t < 0.3) {
+                sf = 1 + (t / 0.3) * 0.55;
+            } else {
+                sf = 1.55 * (1 - (t - 0.3) / 0.7);
+            }
+            const angle = t * 300;
+            drawCellScaledRotated(d.col, d.row, cs, d.type, d.nat, nationColors, sf, angle);
+        }
+
+        for (let i = 0; i < coronations.length; i++) {
+            const k = coronations[i];
+            const sf = 1 + 0.55 * Math.sin(Math.PI * t);
+            drawCellScaledRotated(k.col, k.row, cs, k.type, k.nat, nationColors, sf, 0);
+        }
+
         ctx.strokeStyle = '#999999';
         ctx.lineWidth = 2 / scale;
         ctx.strokeRect(0, 0, cols * cs, rows * cs);
@@ -325,7 +356,7 @@ window.ConwaysInterop = (() => {
         ctx.restore();
     }
 
-    function renderFrame(cells, nationColors, newCols, newRows, moves, births, deaths, animationEnabled, stepIntervalMs) {
+    function renderFrame(cells, nationColors, newCols, newRows, moves, births, deaths, epicDeaths, coronations, animationEnabled, stepIntervalMs) {
         if (!ctx) return Promise.resolve();
 
         const gridChanged = (newCols !== cols || newRows !== rows);
@@ -334,10 +365,13 @@ window.ConwaysInterop = (() => {
         cachedNationColors = nationColors;
         if (gridChanged && !userHasTransformed) fitToWindow();
 
-        const hasMoves   = moves  && moves.length  > 0;
-        const hasBirths  = births && births.length  > 0;
-        const hasDeaths  = deaths && deaths.length  > 0;
-        const shouldAnimate = animationEnabled && !gridChanged && (hasMoves || hasBirths || hasDeaths);
+        const hasMoves      = moves      && moves.length      > 0;
+        const hasBirths     = births     && births.length     > 0;
+        const hasDeaths     = deaths     && deaths.length     > 0;
+        const hasEpicDeaths = epicDeaths && epicDeaths.length > 0;
+        const hasCoronations= coronations&& coronations.length> 0;
+        const shouldAnimate = animationEnabled && !gridChanged &&
+            (hasMoves || hasBirths || hasDeaths || hasEpicDeaths || hasCoronations);
 
         if (shouldAnimate) {
             return new Promise(resolve => {
@@ -359,6 +393,14 @@ window.ConwaysInterop = (() => {
                     for (let i = 0; i < deaths.length; i++)
                         excludeSet.add(deaths[i].col + ',' + deaths[i].row);
                 }
+                if (hasEpicDeaths) {
+                    for (let i = 0; i < epicDeaths.length; i++)
+                        excludeSet.add(epicDeaths[i].col + ',' + epicDeaths[i].row);
+                }
+                if (hasCoronations) {
+                    for (let i = 0; i < coronations.length; i++)
+                        excludeSet.add(coronations[i].col + ',' + coronations[i].row);
+                }
 
                 isAnimating = true;
 
@@ -367,7 +409,10 @@ window.ConwaysInterop = (() => {
                     const rawT = Math.min(1.0, elapsed / animDuration);
                     const t = easeInOut(rawT);
 
-                    drawFrameAnimated(t, excludeSet, moves || [], births || [], deaths || [], nationColors);
+                    drawFrameAnimated(t, excludeSet,
+                        moves || [], births || [], deaths || [],
+                        epicDeaths || [], coronations || [],
+                        nationColors);
 
                     if (rawT < 1.0) {
                         requestAnimationFrame(frame);

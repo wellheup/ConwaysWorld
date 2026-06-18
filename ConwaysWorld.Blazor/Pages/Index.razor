@@ -432,6 +432,8 @@
 
         var births = new List<object>();
         var deaths = new List<object>();
+        var epicDeaths = new List<object>();
+        var coronations = new List<object>();
 
         if (_prevCellMap.Count > 0)
         {
@@ -447,7 +449,11 @@
                     && !moveSrcSet.Contains((col, row))
                     && !moveDstSet.Contains((col, row)))
                 {
-                    deaths.Add(new { col, row, type, nat });
+                    bool isEpic = type == (int)CellType.King || type == (int)CellType.Immortal;
+                    if (isEpic)
+                        epicDeaths.Add(new { col, row, type, nat });
+                    else
+                        deaths.Add(new { col, row, type, nat });
                 }
             }
 
@@ -462,11 +468,18 @@
                     {
                         births.Add(new { col, row, type = (int)cell.CellType, nat = cell.Nationality });
                     }
+
+                    if (cell.IsAlive && cell.CellType == CellType.King
+                        && _prevCellMap.TryGetValue((col, row), out var prev)
+                        && prev.type != (int)CellType.King)
+                    {
+                        coronations.Add(new { col, row, type = (int)cell.CellType, nat = cell.Nationality });
+                    }
                 }
         }
 
         var nationColors = Cell_Nation.NationColors;
-        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r, moves, births, deaths, _animationEnabled, _intervalMs);
+        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r, moves, births, deaths, epicDeaths, coronations, _animationEnabled, _intervalMs);
     }
 
     private void UpdateTypeCounts()
