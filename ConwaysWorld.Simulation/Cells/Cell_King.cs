@@ -20,37 +20,37 @@ namespace ConwaysWorld.Simulation;
 /// </summary>
 public class Cell_King : Cell
 {
-        /// <summary>Creates a King cell at the given position.</summary>
-        public Cell_King(int column, int row, bool isAlive)
-        {
-                Column = column;
-                Row = row;
-                IsAlive = isAlive;
-                CellType = CellType.King;
-                Conditions = new HashSet<string>();
-        }
+	/// <summary>Creates a King cell at the given position.</summary>
+	public Cell_King(int column, int row, bool isAlive)
+	{
+		Column = column;
+		Row = row;
+		IsAlive = isAlive;
+		CellType = CellType.King;
+		Conditions = new HashSet<string>();
+	}
 
-        /// <summary>Resets living state, age, and nationality on death (does not call base to avoid double-reset).</summary>
-        public override void Die()
-        {
-                IsAlive = false;
-                Age = 0;
-                Nationality = -1;
-        }
+	/// <summary>Resets living state, age, and nationality on death (does not call base to avoid double-reset).</summary>
+	public override void Die()
+	{
+		IsAlive = false;
+		Age = 0;
+		Nationality = -1;
+	}
 
-        /// <summary>
-        /// Marks every adjacent living Basic cell with the <c>"toWar"</c> condition.
-        /// Those cells will be converted to Warriors during the next conditions-update pass.
-        /// </summary>
-        private void MakeArmy()
-        {
-                foreach (var neighbor in CellNeighborhood.NeighborhoodDict.Values)
-                {
-                        if (neighbor.IsAlive && neighbor != this && neighbor.CellType == CellType.Basic)
-                                neighbor.Conditions.Add("toWar");
-                }
-        }
+	/// <summary>
+	/// Marks every adjacent living Basic cell with the <c>"toWar"</c> condition.
+	/// Those cells will be converted to Warriors during the next conditions-update pass.
+	/// </summary>
+	private void MakeArmy()
+	{
+		foreach (var neighbor in CellNeighborhood.NeighborhoodDict.Values)
+		{
+			if (neighbor.IsAlive && neighbor != this && neighbor.CellType == CellType.Basic)
+				neighbor.Conditions.Add("toWar");
+		}
+	}
 
-        /// <inheritdoc/>
-        public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null) => MakeArmy();
+	/// <inheritdoc/>
+	public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null) => MakeArmy();
 }

@@ -19,69 +19,69 @@ namespace ConwaysWorld.Simulation;
 /// </summary>
 public class Cell_Explorer : Cell_Traveler
 {
-        /// <summary>Prevents the grid from expanding more than once per Explorer lifetime.</summary>
-        private bool _hasExplored = false;
+	/// <summary>Prevents the grid from expanding more than once per Explorer lifetime.</summary>
+	private bool _hasExplored = false;
 
-        /// <summary>
-        /// Creates an Explorer, inheriting Traveler state and overriding the isolation tolerance.
-        /// </summary>
-        public Cell_Explorer(int column, int row, bool isAlive)
-                : base(column, row, isAlive)
-        {
-                CellType = CellType.Explorer;
-                MaxAloneTime = 4;
-                Conditions = new HashSet<string>();
-                ChooseNation();
-        }
+	/// <summary>
+	/// Creates an Explorer, inheriting Traveler state and overriding the isolation tolerance.
+	/// </summary>
+	public Cell_Explorer(int column, int row, bool isAlive)
+			: base(column, row, isAlive)
+	{
+		CellType = CellType.Explorer;
+		MaxAloneTime = 4;
+		Conditions = new HashSet<string>();
+		ChooseNation();
+	}
 
-        /// <summary>
-        /// Updates counters and sets the <c>"exploring"</c> condition if the cell's travel
-        /// direction would cross the grid boundary (detected by a coordinate distance &gt; 1,
-        /// which only occurs with toroidal wrap-around at the edges).
-        /// </summary>
-        public override void Live()
-        {
-                IsAlive = true;
-                Age++;
+	/// <summary>
+	/// Updates counters and sets the <c>"exploring"</c> condition if the cell's travel
+	/// direction would cross the grid boundary (detected by a coordinate distance &gt; 1,
+	/// which only occurs with toroidal wrap-around at the edges).
+	/// </summary>
+	public override void Live()
+	{
+		IsAlive = true;
+		Age++;
 
-                if (CellNeighborhood.NumNeighbors == 0)
-                        DeathCountDown++;
-                else
-                        DeathCountDown = 0;
+		if (CellNeighborhood.NumNeighbors == 0)
+			DeathCountDown++;
+		else
+			DeathCountDown = 0;
 
-                if (CellNeighborhood.NumNeighbors == 8)
-                        CrushCountDown++;
-                else
-                        CrushCountDown = 0;
+		if (CellNeighborhood.NumNeighbors == 8)
+			CrushCountDown++;
+		else
+			CrushCountDown = 0;
 
-                SpecialPerformed = false;
+		SpecialPerformed = false;
 
-                if (!_hasExplored && IsNeighborOverEdge(CellNeighborhood.NeighborhoodDict[Direction]))
-                        Conditions.Add("exploring");
-        }
+		if (!_hasExplored && IsNeighborOverEdge(CellNeighborhood.NeighborhoodDict[Direction]))
+			Conditions.Add("exploring");
+	}
 
-        /// <summary>
-        /// Returns <c>true</c> if <paramref name="neighbor"/> is more than 1 cell away in any axis,
-        /// which only happens via toroidal wrapping — i.e. the neighbour is on the opposite edge.
-        /// </summary>
-        private bool IsNeighborOverEdge(Cell neighbor) =>
-                Math.Abs(Column - neighbor.Column) > 1 || Math.Abs(Row - neighbor.Row) > 1;
+	/// <summary>
+	/// Returns <c>true</c> if <paramref name="neighbor"/> is more than 1 cell away in any axis,
+	/// which only happens via toroidal wrapping — i.e. the neighbour is on the opposite edge.
+	/// </summary>
+	private bool IsNeighborOverEdge(Cell neighbor) =>
+			Math.Abs(Column - neighbor.Column) > 1 || Math.Abs(Row - neighbor.Row) > 1;
 
-        /// <summary>
-        /// Picks a new travel direction and swaps into that slot.
-        /// The <c>"exploring"</c> tag is cleared here (the actual resize is handled by the Model).
-        /// </summary>
-        public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null)
-        {
-                if (IsAlive && !SpecialPerformed)
-                {
-                        Conditions.Remove("exploring");
-                        Direction = ChooseTravelDirection();
-                        var dest = CellNeighborhood.NeighborhoodDict[Direction];
-                        if (dest != this)
-                                moves?.Add(new MoveRecord(Column, Row, dest.Column, dest.Row, (int)CellType, Nationality));
-                        SwapCells(this, dest, cellGrid);
-                        SpecialPerformed = true;
-                }
-        }
+	/// <summary>
+	/// Picks a new travel direction and swaps into that slot.
+	/// The <c>"exploring"</c> tag is cleared here (the actual resize is handled by the Model).
+	/// </summary>
+	public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null)
+	{
+		if (IsAlive && !SpecialPerformed)
+		{
+			Conditions.Remove("exploring");
+			Direction = ChooseTravelDirection();
+			var dest = CellNeighborhood.NeighborhoodDict[Direction];
+			if (dest != this)
+				moves?.Add(new MoveRecord(Column, Row, dest.Column, dest.Row, (int)CellType, Nationality));
+			SwapCells(this, dest, cellGrid);
+			SpecialPerformed = true;
+		}
+	}
 }

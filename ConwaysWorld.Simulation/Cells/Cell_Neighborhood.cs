@@ -37,7 +37,8 @@ public class Cell_Neighborhood
 	{
 		get
 		{
-			if (NeighborhoodDict == null) return null!;
+			if (NeighborhoodDict == null)
+				return null!;
 			var d = new Dictionary<string, Cell>(NeighborhoodDict);
 			d.Remove("center");
 			return d;
@@ -77,7 +78,7 @@ public class Cell_Neighborhood
 			for (int rowOff = -1; rowOff <= 1; rowOff++)
 			{
 				int nc = (column + colOff + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
-				int nr = (row    + rowOff + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
+				int nr = (row + rowOff + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
 
 				if (colOff == 0 && rowOff == 0)
 				{
@@ -85,7 +86,8 @@ public class Cell_Neighborhood
 				}
 				else
 				{
-					if (cellGrid[nc, nr].IsAlive) NumNeighbors++;
+					if (cellGrid[nc, nr].IsAlive)
+						NumNeighbors++;
 					NeighborhoodDict[NeighborHoodKeys[keyIndex++]] = cellGrid[nc, nr];
 				}
 			}

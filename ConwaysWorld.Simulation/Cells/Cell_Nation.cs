@@ -110,7 +110,8 @@ public class Cell_Nation
 		for (int attempt = 0; attempt < 5; attempt++)
 		{
 			elect = CitizensList[SimRandom.Range(0, CitizensList.Count)];
-			if (elect != King && !DiplomatsList.Contains(elect)) break;
+			if (elect != King && !DiplomatsList.Contains(elect))
+				break;
 			elect = null;
 		}
 
@@ -140,14 +141,17 @@ public class Cell_Nation
 			King = null;
 		}
 
-		if (King != null) return;
-		if (CitizensList.Count < 5 || CitizensList.Count <= DiplomatsList.Count) return;
+		if (King != null)
+			return;
+		if (CitizensList.Count < 5 || CitizensList.Count <= DiplomatsList.Count)
+			return;
 
 		Cell? newKing = null;
 		for (int attempt = 0; attempt < 5; attempt++)
 		{
 			newKing = CitizensList[SimRandom.Range(0, CitizensList.Count)];
-			if (newKing.IsAlive) break;
+			if (newKing.IsAlive)
+				break;
 			newKing = null;
 		}
 
