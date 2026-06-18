@@ -25,6 +25,9 @@ public class Cell_Diplomat : Cell
 	/// <summary>Consecutive steps without a successful conversion.  Currently tracked but not yet used for demotion.</summary>
 	private int _idleTurns = 0;
 
+	/// <summary>Prevents <see cref="SpecialActions"/> from running twice in one step when the Diplomat moves to a later grid position.</summary>
+	private bool _specialPerformed = false;
+
 	/// <summary>Creates a Diplomat cell at the given position.</summary>
 	public Cell_Diplomat(int column, int row, bool isAlive)
 	{
@@ -40,6 +43,14 @@ public class Cell_Diplomat : Cell
 	public override void Live()
 	{
 		base.Live();
+		_specialPerformed = false;
+	}
+
+	/// <inheritdoc/>
+	public override void Die()
+	{
+		base.Die();
+		_specialPerformed = true;
 	}
 
 	/// <summary>
@@ -47,7 +58,7 @@ public class Cell_Diplomat : Cell
 	/// and has a valid nation index.
 	/// </summary>
 	private bool IsForeignAlive(Cell c) =>
-					c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
+									c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
 
 	/// <summary>
 	/// For each immediately adjacent foreign cell, rolls a 1-in-4 chance of converting
@@ -96,8 +107,9 @@ public class Cell_Diplomat : Cell
 	/// <summary>Converts adjacent foreign cells, then moves toward the nearest foreign nation.</summary>
 	public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null)
 	{
-		if (!IsAlive)
+		if (!IsAlive || _specialPerformed)
 			return;
+		_specialPerformed = true;
 		Convert(cellGrid);
 		MoveTowardForeignNation(cellGrid, moves);
 	}
