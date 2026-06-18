@@ -356,6 +356,29 @@ window.ConwaysInterop = (() => {
         ctx.restore();
     }
 
+    function animateZoom(fromScale, fromTx, fromTy, toScale, toTx, toTy, duration) {
+        return new Promise(resolve => {
+            const startTime = performance.now();
+            isAnimating = true;
+            function frame(now) {
+                const rawT = Math.min(1.0, (now - startTime) / duration);
+                const t = easeInOut(rawT);
+                scale = lerp(fromScale, toScale, t);
+                tx    = lerp(fromTx,    toTx,    t);
+                ty    = lerp(fromTy,    toTy,    t);
+                drawFrame();
+                if (rawT < 1.0) {
+                    requestAnimationFrame(frame);
+                } else {
+                    scale = toScale; tx = toTx; ty = toTy;
+                    isAnimating = false;
+                    resolve();
+                }
+            }
+            requestAnimationFrame(frame);
+        });
+    }
+
     function renderFrame(cells, nationColors, newCols, newRows, moves, births, deaths, epicDeaths, coronations, animationEnabled, stepIntervalMs) {
         if (!ctx) return Promise.resolve();
 
@@ -363,14 +386,25 @@ window.ConwaysInterop = (() => {
         cols = newCols; rows = newRows;
         cachedCells = cells;
         cachedNationColors = nationColors;
-        if (gridChanged && !userHasTransformed) fitToWindow();
+
+        if (gridChanged) {
+            if (!userHasTransformed) {
+                const fromScale = scale, fromTx = tx, fromTy = ty;
+                fitToWindow();
+                const toScale = scale, toTx = tx, toTy = ty;
+                scale = fromScale; tx = fromTx; ty = fromTy;
+                return animateZoom(fromScale, fromTx, fromTy, toScale, toTx, toTy, 450);
+            }
+            drawFrame();
+            return Promise.resolve();
+        }
 
         const hasMoves      = moves      && moves.length      > 0;
         const hasBirths     = births     && births.length     > 0;
         const hasDeaths     = deaths     && deaths.length     > 0;
         const hasEpicDeaths = epicDeaths && epicDeaths.length > 0;
         const hasCoronations= coronations&& coronations.length> 0;
-        const shouldAnimate = animationEnabled && !gridChanged &&
+        const shouldAnimate = animationEnabled &&
             (hasMoves || hasBirths || hasDeaths || hasEpicDeaths || hasCoronations);
 
         if (shouldAnimate) {
