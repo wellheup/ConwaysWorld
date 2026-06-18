@@ -119,12 +119,27 @@ window.ConwaysInterop = (() => {
 
     function onWheel(e) {
         e.preventDefault();
-        userHasTransformed = true;
         const rect = canvas.getBoundingClientRect();
         const mx = e.clientX - rect.left;
         const my = e.clientY - rect.top;
         const factor = e.deltaY < 0 ? 1.1 : 0.9;
-        scale = Math.max(0.2, Math.min(10, scale * factor));
+        const newScale = Math.max(0.2, Math.min(10, scale * factor));
+
+        if (e.deltaY > 0 && userHasTransformed) {
+            const fitScale = Math.min(
+                canvas.width  / (cols * cellSize),
+                canvas.height / (rows * cellSize)
+            ) * 0.97;
+            if (newScale <= Math.max(fitScale, 0.2)) {
+                userHasTransformed = false;
+                fitToWindow();
+                scheduleRedraw();
+                return;
+            }
+        }
+
+        userHasTransformed = true;
+        scale = newScale;
         tx = mx - (mx - tx) * factor;
         ty = my - (my - ty) * factor;
         scheduleRedraw();
@@ -387,14 +402,15 @@ window.ConwaysInterop = (() => {
         cachedCells = cells;
         cachedNationColors = nationColors;
 
-        if (gridChanged) {
-            if (!userHasTransformed) {
-                const fromScale = scale, fromTx = tx, fromTy = ty;
-                fitToWindow();
-                const toScale = scale, toTx = tx, toTy = ty;
-                scale = fromScale; tx = fromTx; ty = fromTy;
-                return animateZoom(fromScale, fromTx, fromTy, toScale, toTx, toTy, 450);
-            }
+        let doZoom = false;
+        let fromScale, fromTx, fromTy, toScale, toTx, toTy;
+        if (gridChanged && !userHasTransformed) {
+            fromScale = scale; fromTx = tx; fromTy = ty;
+            fitToWindow();
+            toScale = scale; toTx = tx; toTy = ty;
+            scale = fromScale; tx = fromTx; ty = fromTy;
+            doZoom = true;
+        } else if (gridChanged) {
             drawFrame();
             return Promise.resolve();
         }
@@ -404,65 +420,68 @@ window.ConwaysInterop = (() => {
         const hasDeaths     = deaths     && deaths.length     > 0;
         const hasEpicDeaths = epicDeaths && epicDeaths.length > 0;
         const hasCoronations= coronations&& coronations.length> 0;
-        const shouldAnimate = animationEnabled &&
+        const doCellAnim    = animationEnabled &&
             (hasMoves || hasBirths || hasDeaths || hasEpicDeaths || hasCoronations);
 
-        if (shouldAnimate) {
-            return new Promise(resolve => {
-                const animDuration = stepIntervalMs * 0.65;
-                const startTime = performance.now();
-
-                const excludeSet = new Set();
-                if (hasMoves) {
-                    for (let i = 0; i < moves.length; i++) {
-                        excludeSet.add(moves[i].fromCol + ',' + moves[i].fromRow);
-                        excludeSet.add(moves[i].toCol  + ',' + moves[i].toRow);
-                    }
-                }
-                if (hasBirths) {
-                    for (let i = 0; i < births.length; i++)
-                        excludeSet.add(births[i].col + ',' + births[i].row);
-                }
-                if (hasDeaths) {
-                    for (let i = 0; i < deaths.length; i++)
-                        excludeSet.add(deaths[i].col + ',' + deaths[i].row);
-                }
-                if (hasEpicDeaths) {
-                    for (let i = 0; i < epicDeaths.length; i++)
-                        excludeSet.add(epicDeaths[i].col + ',' + epicDeaths[i].row);
-                }
-                if (hasCoronations) {
-                    for (let i = 0; i < coronations.length; i++)
-                        excludeSet.add(coronations[i].col + ',' + coronations[i].row);
-                }
-
-                isAnimating = true;
-
-                function frame(now) {
-                    const elapsed = now - startTime;
-                    const rawT = Math.min(1.0, elapsed / animDuration);
-                    const t = easeInOut(rawT);
-
-                    drawFrameAnimated(t, excludeSet,
-                        moves || [], births || [], deaths || [],
-                        epicDeaths || [], coronations || [],
-                        nationColors);
-
-                    if (rawT < 1.0) {
-                        requestAnimationFrame(frame);
-                    } else {
-                        isAnimating = false;
-                        drawFrame();
-                        resolve();
-                    }
-                }
-
-                requestAnimationFrame(frame);
-            });
-        } else {
+        if (!doZoom && !doCellAnim) {
             drawFrame();
             return Promise.resolve();
         }
+
+        const zoomDuration = 450;
+        const cellDuration = stepIntervalMs * 0.65;
+        const totalDuration = Math.max(doZoom ? zoomDuration : 0, doCellAnim ? cellDuration : 0);
+
+        const excludeSet = new Set();
+        if (doCellAnim) {
+            if (hasMoves) {
+                for (let i = 0; i < moves.length; i++) {
+                    excludeSet.add(moves[i].fromCol + ',' + moves[i].fromRow);
+                    excludeSet.add(moves[i].toCol   + ',' + moves[i].toRow);
+                }
+            }
+            if (hasBirths)      for (let i = 0; i < births.length;      i++) excludeSet.add(births[i].col      + ',' + births[i].row);
+            if (hasDeaths)      for (let i = 0; i < deaths.length;      i++) excludeSet.add(deaths[i].col      + ',' + deaths[i].row);
+            if (hasEpicDeaths)  for (let i = 0; i < epicDeaths.length;  i++) excludeSet.add(epicDeaths[i].col  + ',' + epicDeaths[i].row);
+            if (hasCoronations) for (let i = 0; i < coronations.length; i++) excludeSet.add(coronations[i].col + ',' + coronations[i].row);
+        }
+
+        return new Promise(resolve => {
+            const startTime = performance.now();
+            isAnimating = true;
+
+            function frame(now) {
+                const elapsed = now - startTime;
+
+                if (doZoom) {
+                    const zT = easeInOut(Math.min(1.0, elapsed / zoomDuration));
+                    scale = lerp(fromScale, toScale, zT);
+                    tx    = lerp(fromTx,    toTx,    zT);
+                    ty    = lerp(fromTy,    toTy,    zT);
+                }
+
+                if (doCellAnim && elapsed < cellDuration) {
+                    const cT = easeInOut(Math.min(1.0, elapsed / cellDuration));
+                    drawFrameAnimated(cT, excludeSet,
+                        moves || [], births || [], deaths || [],
+                        epicDeaths || [], coronations || [],
+                        nationColors);
+                } else {
+                    drawFrame();
+                }
+
+                if (elapsed < totalDuration) {
+                    requestAnimationFrame(frame);
+                } else {
+                    if (doZoom) { scale = toScale; tx = toTx; ty = toTy; }
+                    isAnimating = false;
+                    drawFrame();
+                    resolve();
+                }
+            }
+
+            requestAnimationFrame(frame);
+        });
     }
 
     function getCanvasSize() {
