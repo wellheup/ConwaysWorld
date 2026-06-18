@@ -26,9 +26,19 @@ window.ConwaysInterop = (() => {
     let rafPending = false;
     const SETTINGS_KEY = 'cw_settings';
     const SPRITE_NAMES = [
-        'Dead', 'Basic', 'Immortal', 'Diseased', 'Plague',
-        'Traveler', 'Explorer', 'Doctor', 'Warrior', 'Hunter',
-        'Bomber', 'Diplomat', 'King',
+        'Dead',
+        'Basic',
+        'Immortal',
+        'Diseased',
+        'Plague',
+        'Traveler',
+        'Explorer',
+        'Doctor',
+        'Warrior',
+        'Hunter',
+        'Bomber',
+        'Diplomat',
+        'King',
     ];
     const TYPE_COLORS = {
         0: '#111',
@@ -49,7 +59,10 @@ window.ConwaysInterop = (() => {
     function loadSprites() {
         const promises = SPRITE_NAMES.map((name, i) => new Promise(resolve => {
             const img = new Image();
-            img.onload = () => { sprites[i] = img; resolve(); };
+            img.onload = () => {
+                sprites[i] = img;
+                resolve();
+            };
             img.onerror = () => resolve();
             img.src = `Assets/Sprites/Cell_${name}.jpg`;
         }));
@@ -103,7 +116,10 @@ window.ConwaysInterop = (() => {
         canvas.addEventListener('click', onClick);
         canvas.addEventListener('mouseleave', onMouseLeave);
         canvas.addEventListener('contextmenu', e => e.preventDefault());
-        window.addEventListener('resize', () => { fitCanvas(); scheduleRedraw(); });
+        window.addEventListener('resize', () => {
+            fitCanvas();
+            scheduleRedraw();
+        });
         window.addEventListener('keydown', onKeyDown);
     }
     function scheduleRedraw() {
@@ -225,7 +241,7 @@ window.ConwaysInterop = (() => {
         if (!ctx)
             return;
         const w = cs - 1;
-        const nationColor = (nat >= 0 && nat < nationColors.length) ? nationColors[nat] : '#222';
+        const nationColor = nat >= 0 && nat < nationColors.length ? nationColors[nat] : '#222';
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
         if (sprites[type]) {
@@ -254,7 +270,7 @@ window.ConwaysInterop = (() => {
         const offset = (fullW - w) / 2;
         const px = col * cs + offset;
         const py = row * cs + offset;
-        const nationColor = (nat >= 0 && nat < nationColors.length) ? nationColors[nat] : '#222';
+        const nationColor = nat >= 0 && nat < nationColors.length ? nationColors[nat] : '#222';
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
         if (sprites[type]) {
@@ -279,7 +295,7 @@ window.ConwaysInterop = (() => {
         const cy = (row + 0.5) * cs;
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.rotate(angleDeg * Math.PI / 180);
+        ctx.rotate((angleDeg * Math.PI) / 180);
         ctx.translate(-cx, -cy);
         drawCellScaled(col, row, cs, type, nat, nationColors, sizeFactor);
         ctx.restore();
@@ -376,7 +392,7 @@ window.ConwaysInterop = (() => {
     function renderFrame(cells, nationColors, newCols, newRows, moves, births, deaths, epicDeaths, coronations, animationEnabled, stepIntervalMs) {
         if (!ctx)
             return Promise.resolve();
-        const gridChanged = (newCols !== cols || newRows !== rows);
+        const gridChanged = newCols !== cols || newRows !== rows;
         cols = newCols;
         rows = newRows;
         cachedCells = cells;
@@ -406,8 +422,7 @@ window.ConwaysInterop = (() => {
         const hasDeaths = deaths.length > 0;
         const hasEpicDeaths = epicDeaths.length > 0;
         const hasCoronations = coronations.length > 0;
-        const doCellAnim = animationEnabled &&
-            (hasMoves || hasBirths || hasDeaths || hasEpicDeaths || hasCoronations);
+        const doCellAnim = animationEnabled && (hasMoves || hasBirths || hasDeaths || hasEpicDeaths || hasCoronations);
         if (!doZoom && !doCellAnim) {
             drawFrame();
             return Promise.resolve();

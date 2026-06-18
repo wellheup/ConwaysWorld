@@ -1,7 +1,12 @@
 {
   "name": "conways-world-blazor",
   "private": true,
+  "scripts": {
+    "format": "prettier --write \"./ts/**/*.ts\"",
+    "check": "prettier --check \"./ts/**/*.ts\""
+  },
   "devDependencies": {
+    "prettier": "^3.3.2",
     "typescript": "^5.4.5"
   }
 }

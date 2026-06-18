@@ -35,8 +35,11 @@ interface DotNetRef {
     let canvas: HTMLCanvasElement | null = null;
     let ctx: CanvasRenderingContext2D | null = null;
     let cellSize = 14;
-    let cols = 0, rows = 0;
-    let scale = 1, tx = 0, ty = 0;
+    let cols = 0,
+        rows = 0;
+    let scale = 1,
+        tx = 0,
+        ty = 0;
     let userHasTransformed = false;
     let isPanning = false;
     let panStart = { x: 0, y: 0 };
@@ -52,9 +55,19 @@ interface DotNetRef {
     const SETTINGS_KEY = 'cw_settings';
 
     const SPRITE_NAMES: string[] = [
-        'Dead', 'Basic', 'Immortal', 'Diseased', 'Plague',
-        'Traveler', 'Explorer', 'Doctor', 'Warrior', 'Hunter',
-        'Bomber', 'Diplomat', 'King',
+        'Dead',
+        'Basic',
+        'Immortal',
+        'Diseased',
+        'Plague',
+        'Traveler',
+        'Explorer',
+        'Doctor',
+        'Warrior',
+        'Hunter',
+        'Bomber',
+        'Diplomat',
+        'King',
     ];
 
     const TYPE_COLORS: Record<number, string> = {
@@ -76,19 +89,27 @@ interface DotNetRef {
     const sprites: { [key: number]: HTMLImageElement } = {};
 
     function loadSprites(): Promise<void[]> {
-        const promises = SPRITE_NAMES.map((name, i) => new Promise<void>(resolve => {
-            const img = new Image();
-            img.onload = () => { sprites[i] = img; resolve(); };
-            img.onerror = () => resolve();
-            img.src = `Assets/Sprites/Cell_${name}.jpg`;
-        }));
+        const promises = SPRITE_NAMES.map(
+            (name, i) =>
+                new Promise<void>(resolve => {
+                    const img = new Image();
+                    img.onload = () => {
+                        sprites[i] = img;
+                        resolve();
+                    };
+                    img.onerror = () => resolve();
+                    img.src = `Assets/Sprites/Cell_${name}.jpg`;
+                }),
+        );
         return Promise.all(promises);
     }
 
     async function init(canvasId: string, c: number, r: number, cs: number, ref: DotNetRef): Promise<void> {
         canvas = document.getElementById(canvasId) as HTMLCanvasElement;
         ctx = canvas.getContext('2d');
-        cols = c; rows = r; cellSize = cs;
+        cols = c;
+        rows = r;
+        cellSize = cs;
         dotnetRef = ref;
         await loadSprites();
         fitCanvas();
@@ -106,17 +127,14 @@ interface DotNetRef {
 
     function fitToWindow(): void {
         if (!canvas || !cols || !rows) return;
-        const fitScale = Math.min(
-            canvas.width  / (cols * cellSize),
-            canvas.height / (rows * cellSize),
-        ) * 0.97;
+        const fitScale = Math.min(canvas.width / (cols * cellSize), canvas.height / (rows * cellSize)) * 0.97;
         scale = Math.max(0.1, fitScale);
         centerGrid();
     }
 
     function centerGrid(): void {
         if (!canvas) return;
-        tx = (canvas.width  - cols * cellSize * scale) / 2;
+        tx = (canvas.width - cols * cellSize * scale) / 2;
         ty = (canvas.height - rows * cellSize * scale) / 2;
     }
 
@@ -130,7 +148,10 @@ interface DotNetRef {
         canvas.addEventListener('click', onClick);
         canvas.addEventListener('mouseleave', onMouseLeave);
         canvas.addEventListener('contextmenu', e => e.preventDefault());
-        window.addEventListener('resize', () => { fitCanvas(); scheduleRedraw(); });
+        window.addEventListener('resize', () => {
+            fitCanvas();
+            scheduleRedraw();
+        });
         window.addEventListener('keydown', onKeyDown);
     }
 
@@ -164,10 +185,7 @@ interface DotNetRef {
         const newScale = Math.max(0.2, Math.min(10, scale * factor));
 
         if (e.deltaY > 0 && userHasTransformed) {
-            const fitScale = Math.min(
-                canvas.width  / (cols * cellSize),
-                canvas.height / (rows * cellSize),
-            ) * 0.97;
+            const fitScale = Math.min(canvas.width / (cols * cellSize), canvas.height / (rows * cellSize)) * 0.97;
             if (newScale <= Math.max(fitScale, 0.2)) {
                 userHasTransformed = false;
                 fitToWindow();
@@ -251,13 +269,18 @@ interface DotNetRef {
     }
 
     function drawCell(
-        px: number, py: number, cs: number,
-        type: number, nat: number, nationColors: string[],
-        col: number, row: number,
+        px: number,
+        py: number,
+        cs: number,
+        type: number,
+        nat: number,
+        nationColors: string[],
+        col: number,
+        row: number,
     ): void {
         if (!ctx) return;
         const w = cs - 1;
-        const nationColor = (nat >= 0 && nat < nationColors.length) ? nationColors[nat] : '#222';
+        const nationColor = nat >= 0 && nat < nationColors.length ? nationColors[nat] : '#222';
 
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
@@ -279,8 +302,12 @@ interface DotNetRef {
     }
 
     function drawCellScaled(
-        col: number, row: number, cs: number,
-        type: number, nat: number, nationColors: string[],
+        col: number,
+        row: number,
+        cs: number,
+        type: number,
+        nat: number,
+        nationColors: string[],
         sizeFactor: number,
     ): void {
         if (!ctx || sizeFactor <= 0) return;
@@ -290,7 +317,7 @@ interface DotNetRef {
         const offset = (fullW - w) / 2;
         const px = col * cs + offset;
         const py = row * cs + offset;
-        const nationColor = (nat >= 0 && nat < nationColors.length) ? nationColors[nat] : '#222';
+        const nationColor = nat >= 0 && nat < nationColors.length ? nationColors[nat] : '#222';
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
         if (sprites[type]) {
@@ -305,17 +332,25 @@ interface DotNetRef {
     }
 
     function drawCellScaledRotated(
-        col: number, row: number, cs: number,
-        type: number, nat: number, nationColors: string[],
-        sizeFactor: number, angleDeg: number,
+        col: number,
+        row: number,
+        cs: number,
+        type: number,
+        nat: number,
+        nationColors: string[],
+        sizeFactor: number,
+        angleDeg: number,
     ): void {
         if (!ctx || sizeFactor <= 0) return;
-        if (!angleDeg) { drawCellScaled(col, row, cs, type, nat, nationColors, sizeFactor); return; }
+        if (!angleDeg) {
+            drawCellScaled(col, row, cs, type, nat, nationColors, sizeFactor);
+            return;
+        }
         const cx = (col + 0.5) * cs;
         const cy = (row + 0.5) * cs;
         ctx.save();
         ctx.translate(cx, cy);
-        ctx.rotate(angleDeg * Math.PI / 180);
+        ctx.rotate((angleDeg * Math.PI) / 180);
         ctx.translate(-cx, -cy);
         drawCellScaled(col, row, cs, type, nat, nationColors, sizeFactor);
         ctx.restore();
@@ -446,32 +481,42 @@ interface DotNetRef {
     ): Promise<void> {
         if (!ctx) return Promise.resolve();
 
-        const gridChanged = (newCols !== cols || newRows !== rows);
-        cols = newCols; rows = newRows;
+        const gridChanged = newCols !== cols || newRows !== rows;
+        cols = newCols;
+        rows = newRows;
         cachedCells = cells;
         cachedNationColors = nationColors;
 
         let doZoom = false;
-        let fromScale = 0, fromTx = 0, fromTy = 0;
-        let toScale = 0, toTx = 0, toTy = 0;
+        let fromScale = 0,
+            fromTx = 0,
+            fromTy = 0;
+        let toScale = 0,
+            toTx = 0,
+            toTy = 0;
         if (gridChanged && !userHasTransformed) {
-            fromScale = scale; fromTx = tx; fromTy = ty;
+            fromScale = scale;
+            fromTx = tx;
+            fromTy = ty;
             fitToWindow();
-            toScale = scale; toTx = tx; toTy = ty;
-            scale = fromScale; tx = fromTx; ty = fromTy;
+            toScale = scale;
+            toTx = tx;
+            toTy = ty;
+            scale = fromScale;
+            tx = fromTx;
+            ty = fromTy;
             doZoom = true;
         } else if (gridChanged) {
             drawFrame();
             return Promise.resolve();
         }
 
-        const hasMoves       = moves.length       > 0;
-        const hasBirths      = births.length      > 0;
-        const hasDeaths      = deaths.length      > 0;
-        const hasEpicDeaths  = epicDeaths.length  > 0;
+        const hasMoves = moves.length > 0;
+        const hasBirths = births.length > 0;
+        const hasDeaths = deaths.length > 0;
+        const hasEpicDeaths = epicDeaths.length > 0;
         const hasCoronations = coronations.length > 0;
-        const doCellAnim     = animationEnabled &&
-            (hasMoves || hasBirths || hasDeaths || hasEpicDeaths || hasCoronations);
+        const doCellAnim = animationEnabled && (hasMoves || hasBirths || hasDeaths || hasEpicDeaths || hasCoronations);
 
         if (!doZoom && !doCellAnim) {
             drawFrame();
@@ -487,13 +532,16 @@ interface DotNetRef {
             if (hasMoves) {
                 for (let i = 0; i < moves.length; i++) {
                     excludeSet.add(moves[i].fromCol + ',' + moves[i].fromRow);
-                    excludeSet.add(moves[i].toCol   + ',' + moves[i].toRow);
+                    excludeSet.add(moves[i].toCol + ',' + moves[i].toRow);
                 }
             }
-            if (hasBirths)      for (let i = 0; i < births.length;      i++) excludeSet.add(births[i].col      + ',' + births[i].row);
-            if (hasDeaths)      for (let i = 0; i < deaths.length;      i++) excludeSet.add(deaths[i].col      + ',' + deaths[i].row);
-            if (hasEpicDeaths)  for (let i = 0; i < epicDeaths.length;  i++) excludeSet.add(epicDeaths[i].col  + ',' + epicDeaths[i].row);
-            if (hasCoronations) for (let i = 0; i < coronations.length; i++) excludeSet.add(coronations[i].col + ',' + coronations[i].row);
+            if (hasBirths) for (let i = 0; i < births.length; i++) excludeSet.add(births[i].col + ',' + births[i].row);
+            if (hasDeaths) for (let i = 0; i < deaths.length; i++) excludeSet.add(deaths[i].col + ',' + deaths[i].row);
+            if (hasEpicDeaths)
+                for (let i = 0; i < epicDeaths.length; i++) excludeSet.add(epicDeaths[i].col + ',' + epicDeaths[i].row);
+            if (hasCoronations)
+                for (let i = 0; i < coronations.length; i++)
+                    excludeSet.add(coronations[i].col + ',' + coronations[i].row);
         }
 
         return new Promise<void>(resolve => {
@@ -506,8 +554,8 @@ interface DotNetRef {
                 if (doZoom) {
                     const zT = easeInOut(Math.min(1.0, elapsed / zoomDuration));
                     scale = lerp(fromScale, toScale, zT);
-                    tx    = lerp(fromTx,    toTx,    zT);
-                    ty    = lerp(fromTy,    toTy,    zT);
+                    tx = lerp(fromTx, toTx, zT);
+                    ty = lerp(fromTy, toTy, zT);
                 }
 
                 if (doCellAnim && elapsed < cellDuration) {
@@ -520,7 +568,11 @@ interface DotNetRef {
                 if (elapsed < totalDuration) {
                     requestAnimationFrame(frame);
                 } else {
-                    if (doZoom) { scale = toScale; tx = toTx; ty = toTy; }
+                    if (doZoom) {
+                        scale = toScale;
+                        tx = toTx;
+                        ty = toTy;
+                    }
                     isAnimating = false;
                     drawFrame();
                     resolve();
@@ -537,19 +589,28 @@ interface DotNetRef {
     }
 
     function updateGridSize(c: number, r: number): void {
-        cols = c; rows = r;
+        cols = c;
+        rows = r;
     }
 
     function saveSettings(json: string): void {
-        try { localStorage.setItem(SETTINGS_KEY, json); } catch (_e) {}
+        try {
+            localStorage.setItem(SETTINGS_KEY, json);
+        } catch (_e) {}
     }
 
     function loadSettings(): string | null {
-        try { return localStorage.getItem(SETTINGS_KEY) || null; } catch (_e) { return null; }
+        try {
+            return localStorage.getItem(SETTINGS_KEY) || null;
+        } catch (_e) {
+            return null;
+        }
     }
 
     function clearSettings(): void {
-        try { localStorage.removeItem(SETTINGS_KEY); } catch (_e) {}
+        try {
+            localStorage.removeItem(SETTINGS_KEY);
+        } catch (_e) {}
     }
 
     return { init, renderFrame, getCanvasSize, updateGridSize, saveSettings, loadSettings, clearSettings };
