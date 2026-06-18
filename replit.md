@@ -87,5 +87,4 @@ Configured for **autoscale** deployment via `dotnet run` on port 5000.
 
 ## User Preferences
 
-- Keep original `index.html` and `server.js` as reference files (do not delete or modify)
 - Simulation library must remain pure C# with no framework dependencies
