@@ -1,6 +1,8 @@
 @page "/"
 @implements IAsyncDisposable
 @inject IJSRuntime JS
+@using System.Text.Json
+@using System.Text.Json.Serialization
 
 <PageTitle>Conway's World</PageTitle>
 
@@ -146,6 +148,12 @@
                             <span class="cw-pop-sep">/ @(_startCols * _startRows)</span>
                         </div>
                     </div>
+                    <div class="cw-field">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                            <input type="checkbox" @bind="_animationEnabled" />
+                            Enable movement animation
+                        </label>
+                    </div>
 
                     <h3 style="margin:10px 0 6px">Spawn Weights</h3>
                     @foreach (var kv in _spawnWeights)
@@ -160,7 +168,10 @@
                         </div>
                     }
 
-                    <button class="cw-apply-btn" @onclick="ApplyAndRestart">Apply & Restart</button>
+                    <div style="display:flex;gap:8px;margin-top:12px">
+                        <button class="cw-apply-btn" style="flex:1" @onclick="ApplyAndRestart">Apply & Restart</button>
+                        <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="ResetToDefaults">Reset Defaults</button>
+                    </div>
                 </div>
             }
         </div>
@@ -174,7 +185,8 @@
     private DotNetObjectReference<Index>? _dotNetRef;
     private bool _running = false;
     private bool _showSettings = false;
-    private int _intervalMs = 500;
+    private int _intervalMs = 1000;
+    private bool _animationEnabled = true;
     private bool _canvasReady = false;
 
     private List<(string Name, string Color, int Count)> _typeCounts = new();
@@ -209,17 +221,30 @@
         "#e0a000","#a060e0","#f0d000"
     };
 
+    private class SavedSettings
+    {
+        [JsonPropertyName("startCols")]        public int StartCols { get; set; } = 40;
+        [JsonPropertyName("startRows")]        public int StartRows { get; set; } = 40;
+        [JsonPropertyName("maxGrid")]          public int MaxGrid { get; set; } = 120;
+        [JsonPropertyName("maxNations")]       public int MaxNations { get; set; } = 4;
+        [JsonPropertyName("popPercent")]       public double PopPercent { get; set; } = 10.0;
+        [JsonPropertyName("intervalMs")]       public int IntervalMs { get; set; } = 1000;
+        [JsonPropertyName("animationEnabled")] public bool AnimationEnabled { get; set; } = true;
+        [JsonPropertyName("spawnWeights")]     public Dictionary<string, int>? SpawnWeights { get; set; }
+    }
+
     protected override void OnInitialized()
     {
+        var defaultSettings = new SimulationSettings();
+        _spawnWeights = defaultSettings.SpawnWeights
+            .ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
+
         InitSettings();
         _model = new Model(_settings);
 
-        _spawnWeights = _settings.SpawnWeights
-            .ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
-
         _timer = new System.Timers.Timer(_intervalMs);
         _timer.Elapsed += async (_, _) => await OnTimerTick();
-        _timer.AutoReset = true;
+        _timer.AutoReset = false;
     }
 
     private void InitSettings()
@@ -233,6 +258,49 @@
             PopMode      = PopMode.Percent,
             PopValue     = (int)Math.Round(_popPercent),
         };
+        foreach (var kv in _spawnWeights)
+            if (Enum.TryParse<CellType>(kv.Key, out var ct))
+                _settings.SpawnWeights[ct] = kv.Value;
+    }
+
+    private void ApplySettingsJson(string json)
+    {
+        try
+        {
+            var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var s = JsonSerializer.Deserialize<SavedSettings>(json, opts);
+            if (s == null) return;
+            _startCols        = Math.Clamp(s.StartCols, 5, 300);
+            _startRows        = Math.Clamp(s.StartRows, 5, 300);
+            _maxGrid          = Math.Clamp(s.MaxGrid, 0, 500);
+            _maxNations       = Math.Clamp(s.MaxNations, 1, 20);
+            _popPercent       = Math.Clamp(s.PopPercent, 0, 100);
+            _popPercentStr    = _popPercent.ToString("F1");
+            _popCount         = (int)Math.Round(_popPercent / 100.0 * _startCols * _startRows);
+            _intervalMs       = Math.Clamp(s.IntervalMs, 50, 5000);
+            _animationEnabled = s.AnimationEnabled;
+            if (s.SpawnWeights != null)
+                foreach (var kv in s.SpawnWeights)
+                    if (_spawnWeights.ContainsKey(kv.Key))
+                        _spawnWeights[kv.Key] = kv.Value;
+        }
+        catch { }
+    }
+
+    private string SerializeSettings()
+    {
+        var s = new SavedSettings
+        {
+            StartCols        = _startCols,
+            StartRows        = _startRows,
+            MaxGrid          = _maxGrid,
+            MaxNations       = _maxNations,
+            PopPercent       = _popPercent,
+            IntervalMs       = _intervalMs,
+            AnimationEnabled = _animationEnabled,
+            SpawnWeights     = new Dictionary<string, int>(_spawnWeights),
+        };
+        return JsonSerializer.Serialize(s);
     }
 
     private void OnPopPercentChange(ChangeEventArgs e)
@@ -260,6 +328,19 @@
     {
         if (firstRender)
         {
+            try
+            {
+                var json = await JS.InvokeAsync<string?>("ConwaysInterop.loadSettings");
+                if (!string.IsNullOrEmpty(json))
+                {
+                    ApplySettingsJson(json);
+                    _timer.Interval = _intervalMs;
+                    InitSettings();
+                    _model = new Model(_settings);
+                }
+            }
+            catch { }
+
             _dotNetRef = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("ConwaysInterop.init",
                 "sim-canvas",
@@ -299,6 +380,7 @@
 
     private async Task OnTimerTick()
     {
+        if (!_running) return;
         _model.Step();
         var hadEvents = _model.PendingEvents.Count > 0;
         await InvokeAsync(async () =>
@@ -307,6 +389,7 @@
             await RenderFrame();
             UpdateTypeCounts();
             StateHasChanged();
+            if (_running) _timer.Start();
         });
     }
 
@@ -328,8 +411,12 @@
             }
         }
 
+        var moves = _model.PendingMoves
+            .Select(m => new { fromCol = m.FromCol, fromRow = m.FromRow, toCol = m.ToCol, toRow = m.ToRow, type = m.CellType, nat = m.Nationality })
+            .ToList<object>();
+
         var nationColors = Cell_Nation.NationColors;
-        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r);
+        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r, moves, _animationEnabled, _intervalMs);
     }
 
     private void UpdateTypeCounts()
@@ -387,29 +474,57 @@
             _spawnWeights[typeName] = v;
     }
 
-    private void ApplyAndRestart()
+    private async Task ApplyAndRestart()
     {
         _timer.Stop();
         _running = false;
 
-        _settings = new SimulationSettings
-        {
-            StartColumns = _startCols,
-            StartRows    = _startRows,
-            MaxGridSize  = _maxGrid,
-            MaxNations   = Math.Clamp(_maxNations, 1, 20),
-            PopMode      = PopMode.Percent,
-            PopValue     = (int)Math.Round(_popPercent),
-        };
-
-        foreach (var kv in _spawnWeights)
-        {
-            if (Enum.TryParse<CellType>(kv.Key, out var ct))
-                _settings.SpawnWeights[ct] = kv.Value;
-        }
-
+        InitSettings();
+        _eventLog.Clear();
         _model = new Model(_settings);
-        _ = RenderFrame();
+        _timer.Interval = _intervalMs;
+
+        try
+        {
+            await JS.InvokeVoidAsync("ConwaysInterop.saveSettings", SerializeSettings());
+        }
+        catch { }
+
+        await RenderFrame();
+        UpdateTypeCounts();
+    }
+
+    private async Task ResetToDefaults()
+    {
+        _timer.Stop();
+        _running = false;
+
+        _startCols        = 40;
+        _startRows        = 40;
+        _maxGrid          = 120;
+        _maxNations       = 4;
+        _popPercent       = 10.0;
+        _popPercentStr    = "10.0";
+        _popCount         = 160;
+        _intervalMs       = 1000;
+        _animationEnabled = true;
+
+        var defaultSettings = new SimulationSettings();
+        _spawnWeights = defaultSettings.SpawnWeights
+            .ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
+
+        _timer.Interval = _intervalMs;
+        InitSettings();
+        _eventLog.Clear();
+        _model = new Model(_settings);
+
+        try
+        {
+            await JS.InvokeVoidAsync("ConwaysInterop.clearSettings");
+        }
+        catch { }
+
+        await RenderFrame();
         UpdateTypeCounts();
     }
 

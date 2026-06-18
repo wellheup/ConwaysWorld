@@ -1,5 +1,8 @@
 namespace ConwaysWorld.Simulation;
 
+/// <summary>Records a single cell movement during <see cref="Model.UpdateSpecialActions"/>.</summary>
+public record MoveRecord(int FromCol, int FromRow, int ToCol, int ToRow, int CellType, int Nationality);
+
 /// <summary>
 /// The central orchestrator for one Conway's World simulation run.
 /// Owns the cell grid, the alive-next-generation scratch grid, and the nation registry.
@@ -38,6 +41,12 @@ public class Model
         /// after <see cref="Step"/> returns and before the next call.
         /// </summary>
         public List<string> PendingEvents { get; } = new();
+
+        /// <summary>
+        /// Cell movement deltas recorded during the most recent <see cref="Step"/> call.
+        /// Cleared at the start of each step.  Used by the renderer to animate moving cells.
+        /// </summary>
+        public List<MoveRecord> PendingMoves { get; } = new();
 
         // ── Private state ─────────────────────────────────────────────────────────────
 
@@ -117,6 +126,7 @@ public class Model
         public int Step()
         {
                 PendingEvents.Clear();
+                PendingMoves.Clear();
                 UpdateNeighborhoodsGrid();
                 UpdateAliveNextGenGrid();
                 UpdateCellLives();
@@ -283,7 +293,7 @@ public class Model
         {
                 for (int c = 0; c < _columns; c++)
                         for (int r = 0; r < _rows; r++)
-                                CellGrid[c, r].SpecialActions(CellGrid);
+                                CellGrid[c, r].SpecialActions(CellGrid, PendingMoves);
         }
 
         /// <summary>

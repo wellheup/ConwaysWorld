@@ -18,35 +18,35 @@ namespace ConwaysWorld.Simulation;
 /// </summary>
 public class Cell_Bomber : Cell
 {
-	/// <summary>Creates a Bomber cell at the given position.</summary>
-	public Cell_Bomber(int column, int row, bool isAlive)
-	{
-		Column = column;
-		Row = row;
-		IsAlive = isAlive;
-		CellType = CellType.Bomber;
-		Conditions = new HashSet<string>();
-	}
+        /// <summary>Creates a Bomber cell at the given position.</summary>
+        public Cell_Bomber(int column, int row, bool isAlive)
+        {
+                Column = column;
+                Row = row;
+                IsAlive = isAlive;
+                CellType = CellType.Bomber;
+                Conditions = new HashSet<string>();
+        }
 
-	/// <summary>
-	/// Always votes to stay alive so the Bomber reaches age 2 before detonating.
-	/// Detonation is handled in <see cref="SpecialActions"/>, not here.
-	/// </summary>
-	public override bool CalcCellAliveNextGen() => true;
+        /// <summary>
+        /// Always votes to stay alive so the Bomber reaches age 2 before detonating.
+        /// Detonation is handled in <see cref="SpecialActions"/>, not here.
+        /// </summary>
+        public override bool CalcCellAliveNextGen() => true;
 
-	/// <inheritdoc/>
-	public override void SpecialActions(Cell[,] cellGrid) => Detonate(cellGrid);
+        /// <inheritdoc/>
+        public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null) => Detonate(cellGrid);
 
-	/// <summary>
-	/// Kills all living cells within range 2 (Chebyshev) and then kills the Bomber itself.
-	/// Does nothing if <see cref="Cell.Age"/> is less than 2.
-	/// </summary>
-	private void Detonate(Cell[,] cellGrid)
-	{
-		if (Age < 2) return;
+        /// <summary>
+        /// Kills all living cells within range 2 (Chebyshev) and then kills the Bomber itself.
+        /// Does nothing if <see cref="Cell.Age"/> is less than 2.
+        /// </summary>
+        private void Detonate(Cell[,] cellGrid)
+        {
+                if (Age < 2) return;
 
-		var victims = GetAllCellsInRangeByRule(cellGrid, c => c.IsAlive, 2);
-		foreach (var v in victims) v.Die();
-		Die();
-	}
+                var victims = GetAllCellsInRangeByRule(cellGrid, c => c.IsAlive, 2);
+                foreach (var v in victims) v.Die();
+                Die();
+        }
 }

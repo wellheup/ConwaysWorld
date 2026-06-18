@@ -8,11 +8,13 @@ window.ConwaysInterop = (() => {
     let dotnetRef = null;
     let hoveredCell = null;
     let selectedCell = null;
+    let isAnimating = false;
 
-    // Cached cell data for redraws during pan/zoom while paused
     let cachedCells = [];
     let cachedNationColors = [];
     let rafPending = false;
+
+    const SETTINGS_KEY = 'cw_settings';
 
     const SPRITE_NAMES = [
         'Dead','Basic','Immortal','Diseased','Plague',
@@ -96,6 +98,7 @@ window.ConwaysInterop = (() => {
     }
 
     function scheduleRedraw() {
+        if (isAnimating) return;
         if (rafPending) return;
         rafPending = true;
         requestAnimationFrame(() => {
@@ -192,14 +195,27 @@ window.ConwaysInterop = (() => {
         return { col, row };
     }
 
-    function renderFrame(cells, nationColors, newCols, newRows) {
-        if (!ctx) return;
-        const gridChanged = (newCols !== cols || newRows !== rows);
-        cols = newCols; rows = newRows;
-        cachedCells = cells;
-        cachedNationColors = nationColors;
-        if (gridChanged && !userHasTransformed) fitToWindow();
-        drawFrame();
+    function drawCell(px, py, cs, type, nat, nationColors, col, row) {
+        const w = cs - 1;
+        const nationColor = (nat >= 0 && nat < nationColors.length) ? nationColors[nat] : '#222';
+
+        ctx.fillStyle = nationColor;
+        ctx.fillRect(px, py, w, w);
+
+        if (sprites[type]) {
+            ctx.drawImage(sprites[type], px + 1, py + 1, w - 2, w - 2);
+        } else {
+            const inner = Math.max(2, Math.floor(cs * 0.45));
+            const off = Math.floor((cs - inner) / 2);
+            ctx.fillStyle = TYPE_COLORS[type] ?? '#fff';
+            ctx.fillRect(px + off, py + off, inner, inner);
+        }
+
+        if (selectedCell && col >= 0 && selectedCell.col === col && selectedCell.row === row) {
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 1 / scale;
+            ctx.strokeRect(px + 0.5, py + 0.5, w - 1, w - 1);
+        }
     }
 
     function drawFrame() {
@@ -219,31 +235,7 @@ window.ConwaysInterop = (() => {
         for (let i = 0; i < cells.length; i++) {
             const c = cells[i];
             if (!c.alive) continue;
-
-            const px = c.col * cs;
-            const py = c.row * cs;
-            const w = cs - 1;
-
-            const nationColor = (c.nat >= 0 && c.nat < nationColors.length)
-                ? nationColors[c.nat] : '#222';
-
-            ctx.fillStyle = nationColor;
-            ctx.fillRect(px, py, w, w);
-
-            if (sprites[c.type]) {
-                ctx.drawImage(sprites[c.type], px + 1, py + 1, w - 2, w - 2);
-            } else {
-                const inner = Math.max(2, Math.floor(cs * 0.45));
-                const off = Math.floor((cs - inner) / 2);
-                ctx.fillStyle = TYPE_COLORS[c.type] ?? '#fff';
-                ctx.fillRect(px + off, py + off, inner, inner);
-            }
-
-            if (selectedCell && selectedCell.col === c.col && selectedCell.row === c.row) {
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 1 / scale;
-                ctx.strokeRect(px + 0.5, py + 0.5, w - 1, w - 1);
-            }
+            drawCell(c.col * cs, c.row * cs, cs, c.type, c.nat, nationColors, c.col, c.row);
         }
 
         ctx.strokeStyle = '#999999';
@@ -251,6 +243,102 @@ window.ConwaysInterop = (() => {
         ctx.strokeRect(0, 0, cols * cs, rows * cs);
 
         ctx.restore();
+    }
+
+    function easeInOut(t) {
+        return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+
+    function lerp(a, b, t) {
+        return a + (b - a) * t;
+    }
+
+    function drawFrameAnimated(t, movingSet, moves, nationColors) {
+        if (!ctx) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.translate(tx, ty);
+        ctx.scale(scale, scale);
+
+        const cs = cellSize;
+
+        for (let i = 0; i < cachedCells.length; i++) {
+            const c = cachedCells[i];
+            if (!c.alive) continue;
+            if (movingSet.has(c.col + ',' + c.row)) continue;
+            drawCell(c.col * cs, c.row * cs, cs, c.type, c.nat, nationColors, c.col, c.row);
+        }
+
+        for (let i = 0; i < moves.length; i++) {
+            const m = moves[i];
+            const isWrapped = Math.abs(m.fromCol - m.toCol) > 1 || Math.abs(m.fromRow - m.toRow) > 1;
+            let px, py;
+            if (isWrapped) {
+                px = m.toCol * cs;
+                py = m.toRow * cs;
+            } else {
+                px = lerp(m.fromCol * cs, m.toCol * cs, t);
+                py = lerp(m.fromRow * cs, m.toRow * cs, t);
+            }
+            drawCell(px, py, cs, m.type, m.nat, nationColors, -1, -1);
+        }
+
+        ctx.strokeStyle = '#999999';
+        ctx.lineWidth = 2 / scale;
+        ctx.strokeRect(0, 0, cols * cs, rows * cs);
+
+        ctx.restore();
+    }
+
+    function renderFrame(cells, nationColors, newCols, newRows, moves, animationEnabled, stepIntervalMs) {
+        if (!ctx) return Promise.resolve();
+
+        const gridChanged = (newCols !== cols || newRows !== rows);
+        cols = newCols; rows = newRows;
+        cachedCells = cells;
+        cachedNationColors = nationColors;
+        if (gridChanged && !userHasTransformed) fitToWindow();
+
+        const shouldAnimate = animationEnabled && moves && moves.length > 0 && !gridChanged;
+
+        if (shouldAnimate) {
+            return new Promise(resolve => {
+                const animDuration = stepIntervalMs * 0.65;
+                const startTime = performance.now();
+
+                const movingSet = new Map();
+                for (let i = 0; i < moves.length; i++) {
+                    const m = moves[i];
+                    movingSet.set(m.toCol + ',' + m.toRow, m);
+                }
+
+                isAnimating = true;
+
+                function frame(now) {
+                    const elapsed = now - startTime;
+                    const rawT = Math.min(1.0, elapsed / animDuration);
+                    const t = easeInOut(rawT);
+
+                    drawFrameAnimated(t, movingSet, moves, nationColors);
+
+                    if (rawT < 1.0) {
+                        requestAnimationFrame(frame);
+                    } else {
+                        isAnimating = false;
+                        drawFrame();
+                        resolve();
+                    }
+                }
+
+                requestAnimationFrame(frame);
+            });
+        } else {
+            drawFrame();
+            return Promise.resolve();
+        }
     }
 
     function getCanvasSize() {
@@ -262,5 +350,17 @@ window.ConwaysInterop = (() => {
         cols = c; rows = r;
     }
 
-    return { init, renderFrame, getCanvasSize, updateGridSize };
+    function saveSettings(json) {
+        try { localStorage.setItem(SETTINGS_KEY, json); } catch (e) {}
+    }
+
+    function loadSettings() {
+        try { return localStorage.getItem(SETTINGS_KEY) || null; } catch (e) { return null; }
+    }
+
+    function clearSettings() {
+        try { localStorage.removeItem(SETTINGS_KEY); } catch (e) {}
+    }
+
+    return { init, renderFrame, getCanvasSize, updateGridSize, saveSettings, loadSettings, clearSettings };
 })();

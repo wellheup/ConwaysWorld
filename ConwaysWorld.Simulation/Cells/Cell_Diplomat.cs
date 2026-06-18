@@ -19,82 +19,85 @@ namespace ConwaysWorld.Simulation;
 /// </summary>
 public class Cell_Diplomat : Cell
 {
-	/// <summary>The foreign cell currently being pursued.  Refreshed when it becomes invalid.</summary>
-	private Cell? _target;
+        /// <summary>The foreign cell currently being pursued.  Refreshed when it becomes invalid.</summary>
+        private Cell? _target;
 
-	/// <summary>Consecutive steps without a successful conversion.  Currently tracked but not yet used for demotion.</summary>
-	private int _idleTurns = 0;
+        /// <summary>Consecutive steps without a successful conversion.  Currently tracked but not yet used for demotion.</summary>
+        private int _idleTurns = 0;
 
-	/// <summary>Creates a Diplomat cell at the given position.</summary>
-	public Cell_Diplomat(int column, int row, bool isAlive)
-	{
-		Column = column;
-		Row = row;
-		IsAlive = isAlive;
-		CellType = CellType.Diplomat;
-		Conditions = new HashSet<string>();
-		_target = null;
-	}
+        /// <summary>Creates a Diplomat cell at the given position.</summary>
+        public Cell_Diplomat(int column, int row, bool isAlive)
+        {
+                Column = column;
+                Row = row;
+                IsAlive = isAlive;
+                CellType = CellType.Diplomat;
+                Conditions = new HashSet<string>();
+                _target = null;
+        }
 
-	/// <inheritdoc/>
-	public override void Live()
-	{
-		base.Live();
-	}
+        /// <inheritdoc/>
+        public override void Live()
+        {
+                base.Live();
+        }
 
-	/// <summary>
-	/// Returns <c>true</c> if <paramref name="c"/> is alive, belongs to a different nation,
-	/// and has a valid nation index.
-	/// </summary>
-	private bool IsForeignAlive(Cell c) =>
-		c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
+        /// <summary>
+        /// Returns <c>true</c> if <paramref name="c"/> is alive, belongs to a different nation,
+        /// and has a valid nation index.
+        /// </summary>
+        private bool IsForeignAlive(Cell c) =>
+                c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
 
-	/// <summary>
-	/// For each immediately adjacent foreign cell, rolls a 1-in-4 chance of converting
-	/// it to the Diplomat's nation.
-	/// </summary>
-	private void Convert(Cell[,] cellGrid)
-	{
-		foreach (var neighbor in CellNeighborhood.NeighborsDict.Values)
-		{
-			var target = cellGrid[neighbor.Column, neighbor.Row];
-			if (target.IsAlive && target.Nationality != Nationality && target.Nationality >= 0)
-			{
-				if (SimRandom.Range(0, 4) == 0)
-				{
-					target.Nationality = Nationality;
-					_idleTurns = 0;
-				}
-			}
-		}
-	}
+        /// <summary>
+        /// For each immediately adjacent foreign cell, rolls a 1-in-4 chance of converting
+        /// it to the Diplomat's nation.
+        /// </summary>
+        private void Convert(Cell[,] cellGrid)
+        {
+                foreach (var neighbor in CellNeighborhood.NeighborsDict.Values)
+                {
+                        var target = cellGrid[neighbor.Column, neighbor.Row];
+                        if (target.IsAlive && target.Nationality != Nationality && target.Nationality >= 0)
+                        {
+                                if (SimRandom.Range(0, 4) == 0)
+                                {
+                                        target.Nationality = Nationality;
+                                        _idleTurns = 0;
+                                }
+                        }
+                }
+        }
 
-	/// <summary>
-	/// Refreshes the target if it has died or switched nations, then steps one cell
-	/// toward the target.  Increments <see cref="_idleTurns"/> when no target can be found.
-	/// </summary>
-	private void MoveTowardForeignNation(Cell[,] cellGrid)
-	{
-		if (_target == null || !_target.IsAlive || _target.Nationality == Nationality)
-			_target = SelectNearbyCellByRule(cellGrid, IsForeignAlive, 8);
+        /// <summary>
+        /// Refreshes the target if it has died or switched nations, then steps one cell
+        /// toward the target.  Increments <see cref="_idleTurns"/> when no target can be found.
+        /// </summary>
+        private void MoveTowardForeignNation(Cell[,] cellGrid, List<MoveRecord>? moves = null)
+        {
+                if (_target == null || !_target.IsAlive || _target.Nationality == Nationality)
+                        _target = SelectNearbyCellByRule(cellGrid, IsForeignAlive, 8);
 
-		if (_target != null)
-		{
-			var step = FindNeighborInDirOfCell(cellGrid, _target);
-			if (step != this)
-				SwapCells(this, step, cellGrid);
-		}
-		else
-		{
-			_idleTurns++;
-		}
-	}
+                if (_target != null)
+                {
+                        var step = FindNeighborInDirOfCell(cellGrid, _target);
+                        if (step != this)
+                        {
+                                moves?.Add(new MoveRecord(Column, Row, step.Column, step.Row, (int)CellType, Nationality));
+                                SwapCells(this, step, cellGrid);
+                        }
+                }
+                else
+                {
+                        _idleTurns++;
+                }
+        }
 
-	/// <summary>Converts adjacent foreign cells, then moves toward the nearest foreign nation.</summary>
-	public override void SpecialActions(Cell[,] cellGrid)
-	{
-		if (!IsAlive) return;
-		Convert(cellGrid);
-		MoveTowardForeignNation(cellGrid);
-	}
+        /// <summary>Converts adjacent foreign cells, then moves toward the nearest foreign nation.</summary>
+        public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null)
+        {
+                if (!IsAlive) return;
+                Convert(cellGrid);
+                MoveTowardForeignNation(cellGrid, moves);
+        }
 }
