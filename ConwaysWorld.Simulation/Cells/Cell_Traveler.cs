@@ -104,7 +104,7 @@ public class Cell_Traveler : Cell
 			Direction = ChooseTravelDirection();
 			var dest = CellNeighborhood.NeighborhoodDict[Direction];
 			if (dest != this)
-				moves?.Add(new MoveRecord(Column, Row, dest.Column, dest.Row, (int)CellType, Nationality));
+				moves?.Add(new MoveRecord(StepStartColumn, StepStartRow, dest.Column, dest.Row, (int)CellType, Nationality));
 			SwapCells(this, dest, cellGrid);
 			SpecialPerformed = true;
 		}

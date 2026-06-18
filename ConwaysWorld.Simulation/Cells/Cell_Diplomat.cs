@@ -47,7 +47,7 @@ public class Cell_Diplomat : Cell
 	/// and has a valid nation index.
 	/// </summary>
 	private bool IsForeignAlive(Cell c) =>
-			c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
+					c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
 
 	/// <summary>
 	/// For each immediately adjacent foreign cell, rolls a 1-in-4 chance of converting
@@ -83,7 +83,7 @@ public class Cell_Diplomat : Cell
 			var step = FindNeighborInDirOfCell(cellGrid, _target);
 			if (step != this)
 			{
-				moves?.Add(new MoveRecord(Column, Row, step.Column, step.Row, (int)CellType, Nationality));
+				moves?.Add(new MoveRecord(StepStartColumn, StepStartRow, step.Column, step.Row, (int)CellType, Nationality));
 				SwapCells(this, step, cellGrid);
 			}
 		}

@@ -26,7 +26,7 @@ public class Cell_Explorer : Cell_Traveler
 	/// Creates an Explorer, inheriting Traveler state and overriding the isolation tolerance.
 	/// </summary>
 	public Cell_Explorer(int column, int row, bool isAlive)
-			: base(column, row, isAlive)
+					: base(column, row, isAlive)
 	{
 		CellType = CellType.Explorer;
 		MaxAloneTime = 4;
@@ -65,7 +65,7 @@ public class Cell_Explorer : Cell_Traveler
 	/// which only happens via toroidal wrapping — i.e. the neighbour is on the opposite edge.
 	/// </summary>
 	private bool IsNeighborOverEdge(Cell neighbor) =>
-			Math.Abs(Column - neighbor.Column) > 1 || Math.Abs(Row - neighbor.Row) > 1;
+					Math.Abs(Column - neighbor.Column) > 1 || Math.Abs(Row - neighbor.Row) > 1;
 
 	/// <summary>
 	/// Picks a new travel direction and swaps into that slot.
@@ -79,7 +79,7 @@ public class Cell_Explorer : Cell_Traveler
 			Direction = ChooseTravelDirection();
 			var dest = CellNeighborhood.NeighborhoodDict[Direction];
 			if (dest != this)
-				moves?.Add(new MoveRecord(Column, Row, dest.Column, dest.Row, (int)CellType, Nationality));
+				moves?.Add(new MoveRecord(StepStartColumn, StepStartRow, dest.Column, dest.Row, (int)CellType, Nationality));
 			SwapCells(this, dest, cellGrid);
 			SpecialPerformed = true;
 		}

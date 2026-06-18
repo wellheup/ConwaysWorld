@@ -73,6 +73,19 @@ public abstract class Cell
 	/// <summary>Consecutive steps fully surrounded (8 neighbours); used by Traveler/Explorer crush death.</summary>
 	public int CrushCountDown = 0;
 
+	/// <summary>
+	/// Grid column this cell occupied at the start of the current step, snapshotted by
+	/// <see cref="Model.UpdateSpecialActions"/> before any cell moves.  Used to record
+	/// the correct animation origin even after <see cref="SwapCells"/> has repositioned the cell.
+	/// </summary>
+	public int StepStartColumn = 0;
+
+	/// <summary>
+	/// Grid row this cell occupied at the start of the current step.
+	/// See <see cref="StepStartColumn"/>.
+	/// </summary>
+	public int StepStartRow = 0;
+
 	// ── Core lifecycle ─────────────────────────────────────────────────────────────
 
 	/// <summary>

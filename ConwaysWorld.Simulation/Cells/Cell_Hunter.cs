@@ -35,7 +35,7 @@ public class Cell_Hunter : Cell_Traveler
 
 	/// <summary>Creates a Hunter targeting Immortals and Kings.</summary>
 	public Cell_Hunter(int column, int row, bool isAlive)
-			: base(column, row, isAlive)
+					: base(column, row, isAlive)
 	{
 		Column = column;
 		Row = row;
@@ -100,7 +100,7 @@ public class Cell_Hunter : Cell_Traveler
 		if (CurrentPrey != null && cellToSwap == CurrentPrey && cellToSwap.IsAlive)
 		{
 			if (cellToSwap != this)
-				moves?.Add(new MoveRecord(Column, Row, cellToSwap.Column, cellToSwap.Row, (int)CellType, Nationality));
+				moves?.Add(new MoveRecord(StepStartColumn, StepStartRow, cellToSwap.Column, cellToSwap.Row, (int)CellType, Nationality));
 			SwapCells(this, cellToSwap, cellGrid);
 			cellToSwap.Die();
 			CurrentPrey = null;
@@ -109,7 +109,7 @@ public class Cell_Hunter : Cell_Traveler
 		else if (IsPrey(cellToSwap))
 		{
 			if (cellToSwap != this)
-				moves?.Add(new MoveRecord(Column, Row, cellToSwap.Column, cellToSwap.Row, (int)CellType, Nationality));
+				moves?.Add(new MoveRecord(StepStartColumn, StepStartRow, cellToSwap.Column, cellToSwap.Row, (int)CellType, Nationality));
 			SwapCells(this, cellToSwap, cellGrid);
 			cellToSwap.Die();
 			return true;
@@ -117,7 +117,7 @@ public class Cell_Hunter : Cell_Traveler
 		else
 		{
 			if (cellToSwap != this)
-				moves?.Add(new MoveRecord(Column, Row, cellToSwap.Column, cellToSwap.Row, (int)CellType, Nationality));
+				moves?.Add(new MoveRecord(StepStartColumn, StepStartRow, cellToSwap.Column, cellToSwap.Row, (int)CellType, Nationality));
 			SwapCells(this, cellToSwap, cellGrid);
 			return false;
 		}

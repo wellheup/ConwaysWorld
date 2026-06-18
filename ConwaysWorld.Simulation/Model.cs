@@ -262,7 +262,7 @@ public class Model
 					cell.Immaculate(CellGrid);
 
 				if (cell.IsAlive && cell.CellType == CellType.Explorer &&
-						(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
+								(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
 					needResize = true;
 
 				if (cell.IsAlive && cell.Age >= 1 && cell.Nationality < 0)
@@ -290,9 +290,22 @@ public class Model
 	/// Calls <see cref="Cell.SpecialActions"/> on every cell.
 	/// This is where movement, combat, and disease spread happen.
 	/// Neighbourhoods must have been rebuilt immediately before this call.
+	/// <para>
+	/// Before iterating, each cell's <see cref="Cell.StepStartColumn"/> and
+	/// <see cref="Cell.StepStartRow"/> are snapshotted from its current grid position
+	/// so that move records always reflect where the cell began the step, not where a
+	/// prior swap may have displaced it.
+	/// </para>
 	/// </summary>
 	public void UpdateSpecialActions()
 	{
+		for (int c = 0; c < _columns; c++)
+			for (int r = 0; r < _rows; r++)
+			{
+				CellGrid[c, r].StepStartColumn = c;
+				CellGrid[c, r].StepStartRow = r;
+			}
+
 		for (int c = 0; c < _columns; c++)
 			for (int r = 0; r < _rows; r++)
 				CellGrid[c, r].SpecialActions(CellGrid, PendingMoves);
