@@ -41,12 +41,24 @@
             }
         </div>
 
-        <div class="cw-event-log">
-            @foreach (var ev in _eventLog)
-            {
-                <div class="cw-event-entry @ev.CssClass">@ev.Message</div>
-            }
+        <div class="cw-event-bar">
+            <button class="cw-log-toggle" @onclick="() => _showEventLog = !_showEventLog">
+                @(_showEventLog ? "▾ Events" : "▸ Events")
+                @if (_eventLog.Count > 0 && !_showEventLog)
+                {
+                    <span class="cw-log-badge">@_eventLog.Count</span>
+                }
+            </button>
         </div>
+        @if (_showEventLog)
+        {
+            <div class="cw-event-log">
+                @foreach (var ev in _eventLog)
+                {
+                    <div class="cw-event-entry @ev.CssClass">@ev.Message</div>
+                }
+            </div>
+        }
     </div>
 
     <div class="cw-sidebar">
@@ -178,6 +190,7 @@
     private record SimEvent(string Message, string CssClass);
     private List<SimEvent> _eventLog = new();
     private const int MaxEventLog = 60;
+    private bool _showEventLog = false;
 
     private int _startCols = 40;
     private int _startRows = 40;
