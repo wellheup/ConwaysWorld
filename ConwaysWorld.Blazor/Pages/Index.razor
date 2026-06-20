@@ -193,6 +193,12 @@
                             Enable Flood
                         </label>
                     </div>
+                    <div class="cw-field">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                            <input type="checkbox" @bind="_randomLifeEnabled" />
+                            Enable Random Life Injection
+                        </label>
+                    </div>
 
                     <h3 style="margin:10px 0 6px">Spawn Weights</h3>
                     @foreach (var kv in _spawnWeights)
@@ -255,6 +261,7 @@
     private int _famineCooldown = 15;
     private int _famineDuration = 10;
     private bool _floodEnabled = true;
+    private bool _randomLifeEnabled = false;
     private Dictionary<string, int> _spawnWeights = new();
 
     private static readonly string[] TypeNames = {
@@ -284,8 +291,9 @@
         [JsonPropertyName("famineEnabled")]    public bool FamineEnabled { get; set; } = true;
         [JsonPropertyName("famineCooldown")]   public int FamineCooldown { get; set; } = 15;
         [JsonPropertyName("famineDuration")]   public int FamineDuration { get; set; } = 10;
-        [JsonPropertyName("floodEnabled")]     public bool FloodEnabled { get; set; } = true;
-        [JsonPropertyName("spawnWeights")]     public Dictionary<string, int>? SpawnWeights { get; set; }
+        [JsonPropertyName("floodEnabled")]        public bool FloodEnabled { get; set; } = true;
+        [JsonPropertyName("randomLifeEnabled")] public bool RandomLifeEnabled { get; set; } = false;
+        [JsonPropertyName("spawnWeights")]        public Dictionary<string, int>? SpawnWeights { get; set; }
     }
 
     protected override void OnInitialized()
@@ -319,6 +327,7 @@
             FamineCooldown    = Math.Max(1, _famineCooldown),
             FamineDuration    = Math.Max(1, _famineDuration),
             FloodEnabled      = _floodEnabled,
+            RandomLifeEnabled = _randomLifeEnabled,
         };
         foreach (var kv in _spawnWeights)
             if (Enum.TryParse<CellType>(kv.Key, out var ct))
@@ -348,6 +357,7 @@
             _famineCooldown   = Math.Max(1, s.FamineCooldown);
             _famineDuration   = Math.Max(1, s.FamineDuration);
             _floodEnabled     = s.FloodEnabled;
+            _randomLifeEnabled = s.RandomLifeEnabled;
             if (s.SpawnWeights != null)
                 foreach (var kv in s.SpawnWeights)
                     if (_spawnWeights.ContainsKey(kv.Key))
@@ -373,8 +383,9 @@
             FamineEnabled    = _famineEnabled,
             FamineCooldown   = _famineCooldown,
             FamineDuration   = _famineDuration,
-            FloodEnabled     = _floodEnabled,
-            SpawnWeights     = new Dictionary<string, int>(_spawnWeights),
+            FloodEnabled      = _floodEnabled,
+            RandomLifeEnabled = _randomLifeEnabled,
+            SpawnWeights      = new Dictionary<string, int>(_spawnWeights),
         };
         return JsonSerializer.Serialize(s);
     }
@@ -699,7 +710,8 @@
         _famineEnabled    = true;
         _famineCooldown   = 15;
         _famineDuration   = 10;
-        _floodEnabled     = true;
+        _floodEnabled      = true;
+        _randomLifeEnabled = false;
 
         var defaultSettings = new SimulationSettings();
         _spawnWeights = defaultSettings.SpawnWeights

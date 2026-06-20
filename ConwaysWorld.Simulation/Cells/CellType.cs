@@ -79,6 +79,7 @@ public enum CellType
         - TODO: add a behavior to diplomats to instigate a rebellion event where, if a nation is large enough, and significantly larger than others (if there are any), it will become a revolutionary cell
         - TODO: revolutionary cells spawn a bunch of rebels and warriors for a new nation, which they become king of
         - TODO: rebel cells are like diplomats with higher conversion rates but shorter lifespans but are hunted by other nations warriors and hunters
+			- still not working quite right...
 - TODO: add an increased chance to spawn doctors near diseases
 - TODO: make minimum allowable grid size 5x5
 - TODO: utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
