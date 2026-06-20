@@ -123,9 +123,12 @@ public partial class Model
 		int totalCells = _columns * _rows;
 		int livingBudget = (int)(totalCells * _settings.BasePercentLiving);
 
+		if (livingBudget < 1)
+			return;   // nothing to spawn — grid too large for this population setting
+
 		int clusterCount = _settings.StartClusters > 0
-										? Math.Clamp(_settings.StartClusters, 1, livingBudget)
-										: Math.Max(1, _settings.MaxNations / 4);
+																		? Math.Clamp(_settings.StartClusters, 1, livingBudget)
+																		: Math.Max(1, _settings.MaxNations / 4);
 
 		// Choose cluster seed points (unique grid positions).
 		var seeds = new List<(int c, int r)>();
@@ -365,7 +368,7 @@ public partial class Model
 					cell.Immaculate(CellGrid);
 
 				if (cell.IsAlive && cell.CellType == CellType.Explorer &&
-																																																																																																																																																																																																																																																																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
 					needResize = true;
 
 				// Nation-join: nationless living cell scans within 3 Chebyshev tiles.
@@ -566,8 +569,8 @@ public partial class Model
 					{
 						var neighbor = CellGrid[nc, nr];
 						if (!visited.Contains(neighbor) &&
-										neighbor.IsAlive &&
-										neighbor.Nationality < 0)
+														neighbor.IsAlive &&
+														neighbor.Nationality < 0)
 						{
 							visited.Add(neighbor);
 							queue.Enqueue(neighbor);
@@ -621,9 +624,9 @@ public partial class Model
 			return;
 
 		var sorted = Nations.Values
-																																		.Where(n => n.CitizensList.Count > 0)
-																																		.OrderByDescending(n => n.CitizensList.Count)
-																																		.ToList();
+																																																																		.Where(n => n.CitizensList.Count > 0)
+																																																																		.OrderByDescending(n => n.CitizensList.Count)
+																																																																		.ToList();
 
 		if (sorted.Count < 2)
 			return;
@@ -638,13 +641,13 @@ public partial class Model
 			return;
 
 		var candidates = dominant.CitizensList
-																																		.Where(c => c != dominant.King &&
-																																																																																		c.CellType != CellType.Warrior &&
-																																																																																		c.CellType != CellType.Diplomat &&
-																																																																																		c.CellType != CellType.Revolutionary &&
-																																																																																		c.CellType != CellType.Rebel &&
-																																																																																		c.IsAlive)
-																																		.ToList();
+																																																																		.Where(c => c != dominant.King &&
+																																																																																																																																																																		c.CellType != CellType.Warrior &&
+																																																																																																																																																																		c.CellType != CellType.Diplomat &&
+																																																																																																																																																																		c.CellType != CellType.Revolutionary &&
+																																																																																																																																																																		c.CellType != CellType.Rebel &&
+																																																																																																																																																																		c.IsAlive)
+																																																																		.ToList();
 
 		if (candidates.Count == 0)
 			return;
