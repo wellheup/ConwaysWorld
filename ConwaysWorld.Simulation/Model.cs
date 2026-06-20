@@ -20,7 +20,7 @@ public record MoveRecord(int FromCol, int FromRow, int ToCol, int ToRow, int Cel
 /// </list>
 /// </para>
 /// </summary>
-public class Model
+public partial class Model
 {
 	// ── Public grid state ─────────────────────────────────────────────────────────
 
@@ -56,17 +56,6 @@ public class Model
 	private int _columns;
 	private int _rows;
 
-	private bool _famineActive = false;
-	private int _famineDurationCount = 0;
-	private int _stepsSinceLastFamineEnd = 0;
-	private int _famineQuadrant = 0;
-
-	private bool _floodActive = false;
-	private int _floodCooldownCount = 0;
-	private int _floodTriggerAt = 100 + 75; // first trigger: 100-step cooldown + mid-range delay
-
-	private static readonly string[] QuadrantNames = { "Northwest", "Northeast", "Southwest", "Southeast" };
-
 	// ── Public read-only accessors ────────────────────────────────────────────────
 
 	/// <summary>Current grid width in cells.</summary>
@@ -74,15 +63,6 @@ public class Model
 
 	/// <summary>Current grid height in cells.</summary>
 	public int Rows => _rows;
-
-	/// <summary>Whether a Famine world event is currently active.</summary>
-	public bool FamineActive => _famineActive;
-
-	/// <summary>Whether a Flood world event is currently active.</summary>
-	public bool FloodActive => _floodActive;
-
-	/// <summary>Which grid quadrant the active famine affects (0=NW, 1=NE, 2=SW, 3=SE).</summary>
-	public int FamineQuadrant => _famineQuadrant;
 
 	/// <summary>Number of living cells counted at the most recent step.</summary>
 	public int CurrentPopulation => _currentPopulation;
@@ -144,8 +124,8 @@ public class Model
 		int livingBudget = (int)(totalCells * _settings.BasePercentLiving);
 
 		int clusterCount = _settings.StartClusters > 0
-				? Math.Clamp(_settings.StartClusters, 1, livingBudget)
-				: Math.Max(1, _settings.MaxNations / 4);
+						? Math.Clamp(_settings.StartClusters, 1, livingBudget)
+						: Math.Max(1, _settings.MaxNations / 4);
 
 		// Choose cluster seed points (unique grid positions).
 		var seeds = new List<(int c, int r)>();
@@ -384,7 +364,7 @@ public class Model
 					cell.Immaculate(CellGrid);
 
 				if (cell.IsAlive && cell.CellType == CellType.Explorer &&
-																																																																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
+																																																																																																																																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
 					needResize = true;
 
 				// Nation-join: nationless living cell scans within 3 Chebyshev tiles.
@@ -486,6 +466,9 @@ public class Model
 			if (!CellGrid[rc, rr].IsAlive && !AliveNextGenGrid[rc, rr])
 			{
 				CellGrid[rc, rr] = _generator.InitializeRandomCell(rc, rr);
+				// Bombers in isolation just alternate spawn/die; require a live neighbour.
+				if (CellGrid[rc, rr].CellType == CellType.Bomber && !HasLivingNeighbor(rc, rr))
+					CellGrid[rc, rr] = new Cell_Basic(rc, rr, true);
 				added++;
 			}
 			attempts++;
@@ -582,8 +565,8 @@ public class Model
 					{
 						var neighbor = CellGrid[nc, nr];
 						if (!visited.Contains(neighbor) &&
-							neighbor.IsAlive &&
-							neighbor.Nationality < 0)
+								neighbor.IsAlive &&
+								neighbor.Nationality < 0)
 						{
 							visited.Add(neighbor);
 							queue.Enqueue(neighbor);
@@ -637,9 +620,9 @@ public class Model
 			return;
 
 		var sorted = Nations.Values
-										.Where(n => n.CitizensList.Count > 0)
-										.OrderByDescending(n => n.CitizensList.Count)
-										.ToList();
+																		.Where(n => n.CitizensList.Count > 0)
+																		.OrderByDescending(n => n.CitizensList.Count)
+																		.ToList();
 
 		if (sorted.Count < 2)
 			return;
@@ -654,13 +637,13 @@ public class Model
 			return;
 
 		var candidates = dominant.CitizensList
-										.Where(c => c != dominant.King &&
-																						c.CellType != CellType.Warrior &&
-																						c.CellType != CellType.Diplomat &&
-																						c.CellType != CellType.Revolutionary &&
-																						c.CellType != CellType.Rebel &&
-																						c.IsAlive)
-										.ToList();
+																		.Where(c => c != dominant.King &&
+																																										c.CellType != CellType.Warrior &&
+																																										c.CellType != CellType.Diplomat &&
+																																										c.CellType != CellType.Revolutionary &&
+																																										c.CellType != CellType.Rebel &&
+																																										c.IsAlive)
+																		.ToList();
 
 		if (candidates.Count == 0)
 			return;
@@ -695,192 +678,45 @@ public class Model
 		}
 	}
 
-	// ── World events ──────────────────────────────────────────────────────────────
+	// ── Cell neighbor rule application ───────────────────────────────────────────
 
 	/// <summary>
-	/// Advances the Flood world-event state machine by one step.
-	/// <para>
-	/// When no flood is active the cooldown counter increments; once it reaches
-	/// <c>_floodTriggerAt</c> (100 + random 50–100 extra steps) the flood begins.
-	/// While active, <see cref="ApplyFloodStep"/> kills the cell farthest from each
-	/// nation's King (one cell per nation per step).  The flood ends as soon as
-	/// <see cref="AreAnyNationsAdjacent"/> returns <c>false</c>.
-	/// After ending, the next trigger threshold is reset to another 100 + 50–100 steps.
-	/// </para>
-	/// </summary>
-	private void UpdateFlood()
-	{
-		if (!_settings.FloodEnabled)
-		{
-			_floodActive = false;
-			return;
-		}
-
-		if (_floodActive)
-		{
-			if (!AreAnyNationsAdjacent())
-			{
-				_floodActive = false;
-				_floodCooldownCount = 0;
-				_floodTriggerAt = 100 + SimRandom.Range(50, 101);
-				PendingEvents.Add("flood_end:The flood recedes. Nations are separated.");
-				return;
-			}
-			ApplyFloodStep();
-		}
-		else
-		{
-			_floodCooldownCount++;
-			if (_floodCooldownCount >= _floodTriggerAt)
-			{
-				_floodActive = true;
-				_floodCooldownCount = 0;
-				_floodTriggerAt = 100 + SimRandom.Range(50, 101);
-				PendingEvents.Add("flood_start:The flood rises! Nations are being pushed apart.");
-			}
-		}
-	}
-
-	/// <summary>
-	/// Kills the living cell that is farthest (by Manhattan distance) from its nation's
-	/// King in each active nation.  One cell per nation is killed per call.
-	/// If a nation has no King, the centroid of its citizens is used as the reference point.
-	/// Killed cells receive the <c>"cleanup"</c> condition so they are replaced with dead
-	/// Basic cells during <see cref="UpdateCellConditions"/>.
-	/// </summary>
-	private void ApplyFloodStep()
-	{
-		foreach (var nation in Nations.Values)
-		{
-			var citizens = nation.CitizensList.Where(c => c.IsAlive).ToList();
-			if (citizens.Count == 0)
-				continue;
-
-			float refCol, refRow;
-			var king = nation.King;
-			if (king != null && king.IsAlive)
-			{
-				refCol = king.Column;
-				refRow = king.Row;
-			}
-			else
-			{
-				refCol = (float)citizens.Average(c => c.Column);
-				refRow = (float)citizens.Average(c => c.Row);
-			}
-
-			var target = citizens
-							.OrderByDescending(c => Math.Abs(c.Column - refCol) + Math.Abs(c.Row - refRow))
-							.First();
-
-			target.Die();
-			target.Conditions.Add("cleanup");
-		}
-	}
-
-	/// <summary>
-	/// Returns <c>true</c> if any two living cells of different nations share an
-	/// immediately adjacent (Moore neighbourhood) slot.
-	/// </summary>
-	private bool AreAnyNationsAdjacent()
-	{
-		for (int c = 0; c < _columns; c++)
-		{
-			for (int r = 0; r < _rows; r++)
-			{
-				var cell = CellGrid[c, r];
-				if (!cell.IsAlive || cell.Nationality < 0)
-					continue;
-				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
-				{
-					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
-							neighbor.Nationality != cell.Nationality)
-						return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	/// <summary>
-	/// Advances the Famine world-event state machine by one step.
-	/// If a famine is active, increments its duration counter and ends it when the configured
-	/// duration is reached.  If no famine is active, increments the cooldown counter and
-	/// rolls a 10 % chance each step (once the cooldown has elapsed) to start a new famine
-	/// in a randomly chosen grid quadrant.
-	/// </summary>
-	private void UpdateFamine()
-	{
-		if (!_settings.FamineEnabled)
-		{
-			_famineActive = false;
-			return;
-		}
-
-		if (_famineActive)
-		{
-			_famineDurationCount++;
-			if (_famineDurationCount >= _settings.FamineDuration)
-			{
-				_famineActive = false;
-				_famineDurationCount = 0;
-				_stepsSinceLastFamineEnd = 0;
-				PendingEvents.Add($"famine_end:The famine in the {QuadrantNames[_famineQuadrant]} quadrant has passed.");
-			}
-		}
-		else
-		{
-			_stepsSinceLastFamineEnd++;
-			if (_stepsSinceLastFamineEnd >= _settings.FamineCooldown && SimRandom.Range(0, 10) == 0)
-			{
-				_famineActive = true;
-				_famineDurationCount = 0;
-				_famineQuadrant = SimRandom.Range(0, 4);
-				PendingEvents.Add($"famine_start:Famine strikes the {QuadrantNames[_famineQuadrant]} quadrant!");
-			}
-		}
-	}
-
-	/// <summary>
-	/// Applies the configured <see cref="SimulationSettings.MinLivingNeighbors"/> and
-	/// <see cref="SimulationSettings.MaxLivingNeighbors"/> to every cell, then lowers
-	/// <see cref="Cell.MaxLivingNeighbors"/> by 1 for cells inside the active famine quadrant.
+	/// Applies the base Conway survival constraints (<see cref="SimulationSettings.MinLivingNeighbors"/>
+	/// and <see cref="SimulationSettings.MaxLivingNeighbors"/>) to every cell.
 	/// Must be called before <see cref="UpdateAliveNextGenGrid"/>.
 	/// </summary>
 	private void ApplyCellNeighborRules()
 	{
 		int baseMin = _settings.MinLivingNeighbors;
 		int baseMax = _settings.MaxLivingNeighbors;
-		int halfCols = _columns / 2;
-		int halfRows = _rows / 2;
-
 		for (int c = 0; c < _columns; c++)
-		{
 			for (int r = 0; r < _rows; r++)
 			{
-				var cell = CellGrid[c, r];
-				cell.MinLivingNeighbors = baseMin;
-				cell.MaxLivingNeighbors = baseMax;
-
-				if (_famineActive && IsInFamineQuadrant(c, r, halfCols, halfRows))
-					cell.MaxLivingNeighbors = Math.Max(baseMin, baseMax - 1);
+				CellGrid[c, r].MinLivingNeighbors = baseMin;
+				CellGrid[c, r].MaxLivingNeighbors = baseMax;
 			}
-		}
 	}
 
-	/// <summary>Returns true if the cell at (<paramref name="col"/>, <paramref name="row"/>) falls
-	/// within the currently active famine quadrant.</summary>
-	private bool IsInFamineQuadrant(int col, int row, int halfCols, int halfRows) =>
-																	_famineQuadrant switch
-																	{
-																		0 => col < halfCols && row < halfRows,
-																		1 => col >= halfCols && row < halfRows,
-																		2 => col < halfCols && row >= halfRows,
-																		3 => col >= halfCols && row >= halfRows,
-																		_ => false,
-																	};
-
 	// ── Private helpers ───────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Returns <c>true</c> if any of the eight Moore-neighbourhood cells around
+	/// (<paramref name="col"/>, <paramref name="row"/>) is currently alive.
+	/// Uses direct grid bounds checks — safe to call before neighbourhoods are rebuilt.
+	/// </summary>
+	private bool HasLivingNeighbor(int col, int row)
+	{
+		for (int dc = -1; dc <= 1; dc++)
+			for (int dr = -1; dr <= 1; dr++)
+			{
+				if (dc == 0 && dr == 0)
+					continue;
+				int nc = col + dc, nr = row + dr;
+				if (nc >= 0 && nc < _columns && nr >= 0 && nr < _rows && CellGrid[nc, nr].IsAlive)
+					return true;
+			}
+		return false;
+	}
 
 	/// <summary>
 	/// Counts all living cells in the grid and stores the result in <see cref="_currentPopulation"/>.
