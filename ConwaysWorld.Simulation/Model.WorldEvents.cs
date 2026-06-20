@@ -30,10 +30,10 @@ public partial class Model
 
 	/// <summary>
 	/// Advances the Famine world-event state machine by one step.
-	/// While active, kills a random 5 % of the living population each step.
-	/// Ends after <see cref="SimulationSettings.FamineDuration"/> steps; then a
-	/// cooldown of <see cref="SimulationSettings.FamineCooldown"/> steps must pass
-	/// before a new famine can roll (10 % chance per step after cooldown).
+	/// While active, kills a random 5 % of the living cells inside the famine quadrant each step.
+	/// Ends after <see cref="SimulationSettings.FamineDuration"/> steps; then a cooldown of
+	/// <see cref="SimulationSettings.FamineCooldown"/> steps must pass before a new famine can
+	/// roll (10 % chance per step after cooldown).
 	/// </summary>
 	private void UpdateFamine()
 	{
@@ -107,26 +107,23 @@ public partial class Model
 	/// <summary>Returns <c>true</c> if the cell at (<paramref name="col"/>, <paramref name="row"/>)
 	/// falls within the currently active famine quadrant.</summary>
 	private bool IsInFamineQuadrant(int col, int row, int halfCols, int halfRows) =>
-									_famineQuadrant switch
-									{
-										0 => col < halfCols && row < halfRows,
-										1 => col >= halfCols && row < halfRows,
-										2 => col < halfCols && row >= halfRows,
-										3 => col >= halfCols && row >= halfRows,
-										_ => false,
-									};
+		_famineQuadrant switch
+		{
+			0 => col < halfCols && row < halfRows,
+			1 => col >= halfCols && row < halfRows,
+			2 => col < halfCols && row >= halfRows,
+			3 => col >= halfCols && row >= halfRows,
+			_ => false,
+		};
 
 	// ── Flood ─────────────────────────────────────────────────────────────────────
 
 	/// <summary>
 	/// Advances the Flood world-event state machine by one step.
-	/// When no flood is active the cooldown counter increments; once it reaches
-	/// <c>_floodTriggerAt</c> (100 + random 50–100 extra steps) the flood begins.
-	/// While active, <see cref="ApplyFloodStep"/> kills the entire current contact border
-	/// between nations (one layer per step, from the outside in).  The flood ends as soon
-	/// as <see cref="AreAnyNationsAdjacent"/> returns <c>false</c>, meaning each call
-	/// peels back one ring; thin borders resolve in one step, thick or interleaved borders
-	/// take multiple steps.
+	/// When no flood is active the cooldown counter increments until <c>_floodTriggerAt</c>
+	/// (100 + random 50–100 extra steps) is reached.  While active, animation is driven
+	/// externally via <see cref="DoFloodLayer"/> and <see cref="FinalizeFlood"/>; this
+	/// method is a no-op until those calls complete.
 	/// </summary>
 	private void UpdateFlood()
 	{
@@ -154,10 +151,10 @@ public partial class Model
 	}
 
 	/// <summary>
-	/// Kills one contact-border layer between nations and returns <c>true</c> if nations
-	/// are still adjacent (i.e. more layers remain).  Call repeatedly — one call per
-	/// rendered frame — to produce a visible layer-by-layer flood animation.
-	/// Has no effect and returns <c>false</c> if nations are already separated.
+	/// Kills one contact-border layer and returns <c>true</c> if nations are still adjacent
+	/// (more layers remain).  Only nations that currently have at least one inter-nation
+	/// contact point are included in the kill set — nations whose touch-points have already
+	/// been relieved are never touched.  Returns <c>false</c> immediately if no contacts exist.
 	/// </summary>
 	public bool DoFloodLayer()
 	{
@@ -181,34 +178,54 @@ public partial class Model
 	}
 
 	/// <summary>
-	/// Kills every living cell that is Moore-adjacent to a living cell of a different nation.
-	/// Wiping the entire contact border in one step means <see cref="AreAnyNationsAdjacent"/>
-	/// returns <c>false</c> on the very next call and the flood ends immediately.
+	/// Kills the current inter-nation contact border, respecting isolation:
+	/// <list type="number">
+	///   <item>Pass 1 — identify which nations still have at least one living cell
+	///         adjacent to a cell of a different nation (<em>touching nations</em>).</item>
+	///   <item>Pass 2 — collect border cells, but <em>only</em> from touching nations.
+	///         Nations that are already fully isolated are never included in the kill set.</item>
+	///   <item>Kill all collected border cells.</item>
+	/// </list>
 	/// Killed cells receive the <c>"cleanup"</c> condition so they are replaced with dead
 	/// Basic cells during <see cref="UpdateCellConditions"/>.
 	/// </summary>
 	private void ApplyFloodStep()
 	{
-		// Collect border cells first, then kill — avoid mutating while iterating.
-		var border = new HashSet<Cell>();
+		// Pass 1: determine which nations still have at least one inter-nation contact.
+		var touchingNations = new HashSet<int>();
 		for (int c = 0; c < _columns; c++)
-		{
 			for (int r = 0; r < _rows; r++)
 			{
 				var cell = CellGrid[c, r];
 				if (!cell.IsAlive || cell.Nationality < 0)
 					continue;
-				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
-				{
-					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
-													neighbor.Nationality != cell.Nationality)
+				foreach (var nb in cell.CellNeighborhood.NeighborsDict.Values)
+					if (nb.IsAlive && nb.Nationality >= 0 && nb.Nationality != cell.Nationality)
+					{
+						touchingNations.Add(cell.Nationality);
+						break;
+					}
+			}
+
+		// Pass 2: collect border cells, skipping nations that are already isolated.
+		// The full-grid scan naturally finds each border cell exactly once from its own
+		// position, so adding the neighbour explicitly is not needed.
+		var border = new HashSet<Cell>();
+		for (int c = 0; c < _columns; c++)
+			for (int r = 0; r < _rows; r++)
+			{
+				var cell = CellGrid[c, r];
+				if (!cell.IsAlive || cell.Nationality < 0)
+					continue;
+				if (!touchingNations.Contains(cell.Nationality))
+					continue;
+				foreach (var nb in cell.CellNeighborhood.NeighborsDict.Values)
+					if (nb.IsAlive && nb.Nationality >= 0 && nb.Nationality != cell.Nationality)
 					{
 						border.Add(cell);
-						border.Add(neighbor);
+						break;
 					}
-				}
 			}
-		}
 
 		foreach (var cell in border)
 		{
@@ -233,7 +250,7 @@ public partial class Model
 				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
 				{
 					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
-													neighbor.Nationality != cell.Nationality)
+						neighbor.Nationality != cell.Nationality)
 						return true;
 				}
 			}
