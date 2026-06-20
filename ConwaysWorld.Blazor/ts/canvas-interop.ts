@@ -300,7 +300,7 @@ interface DotNetRef {
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
 
-        if (sprites[type]) {
+        if (sprites[type] && cs * scale > 5) {
             ctx.drawImage(sprites[type], px + 1, py + 1, w - 2, w - 2);
         } else {
             const inner = Math.max(2, Math.floor(cs * 0.45));
@@ -335,7 +335,7 @@ interface DotNetRef {
         const nationColor = nat >= 0 && nat < nationColors.length ? nationColors[nat] : '#222';
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
-        if (sprites[type]) {
+        if (sprites[type] && w * scale > 5) {
             const inner = Math.max(1, w - 2);
             ctx.drawImage(sprites[type], px + 1, py + 1, inner, inner);
         } else {
