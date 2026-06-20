@@ -69,17 +69,20 @@ public partial class Model
 	}
 
 	/// <summary>
-	/// Kills a random 5 % of the current living population.
+	/// Kills a random 5 % of the living cells inside the active famine quadrant.
 	/// Called once per step while a famine is active.
 	/// Killed cells are marked <c>"cleanup"</c> so they are replaced with dead Basic
 	/// cells during <see cref="UpdateCellConditions"/>.
 	/// </summary>
 	private void ApplyFamineStep()
 	{
+		int halfCols = _columns / 2;
+		int halfRows = _rows / 2;
+
 		var living = new List<Cell>();
 		for (int c = 0; c < _columns; c++)
 			for (int r = 0; r < _rows; r++)
-				if (CellGrid[c, r].IsAlive)
+				if (CellGrid[c, r].IsAlive && IsInFamineQuadrant(c, r, halfCols, halfRows))
 					living.Add(CellGrid[c, r]);
 
 		if (living.Count == 0)
@@ -100,6 +103,18 @@ public partial class Model
 			living[i].Conditions.Add("cleanup");
 		}
 	}
+
+	/// <summary>Returns <c>true</c> if the cell at (<paramref name="col"/>, <paramref name="row"/>)
+	/// falls within the currently active famine quadrant.</summary>
+	private bool IsInFamineQuadrant(int col, int row, int halfCols, int halfRows) =>
+			_famineQuadrant switch
+			{
+				0 => col < halfCols && row < halfRows,
+				1 => col >= halfCols && row < halfRows,
+				2 => col < halfCols && row >= halfRows,
+				3 => col >= halfCols && row >= halfRows,
+				_ => false,
+			};
 
 	// ── Flood ─────────────────────────────────────────────────────────────────────
 
@@ -145,39 +160,39 @@ public partial class Model
 	}
 
 	/// <summary>
-	/// Kills the living cell that is farthest (by Manhattan distance) from its nation's
-	/// King in each active nation. One cell per nation is killed per call.
-	/// If a nation has no King, the centroid of its citizens is used as the reference point.
+	/// Kills every living cell that is Moore-adjacent to a living cell of a different nation.
+	/// Wiping the entire contact border in one step means <see cref="AreAnyNationsAdjacent"/>
+	/// returns <c>false</c> on the very next call and the flood ends immediately.
 	/// Killed cells receive the <c>"cleanup"</c> condition so they are replaced with dead
 	/// Basic cells during <see cref="UpdateCellConditions"/>.
 	/// </summary>
 	private void ApplyFloodStep()
 	{
-		foreach (var nation in Nations.Values)
+		// Collect border cells first, then kill — avoid mutating while iterating.
+		var border = new HashSet<Cell>();
+		for (int c = 0; c < _columns; c++)
 		{
-			var citizens = nation.CitizensList.Where(c => c.IsAlive).ToList();
-			if (citizens.Count == 0)
-				continue;
-
-			float refCol, refRow;
-			var king = nation.King;
-			if (king != null && king.IsAlive)
+			for (int r = 0; r < _rows; r++)
 			{
-				refCol = king.Column;
-				refRow = king.Row;
+				var cell = CellGrid[c, r];
+				if (!cell.IsAlive || cell.Nationality < 0)
+					continue;
+				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
+				{
+					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
+							neighbor.Nationality != cell.Nationality)
+					{
+						border.Add(cell);
+						border.Add(neighbor);
+					}
+				}
 			}
-			else
-			{
-				refCol = (float)citizens.Average(c => c.Column);
-				refRow = (float)citizens.Average(c => c.Row);
-			}
+		}
 
-			var target = citizens
-				.OrderByDescending(c => Math.Abs(c.Column - refCol) + Math.Abs(c.Row - refRow))
-				.First();
-
-			target.Die();
-			target.Conditions.Add("cleanup");
+		foreach (var cell in border)
+		{
+			cell.Die();
+			cell.Conditions.Add("cleanup");
 		}
 	}
 
@@ -197,7 +212,7 @@ public partial class Model
 				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
 				{
 					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
-						neighbor.Nationality != cell.Nationality)
+							neighbor.Nationality != cell.Nationality)
 						return true;
 				}
 			}
