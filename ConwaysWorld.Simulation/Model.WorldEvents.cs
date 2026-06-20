@@ -107,14 +107,14 @@ public partial class Model
 	/// <summary>Returns <c>true</c> if the cell at (<paramref name="col"/>, <paramref name="row"/>)
 	/// falls within the currently active famine quadrant.</summary>
 	private bool IsInFamineQuadrant(int col, int row, int halfCols, int halfRows) =>
-					_famineQuadrant switch
-					{
-						0 => col < halfCols && row < halfRows,
-						1 => col >= halfCols && row < halfRows,
-						2 => col < halfCols && row >= halfRows,
-						3 => col >= halfCols && row >= halfRows,
-						_ => false,
-					};
+									_famineQuadrant switch
+									{
+										0 => col < halfCols && row < halfRows,
+										1 => col >= halfCols && row < halfRows,
+										2 => col < halfCols && row >= halfRows,
+										3 => col >= halfCols && row >= halfRows,
+										_ => false,
+									};
 
 	// ── Flood ─────────────────────────────────────────────────────────────────────
 
@@ -138,26 +138,46 @@ public partial class Model
 
 		if (_floodActive)
 		{
-			// Peel all contact layers in one step until nations are fully separated.
-			while (AreAnyNationsAdjacent())
-				ApplyFloodStep();
+			// Layer-by-layer animation is driven externally by the UI.
+			// DoFloodLayer() and FinalizeFlood() are called there; nothing to do here.
+			return;
+		}
 
-			_floodActive = false;
+		_floodCooldownCount++;
+		if (_floodCooldownCount >= _floodTriggerAt)
+		{
+			_floodActive = true;
 			_floodCooldownCount = 0;
 			_floodTriggerAt = 100 + SimRandom.Range(50, 101);
-			PendingEvents.Add("flood_end:The flood recedes. Nations are separated.");
+			PendingEvents.Add("flood_start:The flood rises! Nations are being pushed apart.");
 		}
-		else
-		{
-			_floodCooldownCount++;
-			if (_floodCooldownCount >= _floodTriggerAt)
-			{
-				_floodActive = true;
-				_floodCooldownCount = 0;
-				_floodTriggerAt = 100 + SimRandom.Range(50, 101);
-				PendingEvents.Add("flood_start:The flood rises! Nations are being pushed apart.");
-			}
-		}
+	}
+
+	/// <summary>
+	/// Kills one contact-border layer between nations and returns <c>true</c> if nations
+	/// are still adjacent (i.e. more layers remain).  Call repeatedly — one call per
+	/// rendered frame — to produce a visible layer-by-layer flood animation.
+	/// Has no effect and returns <c>false</c> if nations are already separated.
+	/// </summary>
+	public bool DoFloodLayer()
+	{
+		if (!AreAnyNationsAdjacent())
+			return false;
+		ApplyFloodStep();
+		return AreAnyNationsAdjacent();
+	}
+
+	/// <summary>
+	/// Marks the flood as finished, resets cooldown state, and queues the
+	/// <c>flood_end</c> event into <see cref="PendingEvents"/>.
+	/// Call after the last <see cref="DoFloodLayer"/> returns <c>false</c>.
+	/// </summary>
+	public void FinalizeFlood()
+	{
+		_floodActive = false;
+		_floodCooldownCount = 0;
+		_floodTriggerAt = 100 + SimRandom.Range(50, 101);
+		PendingEvents.Add("flood_end:The flood recedes. Nations are separated.");
 	}
 
 	/// <summary>
@@ -181,7 +201,7 @@ public partial class Model
 				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
 				{
 					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
-									neighbor.Nationality != cell.Nationality)
+													neighbor.Nationality != cell.Nationality)
 					{
 						border.Add(cell);
 						border.Add(neighbor);
@@ -213,7 +233,7 @@ public partial class Model
 				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
 				{
 					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
-									neighbor.Nationality != cell.Nationality)
+													neighbor.Nationality != cell.Nationality)
 						return true;
 				}
 			}

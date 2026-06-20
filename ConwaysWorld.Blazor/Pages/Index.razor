@@ -484,14 +484,45 @@
         CapturePrevCells();
         _model.Step();
         var hadEvents = _model.PendingEvents.Count > 0;
+        bool floodStarted = _model.PendingEvents.Any(e => e.StartsWith("flood_start:"));
         await InvokeAsync(async () =>
         {
             if (hadEvents) CollectEvents();
             await RenderFrame();
             UpdateTypeCounts();
             StateHasChanged();
+            if (floodStarted)
+                await RunFloodAnimation();
             if (_running) _timer.Start();
         });
+    }
+
+    // Delay between each rendered flood layer (ms).
+    private const int FloodLayerDelayMs = 350;
+
+    /// Animates the flood by rendering one border-layer kill per frame, pausing
+    /// the regular simulation timer until all layers are done.
+    private async Task RunFloodAnimation()
+    {
+        // Clear pending moves so the previous step's moves don't replay each frame.
+        _model.PendingMoves.Clear();
+
+        bool moreLayersRemain = true;
+        while (moreLayersRemain)
+        {
+            await Task.Delay(FloodLayerDelayMs);
+            CapturePrevCells();
+            moreLayersRemain = _model.DoFloodLayer();
+            await RenderFrame();
+            StateHasChanged();
+        }
+
+        // Nations are now separated — finalise and show flood_end event.
+        _model.FinalizeFlood();
+        CollectEvents();
+        StateHasChanged();
+        // Brief pause so the player can see the cleared border before play resumes.
+        await Task.Delay(FloodLayerDelayMs);
     }
 
     private async Task RenderFrame()
