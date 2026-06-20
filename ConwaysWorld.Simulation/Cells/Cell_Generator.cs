@@ -79,6 +79,41 @@ public class Cell_Generator
 	}
 
 	/// <summary>
+	/// Creates and returns a guaranteed living cell at (<paramref name="column"/>, <paramref name="row"/>).
+	/// The type is drawn from the weighted frequency table, re-rolling any Dead result,
+	/// so the returned cell is always alive.  Used during cluster spawning so every placed
+	/// cell counts toward the living budget.
+	/// </summary>
+	public Cell InitializeLivingCell(int column, int row)
+	{
+		CellType type = GetRandomCellType();
+		// Re-roll once if we got Dead — cluster positions should be alive.
+		if (type == CellType.Dead)
+			type = GetRandomCellType();
+		if (type == CellType.Dead)
+			type = CellType.Basic;
+
+		float variant = SimRandom.Value;
+		return type switch
+		{
+			CellType.Basic => CreateBasic(column, row),
+			CellType.Immortal => new Cell_Immortal(column, row, true),
+			CellType.Diseased => variant > 0.2f
+					? new Cell_Diseased(column, row, true)
+					: (Cell)new Cell_Plague(column, row, true),
+			CellType.Plague => new Cell_Plague(column, row, true),
+			CellType.Traveler => variant > 0.4f
+					? new Cell_Traveler(column, row, true)
+					: (Cell)new Cell_Explorer(column, row, true),
+			CellType.Explorer => new Cell_Explorer(column, row, true),
+			CellType.Doctor => new Cell_Doctor(column, row, true),
+			CellType.Hunter => new Cell_Hunter(column, row, true),
+			CellType.Bomber => new Cell_Bomber(column, row, true),
+			_ => new Cell_Basic(column, row, true),
+		};
+	}
+
+	/// <summary>
 	/// Creates and returns a randomly typed cell at (<paramref name="column"/>, <paramref name="row"/>).
 	/// Dead rolls produce a dead Basic cell.  Some types produce mixed-variant results
 	/// (see class summary).
@@ -91,12 +126,12 @@ public class Cell_Generator
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-				? new Cell_Diseased(column, row, true)
-				: (Cell)new Cell_Plague(column, row, true),
+					? new Cell_Diseased(column, row, true)
+					: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-				? new Cell_Traveler(column, row, true)
-				: (Cell)new Cell_Explorer(column, row, true),
+					? new Cell_Traveler(column, row, true)
+					: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),

@@ -43,14 +43,21 @@ public class SimulationSettings
 
 	// ── Nations ──────────────────────────────────────────────────────────────────
 
-	/// <summary>
-	/// Minimum number of living cells required to justify one nation slot.
-	/// Nations = floor(livingCells / MinCellsPerNation), capped at <see cref="MaxNations"/>.
-	/// </summary>
-	public int MinCellsPerNation { get; set; } = 3;
-
 	/// <summary>Hard cap on the number of simultaneous nations (maximum 20, one per colour slot).</summary>
 	public int MaxNations { get; set; } = 20;
+
+	/// <summary>
+	/// Number of cell clusters to seed at grid initialisation.
+	/// Each cluster grows outward from a random point with at most 75% fill per ring.
+	/// Defaults to MaxNations / 4 (minimum 1).
+	/// </summary>
+	public int StartClusters { get; set; } = 0; // 0 = derive from MaxNations at runtime
+
+	/// <summary>
+	/// Minimum number of connected nationless cells required to spontaneously form a nation.
+	/// Connectivity is Chebyshev-3 (each cell must be within 3 tiles of at least one other in the group).
+	/// </summary>
+	public int NationFormThreshold { get; set; } = 5;
 
 	// ── Conway survival rules ────────────────────────────────────────────────────
 
@@ -99,34 +106,34 @@ public class SimulationSettings
 	/// Warriors, Diplomats, and Kings are intentionally absent — they are only promoted from existing cells.
 	/// </summary>
 	public Dictionary<CellType, int> SpawnWeights { get; set; } = new()
-								{
-																{ CellType.Basic,    50 },
-																{ CellType.Immortal,  2 },
-																{ CellType.Diseased, 15 },
-																{ CellType.Plague,    3 },
-																{ CellType.Traveler,  6 },
-																{ CellType.Explorer,  3 },
-																{ CellType.Doctor,    5 },
-																{ CellType.Hunter,    5 },
-																{ CellType.Bomber,    8 },
-								};
+																{
+																																{ CellType.Basic,    50 },
+																																{ CellType.Immortal,  2 },
+																																{ CellType.Diseased, 15 },
+																																{ CellType.Plague,    3 },
+																																{ CellType.Traveler,  6 },
+																																{ CellType.Explorer,  3 },
+																																{ CellType.Doctor,    5 },
+																																{ CellType.Hunter,    5 },
+																																{ CellType.Bomber,    8 },
+																};
 
 	/// <summary>
 	/// The set of types that are eligible for spawning.
 	/// Only types present in both this set and <see cref="SpawnWeights"/> are considered.
 	/// </summary>
 	public HashSet<CellType> SpawnEnabled { get; set; } = new()
-								{
-																CellType.Basic,
-																CellType.Immortal,
-																CellType.Diseased,
-																CellType.Plague,
-																CellType.Traveler,
-																CellType.Explorer,
-																CellType.Doctor,
-																CellType.Hunter,
-																CellType.Bomber,
-								};
+																{
+																																CellType.Basic,
+																																CellType.Immortal,
+																																CellType.Diseased,
+																																CellType.Plague,
+																																CellType.Traveler,
+																																CellType.Explorer,
+																																CellType.Doctor,
+																																CellType.Hunter,
+																																CellType.Bomber,
+																};
 
 	// ── Derived ──────────────────────────────────────────────────────────────────
 

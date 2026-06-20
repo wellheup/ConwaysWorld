@@ -125,22 +125,115 @@ public class Model
 	}
 
 	/// <summary>
-	/// Allocates fresh grids, fills them with randomly generated cells,
-	/// then sets up initial neighbourhoods, nations, and population count.
+	/// Allocates fresh grids, fills them with dead cells, then places living cells in
+	/// clusters.  Each cluster grows outward ring by ring from a random seed point,
+	/// filling at most 75 % of each ring's slots.  The total living budget comes from
+	/// <see cref="SimulationSettings.BasePercentLiving"/>.
 	/// </summary>
 	public void PopulateGrid()
 	{
 		CellGrid = new Cell[_columns, _rows];
 		AliveNextGenGrid = new bool[_columns, _rows];
 
+		// Seed every slot with a dead Basic cell first.
 		for (int c = 0; c < _columns; c++)
 			for (int r = 0; r < _rows; r++)
-				CellGrid[c, r] = _generator.InitializeRandomCell(c, r);
+				CellGrid[c, r] = new Cell_Basic(c, r, false);
+
+		int totalCells = _columns * _rows;
+		int livingBudget = (int)(totalCells * _settings.BasePercentLiving);
+
+		int clusterCount = _settings.StartClusters > 0
+				? Math.Clamp(_settings.StartClusters, 1, livingBudget)
+				: Math.Max(1, _settings.MaxNations / 4);
+
+		// Choose cluster seed points (unique grid positions).
+		var seeds = new List<(int c, int r)>();
+		int seedAttempts = 0;
+		while (seeds.Count < clusterCount && seedAttempts < clusterCount * 20)
+		{
+			seedAttempts++;
+			int sc = SimRandom.Range(0, _columns);
+			int sr = SimRandom.Range(0, _rows);
+			if (!seeds.Contains((sc, sr)))
+				seeds.Add((sc, sr));
+		}
+
+		// Distribute the living budget evenly across clusters.
+		int perCluster = livingBudget / seeds.Count;
+		int remainder = livingBudget - perCluster * seeds.Count;
+
+		for (int si = 0; si < seeds.Count; si++)
+		{
+			int budget = perCluster + (si < remainder ? 1 : 0);
+			SpawnCluster(seeds[si].c, seeds[si].r, budget);
+		}
 
 		InitializeNations();
 		UpdateNeighborhoodsGrid();
 		CountInitialPopulation();
 		UpdateNations();
+	}
+
+	/// <summary>
+	/// Places up to <paramref name="budget"/> living cells outward from
+	/// (<paramref name="seedCol"/>, <paramref name="seedRow"/>) in concentric
+	/// Chebyshev rings.  Each ring is capped at 75 % fill so neighbour clusters
+	/// can bleed in without overlap.
+	/// </summary>
+	private void SpawnCluster(int seedCol, int seedRow, int budget)
+	{
+		if (budget <= 0)
+			return;
+
+		int placed = 0;
+
+		// Seed cell itself.
+		if (!CellGrid[seedCol, seedRow].IsAlive)
+		{
+			CellGrid[seedCol, seedRow] = _generator.InitializeLivingCell(seedCol, seedRow);
+			placed++;
+		}
+
+		for (int radius = 1; placed < budget && radius < Math.Max(_columns, _rows); radius++)
+		{
+			// Collect all empty slots in this Chebyshev ring.
+			var ring = new List<(int c, int r)>();
+			for (int dc = -radius; dc <= radius; dc++)
+			{
+				for (int dr = -radius; dr <= radius; dr++)
+				{
+					if (Math.Abs(dc) != radius && Math.Abs(dr) != radius)
+						continue; // inner rings already handled
+					int tc = seedCol + dc;
+					int tr = seedRow + dr;
+					if (tc < 0 || tc >= _columns || tr < 0 || tr >= _rows)
+						continue;
+					if (!CellGrid[tc, tr].IsAlive)
+						ring.Add((tc, tr));
+				}
+			}
+
+			if (ring.Count == 0)
+				continue;
+
+			// Shuffle ring so selection is random.
+			for (int i = ring.Count - 1; i > 0; i--)
+			{
+				int j = SimRandom.Range(0, i + 1);
+				(ring[i], ring[j]) = (ring[j], ring[i]);
+			}
+
+			int ringCap = (int)Math.Ceiling(ring.Count * 0.75);
+			int toPlace = Math.Min(ringCap, budget - placed);
+
+			for (int i = 0; i < toPlace; i++)
+			{
+				var (tc, tr) = ring[i];
+				CellGrid[tc, tr] = _generator.InitializeLivingCell(tc, tr);
+				placed++;
+			}
+		}
 	}
 
 	// ── Step pipeline ─────────────────────────────────────────────────────────────
@@ -291,11 +384,27 @@ public class Model
 					cell.Immaculate(CellGrid);
 
 				if (cell.IsAlive && cell.CellType == CellType.Explorer &&
-																																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
+																																																																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
 					needResize = true;
 
+				// Nation-join: nationless living cell scans within 3 Chebyshev tiles.
 				if (cell.IsAlive && cell.Age >= 1 && cell.Nationality < 0)
-					cell.Nationality = SimRandom.Range(0, Nations.Count > 0 ? Nations.Count : 1);
+				{
+					var nearbyNations = new List<int>();
+					int c3lo = Math.Max(0, c - 3), c3hi = Math.Min(_columns - 1, c + 3);
+					int r3lo = Math.Max(0, r - 3), r3hi = Math.Min(_rows - 1, r + 3);
+					for (int nc = c3lo; nc <= c3hi; nc++)
+						for (int nr = r3lo; nr <= r3hi; nr++)
+						{
+							if (nc == c && nr == r)
+								continue;
+							var n = CellGrid[nc, nr];
+							if (n.IsAlive && n.Nationality >= 0 && !nearbyNations.Contains(n.Nationality))
+								nearbyNations.Add(n.Nationality);
+						}
+					if (nearbyNations.Count > 0)
+						cell.Nationality = nearbyNations[SimRandom.Range(0, nearbyNations.Count)];
+				}
 
 				if (cell.IsAlive && cell.CellType == CellType.Basic && cell.Conditions.Contains("toWar"))
 				{
@@ -386,14 +495,11 @@ public class Model
 	/// <summary>
 	/// Runs <see cref="Cell_Nation.Census"/> for each existing nation, fires
 	/// king-crowned and king-fallen events into <see cref="PendingEvents"/>,
-	/// then creates new nation slots if the current population supports more
-	/// nations than currently exist (up to <see cref="SimulationSettings.MaxNations"/>).
+	/// then checks for groups of nationless cells large enough to form a new nation
+	/// (see <see cref="FormNationsFromNationlessClusters"/>).
 	/// </summary>
 	public void UpdateNations()
 	{
-		// Snapshot king references before census so we can detect changes.
-		// By this point UpdateCellLives() has already run, so King.IsAlive
-		// reflects whether the king survived this step.
 		var prevKings = Nations.ToDictionary(kv => kv.Key, kv => kv.Value.King);
 		var prevCounts = Nations.ToDictionary(kv => kv.Key, kv => kv.Value.CitizensList.Count);
 
@@ -416,14 +522,103 @@ public class Model
 				PendingEvents.Add($"kingdom_destroyed:Nation {kv.Key}: Kingdom destroyed!");
 		}
 
-		float basePct = _settings.BasePercentLiving;
-		float numNations = basePct * _columns * _rows / _settings.MinCellsPerNation;
-		int cap = Math.Min(_settings.MaxNations, Cell_Nation.NationColors.Count);
-		int target = (int)Math.Min(numNations, cap);
-		for (int i = Nations.Count; i < target; i++)
-			Nations[i] = new Cell_Nation(i);
-
+		FormNationsFromNationlessClusters();
 		CheckRevolution();
+	}
+
+	/// <summary>
+	/// Scans the grid for connected groups of nationless living cells.
+	/// Connectivity is Chebyshev-3: each cell in a group must be within 3 tiles
+	/// (Chebyshev) of at least one other cell already in the group.
+	/// Any group with at least <see cref="SimulationSettings.NationFormThreshold"/> cells
+	/// is assigned a new nation index and an immediate King is elected at random,
+	/// provided the nation cap has not been reached.
+	/// </summary>
+	private void FormNationsFromNationlessClusters()
+	{
+		int cap = Math.Min(_settings.MaxNations, Cell_Nation.NationColors.Count);
+		if (Nations.Count >= cap)
+			return;
+
+		// Collect all nationless living cells.
+		var unaffiliated = new List<Cell>();
+		for (int c = 0; c < _columns; c++)
+			for (int r = 0; r < _rows; r++)
+			{
+				var cell = CellGrid[c, r];
+				if (cell.IsAlive && cell.Nationality < 0)
+					unaffiliated.Add(cell);
+			}
+
+		if (unaffiliated.Count == 0)
+			return;
+
+		// BFS/union-find: group cells whose Chebyshev-3 neighbourhoods overlap.
+		var visited = new HashSet<Cell>();
+		var groups = new List<List<Cell>>();
+
+		foreach (var seed in unaffiliated)
+		{
+			if (visited.Contains(seed))
+				continue;
+
+			var group = new List<Cell>();
+			var queue = new Queue<Cell>();
+			queue.Enqueue(seed);
+			visited.Add(seed);
+
+			while (queue.Count > 0)
+			{
+				var current = queue.Dequeue();
+				group.Add(current);
+
+				int clo = Math.Max(0, current.Column - 3);
+				int chi = Math.Min(_columns - 1, current.Column + 3);
+				int rlo = Math.Max(0, current.Row - 3);
+				int rhi = Math.Min(_rows - 1, current.Row + 3);
+
+				for (int nc = clo; nc <= chi; nc++)
+					for (int nr = rlo; nr <= rhi; nr++)
+					{
+						var neighbor = CellGrid[nc, nr];
+						if (!visited.Contains(neighbor) &&
+							neighbor.IsAlive &&
+							neighbor.Nationality < 0)
+						{
+							visited.Add(neighbor);
+							queue.Enqueue(neighbor);
+						}
+					}
+			}
+
+			groups.Add(group);
+		}
+
+		// For each qualifying group, assign a new nation and elect a King.
+		int threshold = _settings.NationFormThreshold;
+		foreach (var group in groups)
+		{
+			if (group.Count < threshold)
+				continue;
+			if (Nations.Count >= cap)
+				break;
+
+			// Find the next free nation index.
+			int newNat = 0;
+			while (Nations.ContainsKey(newNat))
+				newNat++;
+
+			var nation = new Cell_Nation(newNat);
+			Nations[newNat] = nation;
+
+			foreach (var cell in group)
+				cell.Nationality = newNat;
+
+			// Run census to populate CitizensList, then crown a King.
+			nation.Census(CellGrid);
+
+			PendingEvents.Add($"king_crowned:Nation {newNat} has formed!");
+		}
 	}
 
 	/// <summary>
@@ -442,9 +637,9 @@ public class Model
 			return;
 
 		var sorted = Nations.Values
-						.Where(n => n.CitizensList.Count > 0)
-						.OrderByDescending(n => n.CitizensList.Count)
-						.ToList();
+										.Where(n => n.CitizensList.Count > 0)
+										.OrderByDescending(n => n.CitizensList.Count)
+										.ToList();
 
 		if (sorted.Count < 2)
 			return;
@@ -459,13 +654,13 @@ public class Model
 			return;
 
 		var candidates = dominant.CitizensList
-						.Where(c => c != dominant.King &&
-												c.CellType != CellType.Warrior &&
-												c.CellType != CellType.Diplomat &&
-												c.CellType != CellType.Revolutionary &&
-												c.CellType != CellType.Rebel &&
-												c.IsAlive)
-						.ToList();
+										.Where(c => c != dominant.King &&
+																						c.CellType != CellType.Warrior &&
+																						c.CellType != CellType.Diplomat &&
+																						c.CellType != CellType.Revolutionary &&
+																						c.CellType != CellType.Rebel &&
+																						c.IsAlive)
+										.ToList();
 
 		if (candidates.Count == 0)
 			return;
@@ -575,8 +770,8 @@ public class Model
 			}
 
 			var target = citizens
-					.OrderByDescending(c => Math.Abs(c.Column - refCol) + Math.Abs(c.Row - refRow))
-					.First();
+							.OrderByDescending(c => Math.Abs(c.Column - refCol) + Math.Abs(c.Row - refRow))
+							.First();
 
 			target.Die();
 			target.Conditions.Add("cleanup");
@@ -599,7 +794,7 @@ public class Model
 				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
 				{
 					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
-						neighbor.Nationality != cell.Nationality)
+							neighbor.Nationality != cell.Nationality)
 						return true;
 				}
 			}
@@ -676,14 +871,14 @@ public class Model
 	/// <summary>Returns true if the cell at (<paramref name="col"/>, <paramref name="row"/>) falls
 	/// within the currently active famine quadrant.</summary>
 	private bool IsInFamineQuadrant(int col, int row, int halfCols, int halfRows) =>
-									_famineQuadrant switch
-									{
-										0 => col < halfCols && row < halfRows,
-										1 => col >= halfCols && row < halfRows,
-										2 => col < halfCols && row >= halfRows,
-										3 => col >= halfCols && row >= halfRows,
-										_ => false,
-									};
+																	_famineQuadrant switch
+																	{
+																		0 => col < halfCols && row < halfRows,
+																		1 => col >= halfCols && row < halfRows,
+																		2 => col < halfCols && row >= halfRows,
+																		3 => col >= halfCols && row >= halfRows,
+																		_ => false,
+																	};
 
 	// ── Private helpers ───────────────────────────────────────────────────────────
 
@@ -701,18 +896,12 @@ public class Model
 	}
 
 	/// <summary>
-	/// Derives the initial number of nation slots from the living-cell budget and
-	/// <see cref="SimulationSettings.MinCellsPerNation"/>, capped at <see cref="SimulationSettings.MaxNations"/>.
+	/// Resets the nation registry to empty.  Nations form organically during
+	/// <see cref="UpdateNations"/> via <see cref="FormNationsFromNationlessClusters"/>.
 	/// </summary>
 	private void InitializeNations()
 	{
 		Nations = new Dictionary<int, Cell_Nation>();
-		float basePct = _settings.BasePercentLiving;
-		float numNations = basePct * _columns * _rows / _settings.MinCellsPerNation;
-		int cap = Math.Min(_settings.MaxNations, Cell_Nation.NationColors.Count);
-		int count = (int)Math.Min(numNations, cap);
-		for (int i = 0; i < count; i++)
-			Nations[i] = new Cell_Nation(i);
 	}
 
 	/// <summary>
