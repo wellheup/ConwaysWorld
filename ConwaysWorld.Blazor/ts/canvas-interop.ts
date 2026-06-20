@@ -74,6 +74,8 @@ interface DotNetRef {
         'Bomber',
         'Diplomat',
         'King',
+        'Rebel',
+        'Revolutionary',
     ];
 
     const TYPE_COLORS: Record<number, string> = {
@@ -90,6 +92,8 @@ interface DotNetRef {
         10: '#e0a000',
         11: '#a060e0',
         12: '#f0d000',
+        13: '#ff5533',
+        14: '#9b1a4a',
     };
 
     const sprites: { [key: number]: HTMLImageElement } = {};

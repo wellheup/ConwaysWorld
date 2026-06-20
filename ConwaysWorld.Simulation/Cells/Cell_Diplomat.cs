@@ -58,11 +58,18 @@ public class Cell_Diplomat : Cell
 	/// and has a valid nation index.
 	/// </summary>
 	private bool IsForeignAlive(Cell c) =>
-									c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
+																	c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
 
 	/// <summary>
-	/// For each immediately adjacent foreign cell, rolls a 1-in-4 chance of converting
-	/// it to the Diplomat's nation.
+	/// Returns <c>true</c> when a conversion attempt should succeed.
+	/// Base rate is 25 % (1-in-4).  Override in subclasses to alter the rate
+	/// (e.g. <see cref="Cell_Rebel"/> uses 75 %).
+	/// </summary>
+	protected virtual bool ShouldConvert() => SimRandom.Range(0, 4) == 0;
+
+	/// <summary>
+	/// For each immediately adjacent foreign cell, calls <see cref="ShouldConvert"/> to decide
+	/// whether to change that cell's nation to the Diplomat's.
 	/// </summary>
 	private void Convert(Cell[,] cellGrid)
 	{
@@ -71,7 +78,7 @@ public class Cell_Diplomat : Cell
 			var target = cellGrid[neighbor.Column, neighbor.Row];
 			if (target.IsAlive && target.Nationality != Nationality && target.Nationality >= 0)
 			{
-				if (SimRandom.Range(0, 4) == 0)
+				if (ShouldConvert())
 				{
 					target.Nationality = Nationality;
 					_idleTurns = 0;

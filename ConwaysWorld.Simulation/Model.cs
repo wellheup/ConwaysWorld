@@ -280,7 +280,7 @@ public class Model
 					cell.Immaculate(CellGrid);
 
 				if (cell.IsAlive && cell.CellType == CellType.Explorer &&
-												(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
+																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
 					needResize = true;
 
 				if (cell.IsAlive && cell.Age >= 1 && cell.Nationality < 0)
@@ -290,6 +290,12 @@ public class Model
 				{
 					CellGrid[c, r] = Cell.ReplaceCell(cell, CellType.Warrior, true);
 					CellGrid[c, r].Conditions.Remove("toWar");
+				}
+
+				if (cell.IsAlive && cell.Conditions.Contains("toRebel"))
+				{
+					CellGrid[c, r] = Cell.ReplaceCell(cell, CellType.Rebel, true);
+					CellGrid[c, r].Conditions.Remove("toRebel");
 				}
 
 				if (cell.CellType == CellType.Warrior && cell.IdleTurns >= 3)
@@ -405,6 +411,82 @@ public class Model
 		int target = (int)Math.Min(numNations, cap);
 		for (int i = Nations.Count; i < target; i++)
 			Nations[i] = new Cell_Nation(i);
+
+		CheckRevolution();
+	}
+
+	/// <summary>
+	/// Checks whether any nation dominates by holding at least twice the citizens of the
+	/// second-largest nation.  If so, a random non-King citizen of the dominant nation is
+	/// promoted to <see cref="CellType.Revolutionary"/>:
+	/// <list type="bullet">
+	///   <item>If a new nation slot is available, the Revolutionary founds a brand-new nation.</item>
+	///   <item>Otherwise, it defects to the second-largest nation as a <see cref="CellType.Warrior"/>.</item>
+	/// </list>
+	/// Called at the end of <see cref="UpdateNations"/> each step.
+	/// </summary>
+	private void CheckRevolution()
+	{
+		if (Nations.Count < 2)
+			return;
+
+		var sorted = Nations.Values
+				.Where(n => n.CitizensList.Count > 0)
+				.OrderByDescending(n => n.CitizensList.Count)
+				.ToList();
+
+		if (sorted.Count < 2)
+			return;
+
+		var dominant = sorted[0];
+		var secondLargest = sorted[1];
+
+		if (dominant.CitizensList.Count < secondLargest.CitizensList.Count * 2)
+			return;
+
+		if (dominant.CitizensList.Any(c => c.CellType == CellType.Revolutionary))
+			return;
+
+		var candidates = dominant.CitizensList
+				.Where(c => c != dominant.King &&
+							c.CellType != CellType.Warrior &&
+							c.CellType != CellType.Diplomat &&
+							c.CellType != CellType.Revolutionary &&
+							c.CellType != CellType.Rebel &&
+							c.IsAlive)
+				.ToList();
+
+		if (candidates.Count == 0)
+			return;
+
+		var chosen = candidates[SimRandom.Range(0, candidates.Count)];
+		int oldNation = dominant.NationNum;
+
+		int cap = Math.Min(_settings.MaxNations, Cell_Nation.NationColors.Count);
+		bool canCreateNation = Nations.Count < cap;
+
+		if (canCreateNation)
+		{
+			int newNationNum = 0;
+			while (Nations.ContainsKey(newNationNum))
+				newNationNum++;
+			Nations[newNationNum] = new Cell_Nation(newNationNum);
+
+			var rev = (Cell_Revolutionary)Cell.ReplaceCell(chosen, CellType.Revolutionary, true);
+			rev.Nationality = newNationNum;
+			rev.OldNationality = oldNation;
+			CellGrid[rev.Column, rev.Row] = rev;
+
+			PendingEvents.Add($"revolution_start:Nation {oldNation} splinters! A Revolutionary founds Nation {newNationNum}!");
+		}
+		else
+		{
+			var warrior = Cell.ReplaceCell(chosen, CellType.Warrior, true);
+			warrior.Nationality = secondLargest.NationNum;
+			CellGrid[warrior.Column, warrior.Row] = warrior;
+
+			PendingEvents.Add($"revolution_start:Nation {oldNation}: A defector joins Nation {secondLargest.NationNum}!");
+		}
 	}
 
 	// ── World events ──────────────────────────────────────────────────────────────
@@ -478,14 +560,14 @@ public class Model
 	/// <summary>Returns true if the cell at (<paramref name="col"/>, <paramref name="row"/>) falls
 	/// within the currently active famine quadrant.</summary>
 	private bool IsInFamineQuadrant(int col, int row, int halfCols, int halfRows) =>
-			_famineQuadrant switch
-			{
-				0 => col < halfCols && row < halfRows,
-				1 => col >= halfCols && row < halfRows,
-				2 => col < halfCols && row >= halfRows,
-				3 => col >= halfCols && row >= halfRows,
-				_ => false,
-			};
+					_famineQuadrant switch
+					{
+						0 => col < halfCols && row < halfRows,
+						1 => col >= halfCols && row < halfRows,
+						2 => col < halfCols && row >= halfRows,
+						3 => col >= halfCols && row >= halfRows,
+						_ => false,
+					};
 
 	// ── Private helpers ───────────────────────────────────────────────────────────
 

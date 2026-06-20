@@ -40,6 +40,8 @@ window.ConwaysInterop = (() => {
         'Bomber',
         'Diplomat',
         'King',
+        'Rebel',
+        'Revolutionary',
     ];
     const TYPE_COLORS = {
         0: '#111',
@@ -55,6 +57,8 @@ window.ConwaysInterop = (() => {
         10: '#e0a000',
         11: '#a060e0',
         12: '#f0d000',
+        13: '#ff5533',
+        14: '#9b1a4a',
     };
     const sprites = {};
     function loadSprites() {

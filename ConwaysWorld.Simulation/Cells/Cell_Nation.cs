@@ -31,28 +31,28 @@ public class Cell_Nation
 	/// The count here determines the maximum number of concurrent nations.
 	/// </summary>
 	public static readonly List<string> NationColors = new()
-	{
-		"#bc00ff",
-		"#471415",
-		"#a3181c",
-		"#00f542",
-		"#617f1c",
-		"#f50005",
-		"#473d14",
-		"#17a33d",
-		"#a38517",
-		"#299bae",
-		"#00dbff",
-		"#f5bf00",
-		"#232b75",
-		"#ff7000",
-		"#0019f5",
-		"#adff00",
-		"#7f4719",
-		"#671f80",
-		"#1c2bb8",
-		"#1c4724",
-	};
+		{
+				"#bc00ff",
+				"#471415",
+				"#a3181c",
+				"#00f542",
+				"#617f1c",
+				"#f50005",
+				"#473d14",
+				"#17a33d",
+				"#a38517",
+				"#299bae",
+				"#00dbff",
+				"#f5bf00",
+				"#232b75",
+				"#ff7000",
+				"#0019f5",
+				"#adff00",
+				"#7f4719",
+				"#671f80",
+				"#1c2bb8",
+				"#1c4724",
+		};
 
 	/// <summary>Creates a new nation with the given index.</summary>
 	public Cell_Nation(int nationNum)
@@ -110,12 +110,19 @@ public class Cell_Nation
 		for (int attempt = 0; attempt < 5; attempt++)
 		{
 			elect = CitizensList[SimRandom.Range(0, CitizensList.Count)];
-			if (elect != King && !DiplomatsList.Contains(elect))
+			if (elect != King &&
+				!DiplomatsList.Contains(elect) &&
+				elect.CellType != CellType.Warrior &&
+				elect.CellType != CellType.Rebel &&
+				elect.CellType != CellType.Revolutionary)
 				break;
 			elect = null;
 		}
 
-		if (elect != null && elect != King && elect.IsAlive && !DiplomatsList.Contains(elect))
+		if (elect != null && elect != King && elect.IsAlive && !DiplomatsList.Contains(elect) &&
+			elect.CellType != CellType.Warrior &&
+			elect.CellType != CellType.Rebel &&
+			elect.CellType != CellType.Revolutionary)
 		{
 			var diplomat = Cell.ReplaceCell(elect, CellType.Diplomat, true);
 			cellGrid[diplomat.Column, diplomat.Row] = diplomat;

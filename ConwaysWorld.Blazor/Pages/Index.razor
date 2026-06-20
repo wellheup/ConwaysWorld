@@ -248,13 +248,13 @@
     private static readonly string[] TypeNames = {
         "Dead","Basic","Immortal","Diseased","Plague",
         "Traveler","Explorer","Doctor","Warrior","Hunter",
-        "Bomber","Diplomat","King"
+        "Bomber","Diplomat","King","Rebel","Revolutionary"
     };
 
     private static readonly string[] TypeColors = {
         "#111","#e8e8e8","#e0c060","#7a2020","#c01010",
         "#4090d0","#20c0e0","#e050a0","#d08020","#c04040",
-        "#e0a000","#a060e0","#f0d000"
+        "#e0a000","#a060e0","#f0d000","#ff5533","#9b1a4a"
     };
 
     private class SavedSettings
@@ -424,6 +424,8 @@
             return new SimEvent(raw["famine_start:".Length..], "ev-famine");
         if (raw.StartsWith("famine_end:"))
             return new SimEvent(raw["famine_end:".Length..], "ev-famine-end");
+        if (raw.StartsWith("revolution_start:"))
+            return new SimEvent(raw["revolution_start:".Length..], "ev-revolution");
         return new SimEvent(raw, "");
     }
 

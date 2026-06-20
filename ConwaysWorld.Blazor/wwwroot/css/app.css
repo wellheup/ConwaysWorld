@@ -114,7 +114,8 @@ html, body {
 .cw-event-entry.ev-fallen     { color: #b04040; }
 .cw-event-entry.ev-destroy    { color: #884444; }
 .cw-event-entry.ev-famine     { color: #c06010; font-weight: 600; }
-.cw-event-entry.ev-famine-end { color: #609040; }
+.cw-event-entry.ev-famine-end  { color: #609040; }
+.cw-event-entry.ev-revolution  { color: #cc2222; font-weight: 600; }
 
 canvas#sim-canvas {
     display: block;
