@@ -250,14 +250,16 @@ window.ConwaysInterop = (() => {
         const nationColor = nat >= 0 && nat < nationColors.length ? nationColors[nat] : '#222';
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
-        if (sprites[type] && cs * scale > 5) {
-            ctx.drawImage(sprites[type], px + 1, py + 1, w - 2, w - 2);
-        }
-        else {
-            const inner = Math.max(2, Math.floor(cs * 0.45));
-            const off = Math.floor((cs - inner) / 2);
-            ctx.fillStyle = (_a = TYPE_COLORS[type]) !== null && _a !== void 0 ? _a : '#fff';
-            ctx.fillRect(px + off, py + off, inner, inner);
+        if (cs * scale > 5) {
+            if (sprites[type]) {
+                ctx.drawImage(sprites[type], px + 1, py + 1, w - 2, w - 2);
+            }
+            else {
+                const inner = Math.max(2, Math.floor(cs * 0.45));
+                const off = Math.floor((cs - inner) / 2);
+                ctx.fillStyle = (_a = TYPE_COLORS[type]) !== null && _a !== void 0 ? _a : '#fff';
+                ctx.fillRect(px + off, py + off, inner, inner);
+            }
         }
         if (selectedCell && col >= 0 && selectedCell.col === col && selectedCell.row === row) {
             ctx.strokeStyle = '#fff';
@@ -279,15 +281,17 @@ window.ConwaysInterop = (() => {
         const nationColor = nat >= 0 && nat < nationColors.length ? nationColors[nat] : '#222';
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
-        if (sprites[type] && w * scale > 5) {
-            const inner = Math.max(1, w - 2);
-            ctx.drawImage(sprites[type], px + 1, py + 1, inner, inner);
-        }
-        else {
-            const inner = Math.max(1, cs * 0.45 * sizeFactor);
-            const innerOff = (w - inner) / 2;
-            ctx.fillStyle = (_a = TYPE_COLORS[type]) !== null && _a !== void 0 ? _a : '#fff';
-            ctx.fillRect(px + innerOff, py + innerOff, inner, inner);
+        if (w * scale > 5) {
+            if (sprites[type]) {
+                const inner = Math.max(1, w - 2);
+                ctx.drawImage(sprites[type], px + 1, py + 1, inner, inner);
+            }
+            else {
+                const inner = Math.max(1, cs * 0.45 * sizeFactor);
+                const innerOff = (w - inner) / 2;
+                ctx.fillStyle = (_a = TYPE_COLORS[type]) !== null && _a !== void 0 ? _a : '#fff';
+                ctx.fillRect(px + innerOff, py + innerOff, inner, inner);
+            }
         }
     }
     function drawCellScaledRotated(col, row, cs, type, nat, nationColors, sizeFactor, angleDeg) {

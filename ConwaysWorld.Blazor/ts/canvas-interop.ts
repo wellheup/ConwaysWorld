@@ -300,13 +300,15 @@ interface DotNetRef {
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
 
-        if (sprites[type] && cs * scale > 5) {
-            ctx.drawImage(sprites[type], px + 1, py + 1, w - 2, w - 2);
-        } else {
-            const inner = Math.max(2, Math.floor(cs * 0.45));
-            const off = Math.floor((cs - inner) / 2);
-            ctx.fillStyle = TYPE_COLORS[type] ?? '#fff';
-            ctx.fillRect(px + off, py + off, inner, inner);
+        if (cs * scale > 5) {
+            if (sprites[type]) {
+                ctx.drawImage(sprites[type], px + 1, py + 1, w - 2, w - 2);
+            } else {
+                const inner = Math.max(2, Math.floor(cs * 0.45));
+                const off = Math.floor((cs - inner) / 2);
+                ctx.fillStyle = TYPE_COLORS[type] ?? '#fff';
+                ctx.fillRect(px + off, py + off, inner, inner);
+            }
         }
 
         if (selectedCell && col >= 0 && selectedCell.col === col && selectedCell.row === row) {
@@ -335,14 +337,16 @@ interface DotNetRef {
         const nationColor = nat >= 0 && nat < nationColors.length ? nationColors[nat] : '#222';
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
-        if (sprites[type] && w * scale > 5) {
-            const inner = Math.max(1, w - 2);
-            ctx.drawImage(sprites[type], px + 1, py + 1, inner, inner);
-        } else {
-            const inner = Math.max(1, cs * 0.45 * sizeFactor);
-            const innerOff = (w - inner) / 2;
-            ctx.fillStyle = TYPE_COLORS[type] ?? '#fff';
-            ctx.fillRect(px + innerOff, py + innerOff, inner, inner);
+        if (w * scale > 5) {
+            if (sprites[type]) {
+                const inner = Math.max(1, w - 2);
+                ctx.drawImage(sprites[type], px + 1, py + 1, inner, inner);
+            } else {
+                const inner = Math.max(1, cs * 0.45 * sizeFactor);
+                const innerOff = (w - inner) / 2;
+                ctx.fillStyle = TYPE_COLORS[type] ?? '#fff';
+                ctx.fillRect(px + innerOff, py + innerOff, inner, inner);
+            }
         }
     }
 
