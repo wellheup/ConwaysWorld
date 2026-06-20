@@ -56,6 +56,13 @@ public class Model
 	private int _columns;
 	private int _rows;
 
+	private bool _famineActive = false;
+	private int _famineDurationCount = 0;
+	private int _stepsSinceLastFamineEnd = 0;
+	private int _famineQuadrant = 0;
+
+	private static readonly string[] QuadrantNames = { "Northwest", "Northeast", "Southwest", "Southeast" };
+
 	// ── Public read-only accessors ────────────────────────────────────────────────
 
 	/// <summary>Current grid width in cells.</summary>
@@ -63,6 +70,12 @@ public class Model
 
 	/// <summary>Current grid height in cells.</summary>
 	public int Rows => _rows;
+
+	/// <summary>Whether a Famine world event is currently active.</summary>
+	public bool FamineActive => _famineActive;
+
+	/// <summary>Which grid quadrant the active famine affects (0=NW, 1=NE, 2=SW, 3=SE).</summary>
+	public int FamineQuadrant => _famineQuadrant;
 
 	/// <summary>Number of living cells counted at the most recent step.</summary>
 	public int CurrentPopulation => _currentPopulation;
@@ -95,6 +108,9 @@ public class Model
 		_rows = _settings.StartRows;
 		Generation = 0;
 		_currentPopulation = 0;
+		_famineActive = false;
+		_famineDurationCount = 0;
+		_stepsSinceLastFamineEnd = 0;
 		PopulateGrid();
 	}
 
@@ -127,6 +143,8 @@ public class Model
 	{
 		PendingEvents.Clear();
 		PendingMoves.Clear();
+		UpdateFamine();
+		ApplyCellNeighborRules();
 		UpdateNeighborhoodsGrid();
 		UpdateAliveNextGenGrid();
 		UpdateCellLives();
@@ -262,7 +280,7 @@ public class Model
 					cell.Immaculate(CellGrid);
 
 				if (cell.IsAlive && cell.CellType == CellType.Explorer &&
-								(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
+												(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
 					needResize = true;
 
 				if (cell.IsAlive && cell.Age >= 1 && cell.Nationality < 0)
@@ -388,6 +406,86 @@ public class Model
 		for (int i = Nations.Count; i < target; i++)
 			Nations[i] = new Cell_Nation(i);
 	}
+
+	// ── World events ──────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Advances the Famine world-event state machine by one step.
+	/// If a famine is active, increments its duration counter and ends it when the configured
+	/// duration is reached.  If no famine is active, increments the cooldown counter and
+	/// rolls a 10 % chance each step (once the cooldown has elapsed) to start a new famine
+	/// in a randomly chosen grid quadrant.
+	/// </summary>
+	private void UpdateFamine()
+	{
+		if (!_settings.FamineEnabled)
+		{
+			_famineActive = false;
+			return;
+		}
+
+		if (_famineActive)
+		{
+			_famineDurationCount++;
+			if (_famineDurationCount >= _settings.FamineDuration)
+			{
+				_famineActive = false;
+				_famineDurationCount = 0;
+				_stepsSinceLastFamineEnd = 0;
+				PendingEvents.Add($"famine_end:The famine in the {QuadrantNames[_famineQuadrant]} quadrant has passed.");
+			}
+		}
+		else
+		{
+			_stepsSinceLastFamineEnd++;
+			if (_stepsSinceLastFamineEnd >= _settings.FamineCooldown && SimRandom.Range(0, 10) == 0)
+			{
+				_famineActive = true;
+				_famineDurationCount = 0;
+				_famineQuadrant = SimRandom.Range(0, 4);
+				PendingEvents.Add($"famine_start:Famine strikes the {QuadrantNames[_famineQuadrant]} quadrant!");
+			}
+		}
+	}
+
+	/// <summary>
+	/// Applies the configured <see cref="SimulationSettings.MinLivingNeighbors"/> and
+	/// <see cref="SimulationSettings.MaxLivingNeighbors"/> to every cell, then lowers
+	/// <see cref="Cell.MaxLivingNeighbors"/> by 1 for cells inside the active famine quadrant.
+	/// Must be called before <see cref="UpdateAliveNextGenGrid"/>.
+	/// </summary>
+	private void ApplyCellNeighborRules()
+	{
+		int baseMin = _settings.MinLivingNeighbors;
+		int baseMax = _settings.MaxLivingNeighbors;
+		int halfCols = _columns / 2;
+		int halfRows = _rows / 2;
+
+		for (int c = 0; c < _columns; c++)
+		{
+			for (int r = 0; r < _rows; r++)
+			{
+				var cell = CellGrid[c, r];
+				cell.MinLivingNeighbors = baseMin;
+				cell.MaxLivingNeighbors = baseMax;
+
+				if (_famineActive && IsInFamineQuadrant(c, r, halfCols, halfRows))
+					cell.MaxLivingNeighbors = Math.Max(baseMin, baseMax - 1);
+			}
+		}
+	}
+
+	/// <summary>Returns true if the cell at (<paramref name="col"/>, <paramref name="row"/>) falls
+	/// within the currently active famine quadrant.</summary>
+	private bool IsInFamineQuadrant(int col, int row, int halfCols, int halfRows) =>
+			_famineQuadrant switch
+			{
+				0 => col < halfCols && row < halfRows,
+				1 => col >= halfCols && row < halfRows,
+				2 => col < halfCols && row >= halfRows,
+				3 => col >= halfCols && row >= halfRows,
+				_ => false,
+			};
 
 	// ── Private helpers ───────────────────────────────────────────────────────────
 

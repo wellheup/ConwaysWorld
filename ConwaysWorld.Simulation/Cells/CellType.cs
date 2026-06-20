@@ -79,7 +79,6 @@ public enum CellType
 - TODO: make each update frame fade between the 2 more smoothly
 - TODO: the system would be more stable and  likely faster if each cellType has its own phase of the update, so there is a heirarchical order to cell special actions
 - TODO: make doctors more aggressive. Maybe make range a modifiable number in ConwaysWorld?
-- TODO: ad
 
 Visuals
 - add symbols for each type of cell

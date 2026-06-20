@@ -110,9 +110,11 @@ html, body {
     white-space: nowrap;
 }
 
-.cw-event-entry.ev-crown   { color: #d4a800; }
-.cw-event-entry.ev-fallen  { color: #b04040; }
-.cw-event-entry.ev-destroy { color: #884444; }
+.cw-event-entry.ev-crown      { color: #d4a800; }
+.cw-event-entry.ev-fallen     { color: #b04040; }
+.cw-event-entry.ev-destroy    { color: #884444; }
+.cw-event-entry.ev-famine     { color: #c06010; font-weight: 600; }
+.cw-event-entry.ev-famine-end { color: #609040; }
 
 canvas#sim-canvas {
     display: block;

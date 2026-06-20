@@ -155,6 +155,35 @@
                         </label>
                     </div>
 
+                    <h3 style="margin:10px 0 6px">Conway Rules</h3>
+                    <div class="cw-field">
+                        <label>Min living neighbors (survive &amp; birth)</label>
+                        <input type="number" min="0" max="7" @bind="_minNeighbors" />
+                    </div>
+                    <div class="cw-field">
+                        <label>Max living neighbors (survive)</label>
+                        <input type="number" min="0" max="8" @bind="_maxNeighbors" />
+                    </div>
+
+                    <h3 style="margin:10px 0 6px">World Events</h3>
+                    <div class="cw-field">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                            <input type="checkbox" @bind="_famineEnabled" />
+                            Enable Famine
+                        </label>
+                    </div>
+                    @if (_famineEnabled)
+                    {
+                        <div class="cw-field">
+                            <label>Min steps between famines</label>
+                            <input type="number" min="1" max="500" @bind="_famineCooldown" />
+                        </div>
+                        <div class="cw-field">
+                            <label>Famine duration (steps)</label>
+                            <input type="number" min="1" max="100" @bind="_famineDuration" />
+                        </div>
+                    }
+
                     <h3 style="margin:10px 0 6px">Spawn Weights</h3>
                     @foreach (var kv in _spawnWeights)
                     {
@@ -209,6 +238,11 @@
     private double _popPercent = 10.0;
     private int _popCount = 160;
     private string _popPercentStr = "10.0";
+    private int _minNeighbors = 2;
+    private int _maxNeighbors = 3;
+    private bool _famineEnabled = true;
+    private int _famineCooldown = 15;
+    private int _famineDuration = 10;
     private Dictionary<string, int> _spawnWeights = new();
 
     private static readonly string[] TypeNames = {
@@ -232,6 +266,11 @@
         [JsonPropertyName("popPercent")]       public double PopPercent { get; set; } = 10.0;
         [JsonPropertyName("intervalMs")]       public int IntervalMs { get; set; } = 1000;
         [JsonPropertyName("animationEnabled")] public bool AnimationEnabled { get; set; } = true;
+        [JsonPropertyName("minNeighbors")]     public int MinNeighbors { get; set; } = 2;
+        [JsonPropertyName("maxNeighbors")]     public int MaxNeighbors { get; set; } = 3;
+        [JsonPropertyName("famineEnabled")]    public bool FamineEnabled { get; set; } = true;
+        [JsonPropertyName("famineCooldown")]   public int FamineCooldown { get; set; } = 15;
+        [JsonPropertyName("famineDuration")]   public int FamineDuration { get; set; } = 10;
         [JsonPropertyName("spawnWeights")]     public Dictionary<string, int>? SpawnWeights { get; set; }
     }
 
@@ -253,12 +292,17 @@
     {
         _settings = new SimulationSettings
         {
-            StartColumns = _startCols,
-            StartRows    = _startRows,
-            MaxGridSize  = _maxGrid,
-            MaxNations   = Math.Clamp(_maxNations, 1, 20),
-            PopMode      = PopMode.Percent,
-            PopValue     = (int)Math.Round(_popPercent),
+            StartColumns      = _startCols,
+            StartRows         = _startRows,
+            MaxGridSize       = _maxGrid,
+            MaxNations        = Math.Clamp(_maxNations, 1, 20),
+            PopMode           = PopMode.Percent,
+            PopValue          = (int)Math.Round(_popPercent),
+            MinLivingNeighbors = Math.Clamp(_minNeighbors, 0, 7),
+            MaxLivingNeighbors = Math.Clamp(_maxNeighbors, 0, 8),
+            FamineEnabled     = _famineEnabled,
+            FamineCooldown    = Math.Max(1, _famineCooldown),
+            FamineDuration    = Math.Max(1, _famineDuration),
         };
         foreach (var kv in _spawnWeights)
             if (Enum.TryParse<CellType>(kv.Key, out var ct))
@@ -281,6 +325,11 @@
             _popCount         = (int)Math.Round(_popPercent / 100.0 * _startCols * _startRows);
             _intervalMs       = Math.Clamp(s.IntervalMs, 50, 5000);
             _animationEnabled = s.AnimationEnabled;
+            _minNeighbors     = Math.Clamp(s.MinNeighbors, 0, 7);
+            _maxNeighbors     = Math.Clamp(s.MaxNeighbors, 0, 8);
+            _famineEnabled    = s.FamineEnabled;
+            _famineCooldown   = Math.Max(1, s.FamineCooldown);
+            _famineDuration   = Math.Max(1, s.FamineDuration);
             if (s.SpawnWeights != null)
                 foreach (var kv in s.SpawnWeights)
                     if (_spawnWeights.ContainsKey(kv.Key))
@@ -300,6 +349,11 @@
             PopPercent       = _popPercent,
             IntervalMs       = _intervalMs,
             AnimationEnabled = _animationEnabled,
+            MinNeighbors     = _minNeighbors,
+            MaxNeighbors     = _maxNeighbors,
+            FamineEnabled    = _famineEnabled,
+            FamineCooldown   = _famineCooldown,
+            FamineDuration   = _famineDuration,
             SpawnWeights     = new Dictionary<string, int>(_spawnWeights),
         };
         return JsonSerializer.Serialize(s);
@@ -366,6 +420,10 @@
             return new SimEvent(raw["king_fallen:".Length..], "ev-fallen");
         if (raw.StartsWith("kingdom_destroyed:"))
             return new SimEvent(raw["kingdom_destroyed:".Length..], "ev-destroy");
+        if (raw.StartsWith("famine_start:"))
+            return new SimEvent(raw["famine_start:".Length..], "ev-famine");
+        if (raw.StartsWith("famine_end:"))
+            return new SimEvent(raw["famine_end:".Length..], "ev-famine-end");
         return new SimEvent(raw, "");
     }
 
@@ -479,7 +537,8 @@
         }
 
         var nationColors = Cell_Nation.NationColors;
-        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r, moves, births, deaths, epicDeaths, coronations, _animationEnabled, _intervalMs);
+        var famine = new { active = _model.FamineActive, quadrant = _model.FamineQuadrant };
+        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r, moves, births, deaths, epicDeaths, coronations, _animationEnabled, _intervalMs, famine);
     }
 
     private void UpdateTypeCounts()
@@ -576,6 +635,11 @@
         _popCount         = 160;
         _intervalMs       = 1000;
         _animationEnabled = true;
+        _minNeighbors     = 2;
+        _maxNeighbors     = 3;
+        _famineEnabled    = true;
+        _famineCooldown   = 15;
+        _famineDuration   = 10;
 
         var defaultSettings = new SimulationSettings();
         _spawnWeights = defaultSettings.SpawnWeights

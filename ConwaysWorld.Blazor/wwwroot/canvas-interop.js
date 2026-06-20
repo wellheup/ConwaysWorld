@@ -23,6 +23,7 @@ window.ConwaysInterop = (() => {
     let isAnimating = false;
     let cachedCells = [];
     let cachedNationColors = [];
+    let cachedFamine = { active: false, quadrant: 0 };
     let rafPending = false;
     const SETTINGS_KEY = 'cw_settings';
     const SPRITE_NAMES = [
@@ -300,6 +301,32 @@ window.ConwaysInterop = (() => {
         drawCellScaled(col, row, cs, type, nat, nationColors, sizeFactor);
         ctx.restore();
     }
+    function drawFamineOverlay() {
+        if (!ctx || !cachedFamine.active)
+            return;
+        const cs = cellSize;
+        const halfCols = Math.floor(cols / 2);
+        const halfRows = Math.floor(rows / 2);
+        const q = cachedFamine.quadrant;
+        const startCol = q === 1 || q === 3 ? halfCols : 0;
+        const endCol = q === 1 || q === 3 ? cols : halfCols;
+        const startRow = q === 2 || q === 3 ? halfRows : 0;
+        const endRow = q === 2 || q === 3 ? rows : halfRows;
+        const x = startCol * cs;
+        const y = startRow * cs;
+        const w = (endCol - startCol) * cs;
+        const h = (endRow - startRow) * cs;
+        ctx.fillStyle = 'rgba(160, 60, 0, 0.14)';
+        ctx.fillRect(x, y, w, h);
+        const fontSize = Math.max(6, Math.min(16, cs));
+        ctx.save();
+        ctx.font = `bold ${fontSize}px sans-serif`;
+        ctx.fillStyle = 'rgba(200, 80, 0, 0.72)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('⚡ FAMINE', x + w / 2, y + h / 2);
+        ctx.restore();
+    }
     function drawFrame() {
         if (!ctx || !canvas)
             return;
@@ -318,6 +345,7 @@ window.ConwaysInterop = (() => {
                 continue;
             drawCell(c.col * cs, c.row * cs, cs, c.type, c.nat, nationColors, c.col, c.row);
         }
+        drawFamineOverlay();
         ctx.strokeStyle = '#999999';
         ctx.lineWidth = 2 / scale;
         ctx.strokeRect(0, 0, cols * cs, rows * cs);
@@ -384,12 +412,13 @@ window.ConwaysInterop = (() => {
             const k = coronations[i];
             drawCellScaledRotated(k.col, k.row, cs, k.type, k.nat, nationColors, 1 + 0.55 * Math.sin(Math.PI * t), 0);
         }
+        drawFamineOverlay();
         ctx.strokeStyle = '#999999';
         ctx.lineWidth = 2 / scale;
         ctx.strokeRect(0, 0, cols * cs, rows * cs);
         ctx.restore();
     }
-    function renderFrame(cells, nationColors, newCols, newRows, moves, births, deaths, epicDeaths, coronations, animationEnabled, stepIntervalMs) {
+    function renderFrame(cells, nationColors, newCols, newRows, moves, births, deaths, epicDeaths, coronations, animationEnabled, stepIntervalMs, famine) {
         if (!ctx)
             return Promise.resolve();
         const gridChanged = newCols !== cols || newRows !== rows;
@@ -397,6 +426,7 @@ window.ConwaysInterop = (() => {
         rows = newRows;
         cachedCells = cells;
         cachedNationColors = nationColors;
+        cachedFamine = famine !== null && famine !== void 0 ? famine : { active: false, quadrant: 0 };
         let doZoom = false;
         let fromScale = 0, fromTx = 0, fromTy = 0;
         let toScale = 0, toTx = 0, toTy = 0;
