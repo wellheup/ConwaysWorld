@@ -32,6 +32,10 @@ interface FamineData {
     quadrant: number; // 0=NW, 1=NE, 2=SW, 3=SE
 }
 
+interface FloodData {
+    active: boolean;
+}
+
 interface DotNetRef {
     invokeMethodAsync(method: string, ...args: unknown[]): Promise<unknown>;
 }
@@ -56,6 +60,7 @@ interface DotNetRef {
     let cachedCells: CellData[] = [];
     let cachedNationColors: string[] = [];
     let cachedFamine: FamineData = { active: false, quadrant: 0 };
+    let cachedFlood: FloodData = { active: false };
     let rafPending = false;
 
     const SETTINGS_KEY = 'cw_settings';
@@ -366,6 +371,22 @@ interface DotNetRef {
         ctx.restore();
     }
 
+    function drawFloodOverlay(): void {
+        if (!ctx || !cachedFlood.active) return;
+        const w = cols * cellSize;
+        const h = rows * cellSize;
+        ctx.fillStyle = 'rgba(0, 60, 160, 0.13)';
+        ctx.fillRect(0, 0, w, h);
+        const fontSize = Math.max(6, Math.min(16, cellSize));
+        ctx.save();
+        ctx.font = `bold ${fontSize}px sans-serif`;
+        ctx.fillStyle = 'rgba(0, 80, 200, 0.70)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('\uD83C\uDF0A FLOOD', w / 2, h / 2);
+        ctx.restore();
+    }
+
     function drawFamineOverlay(): void {
         if (!ctx || !cachedFamine.active) return;
         const cs = cellSize;
@@ -413,6 +434,7 @@ interface DotNetRef {
         }
 
         drawFamineOverlay();
+        drawFloodOverlay();
 
         ctx.strokeStyle = '#999999';
         ctx.lineWidth = 2 / scale;
@@ -498,6 +520,7 @@ interface DotNetRef {
         }
 
         drawFamineOverlay();
+        drawFloodOverlay();
 
         ctx.strokeStyle = '#999999';
         ctx.lineWidth = 2 / scale;
@@ -519,6 +542,7 @@ interface DotNetRef {
         animationEnabled: boolean,
         stepIntervalMs: number,
         famine: FamineData,
+        flood: FloodData,
     ): Promise<void> {
         if (!ctx) return Promise.resolve();
 
@@ -528,6 +552,7 @@ interface DotNetRef {
         cachedCells = cells;
         cachedNationColors = nationColors;
         cachedFamine = famine ?? { active: false, quadrant: 0 };
+        cachedFlood = flood ?? { active: false };
 
         let doZoom = false;
         let fromScale = 0,

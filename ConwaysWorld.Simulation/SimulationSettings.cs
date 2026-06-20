@@ -71,6 +71,9 @@ public class SimulationSettings
 	/// <summary>Whether the Famine world event can trigger during a simulation run.</summary>
 	public bool FamineEnabled { get; set; } = true;
 
+	/// <summary>Whether the Flood world event can trigger during a simulation run.</summary>
+	public bool FloodEnabled { get; set; } = true;
+
 	/// <summary>
 	/// Minimum number of steps that must pass after a famine ends before a new one can start.
 	/// Default is 15.
@@ -96,34 +99,34 @@ public class SimulationSettings
 	/// Warriors, Diplomats, and Kings are intentionally absent — they are only promoted from existing cells.
 	/// </summary>
 	public Dictionary<CellType, int> SpawnWeights { get; set; } = new()
-				{
-								{ CellType.Basic,    50 },
-								{ CellType.Immortal,  2 },
-								{ CellType.Diseased, 15 },
-								{ CellType.Plague,    3 },
-								{ CellType.Traveler,  6 },
-								{ CellType.Explorer,  3 },
-								{ CellType.Doctor,    5 },
-								{ CellType.Hunter,    5 },
-								{ CellType.Bomber,    8 },
-				};
+								{
+																{ CellType.Basic,    50 },
+																{ CellType.Immortal,  2 },
+																{ CellType.Diseased, 15 },
+																{ CellType.Plague,    3 },
+																{ CellType.Traveler,  6 },
+																{ CellType.Explorer,  3 },
+																{ CellType.Doctor,    5 },
+																{ CellType.Hunter,    5 },
+																{ CellType.Bomber,    8 },
+								};
 
 	/// <summary>
 	/// The set of types that are eligible for spawning.
 	/// Only types present in both this set and <see cref="SpawnWeights"/> are considered.
 	/// </summary>
 	public HashSet<CellType> SpawnEnabled { get; set; } = new()
-				{
-								CellType.Basic,
-								CellType.Immortal,
-								CellType.Diseased,
-								CellType.Plague,
-								CellType.Traveler,
-								CellType.Explorer,
-								CellType.Doctor,
-								CellType.Hunter,
-								CellType.Bomber,
-				};
+								{
+																CellType.Basic,
+																CellType.Immortal,
+																CellType.Diseased,
+																CellType.Plague,
+																CellType.Traveler,
+																CellType.Explorer,
+																CellType.Doctor,
+																CellType.Hunter,
+																CellType.Bomber,
+								};
 
 	// ── Derived ──────────────────────────────────────────────────────────────────
 

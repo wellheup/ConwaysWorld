@@ -183,6 +183,12 @@
                             <input type="number" min="1" max="100" @bind="_famineDuration" />
                         </div>
                     }
+                    <div class="cw-field">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                            <input type="checkbox" @bind="_floodEnabled" />
+                            Enable Flood
+                        </label>
+                    </div>
 
                     <h3 style="margin:10px 0 6px">Spawn Weights</h3>
                     @foreach (var kv in _spawnWeights)
@@ -243,6 +249,7 @@
     private bool _famineEnabled = true;
     private int _famineCooldown = 15;
     private int _famineDuration = 10;
+    private bool _floodEnabled = true;
     private Dictionary<string, int> _spawnWeights = new();
 
     private static readonly string[] TypeNames = {
@@ -271,6 +278,7 @@
         [JsonPropertyName("famineEnabled")]    public bool FamineEnabled { get; set; } = true;
         [JsonPropertyName("famineCooldown")]   public int FamineCooldown { get; set; } = 15;
         [JsonPropertyName("famineDuration")]   public int FamineDuration { get; set; } = 10;
+        [JsonPropertyName("floodEnabled")]     public bool FloodEnabled { get; set; } = true;
         [JsonPropertyName("spawnWeights")]     public Dictionary<string, int>? SpawnWeights { get; set; }
     }
 
@@ -303,6 +311,7 @@
             FamineEnabled     = _famineEnabled,
             FamineCooldown    = Math.Max(1, _famineCooldown),
             FamineDuration    = Math.Max(1, _famineDuration),
+            FloodEnabled      = _floodEnabled,
         };
         foreach (var kv in _spawnWeights)
             if (Enum.TryParse<CellType>(kv.Key, out var ct))
@@ -330,6 +339,7 @@
             _famineEnabled    = s.FamineEnabled;
             _famineCooldown   = Math.Max(1, s.FamineCooldown);
             _famineDuration   = Math.Max(1, s.FamineDuration);
+            _floodEnabled     = s.FloodEnabled;
             if (s.SpawnWeights != null)
                 foreach (var kv in s.SpawnWeights)
                     if (_spawnWeights.ContainsKey(kv.Key))
@@ -354,6 +364,7 @@
             FamineEnabled    = _famineEnabled,
             FamineCooldown   = _famineCooldown,
             FamineDuration   = _famineDuration,
+            FloodEnabled     = _floodEnabled,
             SpawnWeights     = new Dictionary<string, int>(_spawnWeights),
         };
         return JsonSerializer.Serialize(s);
@@ -426,6 +437,10 @@
             return new SimEvent(raw["famine_end:".Length..], "ev-famine-end");
         if (raw.StartsWith("revolution_start:"))
             return new SimEvent(raw["revolution_start:".Length..], "ev-revolution");
+        if (raw.StartsWith("flood_start:"))
+            return new SimEvent(raw["flood_start:".Length..], "ev-flood");
+        if (raw.StartsWith("flood_end:"))
+            return new SimEvent(raw["flood_end:".Length..], "ev-flood-end");
         return new SimEvent(raw, "");
     }
 
@@ -540,7 +555,8 @@
 
         var nationColors = Cell_Nation.NationColors;
         var famine = new { active = _model.FamineActive, quadrant = _model.FamineQuadrant };
-        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r, moves, births, deaths, epicDeaths, coronations, _animationEnabled, _intervalMs, famine);
+        var flood  = new { active = _model.FloodActive };
+        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r, moves, births, deaths, epicDeaths, coronations, _animationEnabled, _intervalMs, famine, flood);
     }
 
     private void UpdateTypeCounts()
@@ -642,6 +658,7 @@
         _famineEnabled    = true;
         _famineCooldown   = 15;
         _famineDuration   = 10;
+        _floodEnabled     = true;
 
         var defaultSettings = new SimulationSettings();
         _spawnWeights = defaultSettings.SpawnWeights

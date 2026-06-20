@@ -61,6 +61,10 @@ public class Model
 	private int _stepsSinceLastFamineEnd = 0;
 	private int _famineQuadrant = 0;
 
+	private bool _floodActive = false;
+	private int _floodCooldownCount = 0;
+	private int _floodTriggerAt = 100 + 75; // first trigger: 100-step cooldown + mid-range delay
+
 	private static readonly string[] QuadrantNames = { "Northwest", "Northeast", "Southwest", "Southeast" };
 
 	// ── Public read-only accessors ────────────────────────────────────────────────
@@ -73,6 +77,9 @@ public class Model
 
 	/// <summary>Whether a Famine world event is currently active.</summary>
 	public bool FamineActive => _famineActive;
+
+	/// <summary>Whether a Flood world event is currently active.</summary>
+	public bool FloodActive => _floodActive;
 
 	/// <summary>Which grid quadrant the active famine affects (0=NW, 1=NE, 2=SW, 3=SE).</summary>
 	public int FamineQuadrant => _famineQuadrant;
@@ -111,6 +118,9 @@ public class Model
 		_famineActive = false;
 		_famineDurationCount = 0;
 		_stepsSinceLastFamineEnd = 0;
+		_floodActive = false;
+		_floodCooldownCount = 0;
+		_floodTriggerAt = 100 + SimRandom.Range(50, 101);
 		PopulateGrid();
 	}
 
@@ -144,6 +154,7 @@ public class Model
 		PendingEvents.Clear();
 		PendingMoves.Clear();
 		UpdateFamine();
+		UpdateFlood();
 		ApplyCellNeighborRules();
 		UpdateNeighborhoodsGrid();
 		UpdateAliveNextGenGrid();
@@ -280,7 +291,7 @@ public class Model
 					cell.Immaculate(CellGrid);
 
 				if (cell.IsAlive && cell.CellType == CellType.Explorer &&
-																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
+																																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
 					needResize = true;
 
 				if (cell.IsAlive && cell.Age >= 1 && cell.Nationality < 0)
@@ -431,9 +442,9 @@ public class Model
 			return;
 
 		var sorted = Nations.Values
-				.Where(n => n.CitizensList.Count > 0)
-				.OrderByDescending(n => n.CitizensList.Count)
-				.ToList();
+						.Where(n => n.CitizensList.Count > 0)
+						.OrderByDescending(n => n.CitizensList.Count)
+						.ToList();
 
 		if (sorted.Count < 2)
 			return;
@@ -448,13 +459,13 @@ public class Model
 			return;
 
 		var candidates = dominant.CitizensList
-				.Where(c => c != dominant.King &&
-							c.CellType != CellType.Warrior &&
-							c.CellType != CellType.Diplomat &&
-							c.CellType != CellType.Revolutionary &&
-							c.CellType != CellType.Rebel &&
-							c.IsAlive)
-				.ToList();
+						.Where(c => c != dominant.King &&
+												c.CellType != CellType.Warrior &&
+												c.CellType != CellType.Diplomat &&
+												c.CellType != CellType.Revolutionary &&
+												c.CellType != CellType.Rebel &&
+												c.IsAlive)
+						.ToList();
 
 		if (candidates.Count == 0)
 			return;
@@ -490,6 +501,111 @@ public class Model
 	}
 
 	// ── World events ──────────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// Advances the Flood world-event state machine by one step.
+	/// <para>
+	/// When no flood is active the cooldown counter increments; once it reaches
+	/// <c>_floodTriggerAt</c> (100 + random 50–100 extra steps) the flood begins.
+	/// While active, <see cref="ApplyFloodStep"/> kills the cell farthest from each
+	/// nation's King (one cell per nation per step).  The flood ends as soon as
+	/// <see cref="AreAnyNationsAdjacent"/> returns <c>false</c>.
+	/// After ending, the next trigger threshold is reset to another 100 + 50–100 steps.
+	/// </para>
+	/// </summary>
+	private void UpdateFlood()
+	{
+		if (!_settings.FloodEnabled)
+		{
+			_floodActive = false;
+			return;
+		}
+
+		if (_floodActive)
+		{
+			if (!AreAnyNationsAdjacent())
+			{
+				_floodActive = false;
+				_floodCooldownCount = 0;
+				_floodTriggerAt = 100 + SimRandom.Range(50, 101);
+				PendingEvents.Add("flood_end:The flood recedes. Nations are separated.");
+				return;
+			}
+			ApplyFloodStep();
+		}
+		else
+		{
+			_floodCooldownCount++;
+			if (_floodCooldownCount >= _floodTriggerAt)
+			{
+				_floodActive = true;
+				_floodCooldownCount = 0;
+				_floodTriggerAt = 100 + SimRandom.Range(50, 101);
+				PendingEvents.Add("flood_start:The flood rises! Nations are being pushed apart.");
+			}
+		}
+	}
+
+	/// <summary>
+	/// Kills the living cell that is farthest (by Manhattan distance) from its nation's
+	/// King in each active nation.  One cell per nation is killed per call.
+	/// If a nation has no King, the centroid of its citizens is used as the reference point.
+	/// Killed cells receive the <c>"cleanup"</c> condition so they are replaced with dead
+	/// Basic cells during <see cref="UpdateCellConditions"/>.
+	/// </summary>
+	private void ApplyFloodStep()
+	{
+		foreach (var nation in Nations.Values)
+		{
+			var citizens = nation.CitizensList.Where(c => c.IsAlive).ToList();
+			if (citizens.Count == 0)
+				continue;
+
+			float refCol, refRow;
+			var king = nation.King;
+			if (king != null && king.IsAlive)
+			{
+				refCol = king.Column;
+				refRow = king.Row;
+			}
+			else
+			{
+				refCol = (float)citizens.Average(c => c.Column);
+				refRow = (float)citizens.Average(c => c.Row);
+			}
+
+			var target = citizens
+					.OrderByDescending(c => Math.Abs(c.Column - refCol) + Math.Abs(c.Row - refRow))
+					.First();
+
+			target.Die();
+			target.Conditions.Add("cleanup");
+		}
+	}
+
+	/// <summary>
+	/// Returns <c>true</c> if any two living cells of different nations share an
+	/// immediately adjacent (Moore neighbourhood) slot.
+	/// </summary>
+	private bool AreAnyNationsAdjacent()
+	{
+		for (int c = 0; c < _columns; c++)
+		{
+			for (int r = 0; r < _rows; r++)
+			{
+				var cell = CellGrid[c, r];
+				if (!cell.IsAlive || cell.Nationality < 0)
+					continue;
+				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
+				{
+					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
+						neighbor.Nationality != cell.Nationality)
+						return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	/// <summary>
 	/// Advances the Famine world-event state machine by one step.
@@ -560,14 +676,14 @@ public class Model
 	/// <summary>Returns true if the cell at (<paramref name="col"/>, <paramref name="row"/>) falls
 	/// within the currently active famine quadrant.</summary>
 	private bool IsInFamineQuadrant(int col, int row, int halfCols, int halfRows) =>
-					_famineQuadrant switch
-					{
-						0 => col < halfCols && row < halfRows,
-						1 => col >= halfCols && row < halfRows,
-						2 => col < halfCols && row >= halfRows,
-						3 => col >= halfCols && row >= halfRows,
-						_ => false,
-					};
+									_famineQuadrant switch
+									{
+										0 => col < halfCols && row < halfRows,
+										1 => col >= halfCols && row < halfRows,
+										2 => col < halfCols && row >= halfRows,
+										3 => col >= halfCols && row >= halfRows,
+										_ => false,
+									};
 
 	// ── Private helpers ───────────────────────────────────────────────────────────
 

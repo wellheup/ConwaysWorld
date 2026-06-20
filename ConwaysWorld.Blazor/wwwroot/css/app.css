@@ -116,6 +116,8 @@ html, body {
 .cw-event-entry.ev-famine     { color: #c06010; font-weight: 600; }
 .cw-event-entry.ev-famine-end  { color: #609040; }
 .cw-event-entry.ev-revolution  { color: #cc2222; font-weight: 600; }
+.cw-event-entry.ev-flood       { color: #2266cc; font-weight: 600; }
+.cw-event-entry.ev-flood-end   { color: #4499aa; }
 
 canvas#sim-canvas {
     display: block;
