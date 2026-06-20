@@ -61,6 +61,7 @@ public enum CellType
 - TODO: make MinLivingNeighbors and MaxLivingNeighbors for cells accessible and alterable in ConwaysWorld object
 - TODO: Add to Conway's world an event that uses a "find the largest island" algorithm
 - TODO: Add different types of specialized cells inheriting from Cell
+- TODO: maybe if cells are too far from their king they die?
         - TODO: voyager (version of the explorer cell which goes farther and specifically targets the nearest other nation)
                 - TODO: once it reaches that nation as a neighbor, it either spawns a diplomat for its nation or spreads plague/disease
         - TODO: necromancer (revives neighbors the turn after they die) - I think this should wait til after refactor...

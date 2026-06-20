@@ -88,7 +88,7 @@ public partial class Model
 		if (living.Count == 0)
 			return;
 
-		int killCount = Math.Max(1, (int)(living.Count * 0.05f));
+		int killCount = Math.Max(1, (int)(living.Count * 0.10f));
 
 		// Fisher-Yates partial shuffle to pick random victims.
 		for (int i = living.Count - 1; i > living.Count - 1 - killCount && i > 0; i--)
@@ -107,14 +107,14 @@ public partial class Model
 	/// <summary>Returns <c>true</c> if the cell at (<paramref name="col"/>, <paramref name="row"/>)
 	/// falls within the currently active famine quadrant.</summary>
 	private bool IsInFamineQuadrant(int col, int row, int halfCols, int halfRows) =>
-		_famineQuadrant switch
-		{
-			0 => col < halfCols && row < halfRows,
-			1 => col >= halfCols && row < halfRows,
-			2 => col < halfCols && row >= halfRows,
-			3 => col >= halfCols && row >= halfRows,
-			_ => false,
-		};
+			_famineQuadrant switch
+			{
+				0 => col < halfCols && row < halfRows,
+				1 => col >= halfCols && row < halfRows,
+				2 => col < halfCols && row >= halfRows,
+				3 => col >= halfCols && row >= halfRows,
+				_ => false,
+			};
 
 	// ── Flood ─────────────────────────────────────────────────────────────────────
 
@@ -250,7 +250,7 @@ public partial class Model
 				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
 				{
 					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
-						neighbor.Nationality != cell.Nationality)
+							neighbor.Nationality != cell.Nationality)
 						return true;
 				}
 			}
