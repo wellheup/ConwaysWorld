@@ -58,14 +58,21 @@ public enum CellType
 
 	/// <summary>Travels across open space to reach a disconnected foreign nation; on arrival either spawns diplomats and warriors (becoming an Explorer) or turns into Plague and seeds four Plague cells.</summary>
 	Voyager,
+
+	/// <summary>Locates the emptiest region of the grid and travels toward it; on arrival spawns five Islander cells.</summary>
+	Wayfinder,
+
+	/// <summary>Nationless cell that lives by standard Conway rules but dies from crowding (20+ cells within 5 tiles). Converts to Barbarian when touched by a nation cell.</summary>
+	Islander,
+
+	/// <summary>Nationless aggressor spawned from Islanders. Converts adjacent Islanders and kills nearby nation cells each step; reverts to Islander when no targets remain.</summary>
+	Barbarian,
 }
 /*
 - TODO: maybe cells should be more likely to survive death for every neighbor of the same nation?
 - TODO: make MinLivingNeighbors and MaxLivingNeighbors for cells accessible and alterable in ConwaysWorld object
 - TODO: Add to Conway's world an event that uses a "find the largest island" algorithm
 - TODO: maybe if cells are too far from their king they die?
-        - TODO: voyager (version of the explorer cell which goes farther and specifically targets the nearest other nation)
-                - TODO: once it reaches that nation as a neighbor, it either spawns a diplomat for its nation or spreads plague/disease
         - TODO: necromancer (revives neighbors the turn after they die) - I think this should wait til after refactor...
         - TODO: zombie (die if their necromancer dies, do not die from overpopulation)
         - TODO: mutant/ mutator (has a small chance every turn to Randomly alter surrounding cells to another cell type)

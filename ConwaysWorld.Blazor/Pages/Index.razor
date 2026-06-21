@@ -12,6 +12,7 @@
     </button>
     <button @onclick="StepOnce">Step</button>
     <button @onclick="Restart">↺ Restart</button>
+    <button @onclick="RandomizeAndRestart">🎲 Random</button>
     <label>Speed</label>
     <input type="range" min="50" max="2000" step="50"
            value="@_intervalMs"
@@ -267,14 +268,18 @@
     private static readonly string[] TypeNames = {
         "Dead","Basic","Immortal","Diseased","Plague",
         "Traveler","Explorer","Doctor","Warrior","Hunter",
-        "Bomber","Diplomat","King","Rebel","Revolutionary","Voyager"
+        "Bomber","Diplomat","King","Rebel","Revolutionary","Voyager",
+        "Wayfinder","Islander","Barbarian"
     };
 
     private static readonly string[] TypeColors = {
         "#111","#e8e8e8","#e0c060","#7a2020","#c01010",
         "#4090d0","#20c0e0","#e050a0","#d08020","#c04040",
-        "#e0a000","#a060e0","#f0d000","#ff5533","#9b1a4a","#00d4aa"
+        "#e0a000","#a060e0","#f0d000","#ff5533","#9b1a4a","#00d4aa",
+        "#1e90ff","#c8a040","#bb2200"
     };
+
+    private static readonly System.Random _uiRandom = new();
 
     private class SavedSettings
     {
@@ -620,7 +625,7 @@
                     counts[(int)grid[col, row].CellType]++;
 
         _typeCounts = Enumerable.Range(1, TypeNames.Length - 1)
-            .Where(i => !_spawnWeights.TryGetValue(TypeNames[i], out var w) || w > 0)
+            .Where(i => counts[i] > 0 || !_spawnWeights.TryGetValue(TypeNames[i], out var w) || w > 0)
             .Select(i => (TypeNames[i], TypeColors[i], counts[i]))
             .ToList();
     }
@@ -683,6 +688,53 @@
             await JS.InvokeVoidAsync("ConwaysInterop.saveSettings", SerializeSettings());
         }
         catch { }
+
+        _prevCellMap.Clear();
+        await RenderFrame();
+        CapturePrevCells();
+        UpdateTypeCounts();
+    }
+
+    private async Task RandomizeAndRestart()
+    {
+        _timer.Stop();
+        _running = false;
+
+        _startCols     = _uiRandom.Next(5, 301);
+        _startRows     = _uiRandom.Next(5, 301);
+        _maxGrid       = _uiRandom.Next(0, 1001);
+        _maxNations    = _uiRandom.Next(1, 21);
+        _startClusters = _uiRandom.Next(0, 11);
+        _popPercent    = Math.Round(_uiRandom.NextDouble() * 29.0 + 1.0, 1);
+        _popPercentStr = _popPercent.ToString("F1");
+        _popCount      = (int)Math.Round(_popPercent / 100.0 * _startCols * _startRows);
+        _intervalMs    = (_uiRandom.Next(1, 41)) * 50; // 50..2000 in 50-step increments
+        _timer.Interval = _intervalMs;
+        _animationEnabled  = _uiRandom.Next(2) == 0;
+        _minNeighbors  = _uiRandom.Next(1, 4);
+        _maxNeighbors  = _uiRandom.Next(_minNeighbors, 9);
+        _famineEnabled = _uiRandom.Next(2) == 0;
+        _famineCooldown  = _uiRandom.Next(5, 51);
+        _famineDuration  = _uiRandom.Next(5, 31);
+        _floodEnabled    = _uiRandom.Next(2) == 0;
+        _randomLifeEnabled = _uiRandom.Next(4) == 0;
+
+        var keys = _spawnWeights.Keys.ToList();
+        bool anyPositive = false;
+        foreach (var k in keys)
+        {
+            int w = _uiRandom.Next(0, 21);
+            _spawnWeights[k] = w;
+            if (w > 0) anyPositive = true;
+        }
+        if (!anyPositive && keys.Count > 0)
+            _spawnWeights[keys[_uiRandom.Next(keys.Count)]] = _uiRandom.Next(1, 21);
+
+        InitSettings();
+        _eventLog.Clear();
+        _model = new Model(_settings);
+
+        try { await JS.InvokeVoidAsync("ConwaysInterop.saveSettings", SerializeSettings()); } catch { }
 
         _prevCellMap.Clear();
         await RenderFrame();

@@ -25,6 +25,7 @@ public class Cell_Voyager : Cell
 	private Cell? _target;
 	private int _targetNation = -1;
 	private bool _specialPerformed = false;
+	private int _noTargetTurns = 0;
 
 	/// <summary>Creates a Voyager cell at the given position.</summary>
 	public Cell_Voyager(int column, int row, bool isAlive)
@@ -56,9 +57,9 @@ public class Cell_Voyager : Cell
 	// ── Private helpers ───────────────────────────────────────────────────────────
 
 	private bool IsTargetValid() =>
-			_target != null && _target.IsAlive &&
-			_targetNation >= 0 && _targetNation != Nationality &&
-			_target.Nationality == _targetNation;
+					_target != null && _target.IsAlive &&
+					_targetNation >= 0 && _targetNation != Nationality &&
+					_target.Nationality == _targetNation;
 
 	/// <summary>
 	/// Scans the entire grid to find the nearest foreign nation that has no cells
@@ -262,7 +263,19 @@ public class Cell_Voyager : Cell
 			SelectTarget(cellGrid);
 
 		if (_target == null)
+		{
+			if (_noTargetTurns >= 1)
+			{
+				// No disconnected nation found for two consecutive steps — become a Traveler.
+				var traveler = ReplaceCell(this, CellType.Traveler, true);
+				traveler.Nationality = Nationality;
+				cellGrid[Column, Row] = traveler;
+				return;
+			}
+			_noTargetTurns++;
 			return;
+		}
+		_noTargetTurns = 0;
 
 		// Check whether we are now adjacent to any cell of the target nation.
 		foreach (var nb in CellNeighborhood.NeighborhoodDict.Values)
