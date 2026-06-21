@@ -26,32 +26,50 @@ public class Cell_Nation
 	public List<Cell> DiplomatsList = new();
 
 	/// <summary>
+	/// How many consecutive steps this nation's population has increased.
+	/// Reset to 0 whenever population stays flat or shrinks.
+	/// </summary>
+	public int ConsecutiveGrowthSteps = 0;
+
+	/// <summary>
+	/// Column of the King that most recently aged out, used to prefer nearby succession candidates.
+	/// Set to -1 when no aged-out king is pending.
+	/// </summary>
+	public int AgedOutKingColumn = -1;
+
+	/// <summary>
+	/// Row of the King that most recently aged out, used to prefer nearby succession candidates.
+	/// Set to -1 when no aged-out king is pending.
+	/// </summary>
+	public int AgedOutKingRow = -1;
+
+	/// <summary>
 	/// The 20 fixed hex colour strings assigned to nations by index.
 	/// Nation 0 uses index 0, nation 1 uses index 1, etc.
 	/// The count here determines the maximum number of concurrent nations.
 	/// </summary>
 	public static readonly List<string> NationColors = new()
 		{
-				"#bc00ff",
-				"#471415",
-				"#a3181c",
-				"#00f542",
-				"#617f1c",
-				"#f50005",
-				"#473d14",
-				"#17a33d",
-				"#a38517",
-				"#299bae",
-				"#00dbff",
-				"#f5bf00",
-				"#232b75",
-				"#ff7000",
-				"#0019f5",
-				"#adff00",
-				"#7f4719",
-				"#671f80",
-				"#1c2bb8",
-				"#1c4724",
+						"#bc00ff",
+						"#471415",
+						"#a3181c",
+						"#00f542",
+						"#617f1c",
+						"#f50005",
+						"#473d14",
+						"#17a33d",
+						"#a38517",
+						"#299bae",
+						"#00dbff",
+						"#f5bf00",
+						"#232b75",
+						"#ff7000",
+						"#0019f5",
+						"#adff00",
+						"#7f4719",
+						"#671f80",
+						"#1c2bb8",
+						"#1c4724",
 		};
 
 	/// <summary>Creates a new nation with the given index.</summary>
@@ -64,7 +82,7 @@ public class Cell_Nation
 
 	/// <summary>
 	/// Scans the entire grid to rebuild <see cref="CitizensList"/> and <see cref="DiplomatsList"/>,
-	/// then calls <see cref="ElectDiplomat"/> and <see cref="CrownKing"/>.
+	/// tracks consecutive population growth, then calls <see cref="ElectDiplomat"/> and <see cref="CrownKing"/>.
 	/// Called once per step by <see cref="Model.UpdateNations"/>.
 	/// </summary>
 	public void Census(Cell[,] cellGrid)
@@ -85,6 +103,14 @@ public class Cell_Nation
 				}
 			}
 		}
+
+		// Track consecutive population growth before overwriting the list.
+		int oldCount = CitizensList.Count;
+		int newCount = tempCits.Count;
+		if (newCount > oldCount && oldCount > 0)
+			ConsecutiveGrowthSteps++;
+		else
+			ConsecutiveGrowthSteps = 0;
 
 		CitizensList = tempCits;
 		DiplomatsList = tempDips;
@@ -132,13 +158,10 @@ public class Cell_Nation
 	}
 
 	/// <summary>
-	/// Crowns a random citizen as King if:
-	/// <list type="bullet">
-	///   <item>The current King is dead (clears the reference and marks it <c>"cleanup"</c>), AND</item>
-	///   <item>The nation has at least 5 citizens with more citizens than Diplomats.</item>
-	/// </list>
-	/// Up to 5 random candidates are tried.  The crowned cell is replaced in the grid with a
-	/// <see cref="Cell_King"/> instance sharing the same nationality.
+	/// Crowns a citizen as King if the nation has no current King and meets the minimum size.
+	/// When the previous King aged out (<see cref="AgedOutKingColumn"/> &gt;= 0), prefers
+	/// candidates within 5 tiles of the old King's position for a natural succession feel.
+	/// Falls back to a random citizen if no nearby candidates qualify.
 	/// </summary>
 	private void CrownKing(Cell[,] cellGrid)
 	{
@@ -154,12 +177,36 @@ public class Cell_Nation
 			return;
 
 		Cell? newKing = null;
-		for (int attempt = 0; attempt < 5; attempt++)
+
+		// If the previous king aged out, prefer nearby cells for succession.
+		if (AgedOutKingColumn >= 0)
 		{
-			newKing = CitizensList[SimRandom.Range(0, CitizensList.Count)];
-			if (newKing.IsAlive)
-				break;
-			newKing = null;
+			var nearby = CitizensList
+				.Where(c => c.IsAlive &&
+							c.CellType != CellType.King &&
+							c.CellType != CellType.Revolutionary &&
+							c.CellType != CellType.Diplomat &&
+							Math.Abs(c.Column - AgedOutKingColumn) <= 5 &&
+							Math.Abs(c.Row - AgedOutKingRow) <= 5)
+				.ToList();
+
+			if (nearby.Count > 0)
+				newKing = nearby[SimRandom.Range(0, nearby.Count)];
+
+			AgedOutKingColumn = -1;
+			AgedOutKingRow = -1;
+		}
+
+		// Fall back to random citizen selection.
+		if (newKing == null)
+		{
+			for (int attempt = 0; attempt < 5; attempt++)
+			{
+				newKing = CitizensList[SimRandom.Range(0, CitizensList.Count)];
+				if (newKing.IsAlive)
+					break;
+				newKing = null;
+			}
 		}
 
 		if (newKing != null && newKing.IsAlive)
