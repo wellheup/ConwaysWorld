@@ -482,7 +482,8 @@ window.ConwaysInterop = (() => {
         const hasDeaths = deaths.length > 0;
         const hasEpicDeaths = epicDeaths.length > 0;
         const hasCoronations = coronations.length > 0;
-        const doCellAnim = animationEnabled && (hasMoves || hasBirths || hasDeaths || hasEpicDeaths || hasCoronations);
+        const cellsFocused = cellSize * scale > 20;
+        const doCellAnim = animationEnabled && cellsFocused && (hasMoves || hasBirths || hasDeaths || hasEpicDeaths || hasCoronations);
         if (!doZoom && !doCellAnim) {
             drawFrame();
             return Promise.resolve();
