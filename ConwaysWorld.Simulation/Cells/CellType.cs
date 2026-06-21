@@ -55,12 +55,14 @@ public enum CellType
 
 	/// <summary>Defects from a dominant nation, founds a rival nation, and recruits Warriors and Rebels from the old homeland.</summary>
 	Revolutionary,
+
+	/// <summary>Travels across open space to reach a disconnected foreign nation; on arrival either spawns diplomats and warriors (becoming an Explorer) or turns into Plague and seeds four Plague cells.</summary>
+	Voyager,
 }
 /*
 - TODO: maybe cells should be more likely to survive death for every neighbor of the same nation?
 - TODO: make MinLivingNeighbors and MaxLivingNeighbors for cells accessible and alterable in ConwaysWorld object
 - TODO: Add to Conway's world an event that uses a "find the largest island" algorithm
-- TODO: Add different types of specialized cells inheriting from Cell
 - TODO: maybe if cells are too far from their king they die?
         - TODO: voyager (version of the explorer cell which goes farther and specifically targets the nearest other nation)
                 - TODO: once it reaches that nation as a neighbor, it either spawns a diplomat for its nation or spreads plague/disease
@@ -79,7 +81,7 @@ public enum CellType
         - TODO: add a behavior to diplomats to instigate a rebellion event where, if a nation is large enough, and significantly larger than others (if there are any), it will become a revolutionary cell
         - TODO: revolutionary cells spawn a bunch of rebels and warriors for a new nation, which they become king of
         - TODO: rebel cells are like diplomats with higher conversion rates but shorter lifespans but are hunted by other nations warriors and hunters
-			- still not working quite right...
+                        - still not working quite right...
 - TODO: add an increased chance to spawn doctors near diseases
 - TODO: make minimum allowable grid size 5x5
 - TODO: utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type

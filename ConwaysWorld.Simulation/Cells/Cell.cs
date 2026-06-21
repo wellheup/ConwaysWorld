@@ -176,6 +176,7 @@ public abstract class Cell
 			CellType.Warrior => new Cell_Warrior(col, row, isAlive),
 			CellType.Rebel => new Cell_Rebel(col, row, isAlive),
 			CellType.Revolutionary => new Cell_Revolutionary(col, row, isAlive),
+			CellType.Voyager => new Cell_Voyager(col, row, isAlive),
 			_ => new Cell_Basic(col, row, isAlive),
 		};
 		cell.Conditions = new HashSet<string>(oldCell.Conditions);
