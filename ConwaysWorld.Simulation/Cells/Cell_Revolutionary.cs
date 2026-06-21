@@ -27,104 +27,102 @@ namespace ConwaysWorld.Simulation;
 /// </summary>
 public class Cell_Revolutionary : Cell
 {
-        /// <summary>The nation this Revolutionary defected from; used to identify recruit targets.</summary>
-        public int OldNationality { get; set; } = -1;
+	/// <summary>The nation this Revolutionary defected from; used to identify recruit targets.</summary>
+	public int OldNationality { get; set; } = -1;
 
-        private bool _firstStepDone = false;
-        private bool _specialPerformed = false;
+	private bool _specialPerformed = false;
 
-        /// <summary>Creates a Revolutionary cell at the given position.</summary>
-        public Cell_Revolutionary(int column, int row, bool isAlive)
-        {
-                Column = column;
-                Row = row;
-                IsAlive = isAlive;
-                CellType = CellType.Revolutionary;
-                Conditions = new HashSet<string>();
-        }
+	/// <summary>Creates a Revolutionary cell at the given position.</summary>
+	public Cell_Revolutionary(int column, int row, bool isAlive)
+	{
+		Column = column;
+		Row = row;
+		IsAlive = isAlive;
+		CellType = CellType.Revolutionary;
+		Conditions = new HashSet<string>();
+	}
 
-        /// <inheritdoc/>
-        public override void Live()
-        {
-                base.Live();
-                _specialPerformed = false;
-        }
+	/// <inheritdoc/>
+	public override void Live()
+	{
+		base.Live();
+		_specialPerformed = false;
+	}
 
-        /// <inheritdoc/>
-        public override void Die()
-        {
-                base.Die();
-                _specialPerformed = true;
-        }
+	/// <inheritdoc/>
+	public override void Die()
+	{
+		base.Die();
+		_specialPerformed = true;
+	}
 
-        /// <summary>
-        /// Marks every adjacent living Basic cell of the same nation with <c>"toWar"</c>,
-        /// mirroring <see cref="Cell_King"/> army-building behaviour.
-        /// </summary>
-        private void MakeArmy()
-        {
-                foreach (var neighbor in CellNeighborhood.NeighborhoodDict.Values)
-                {
-                        if (neighbor.IsAlive && neighbor != this &&
-                                neighbor.CellType == CellType.Basic &&
-                                neighbor.Nationality == Nationality)
-                                neighbor.Conditions.Add("toWar");
-                }
-        }
+	/// <summary>
+	/// Marks every adjacent living Basic cell of the same nation with <c>"toWar"</c>,
+	/// mirroring <see cref="Cell_King"/> army-building behaviour.
+	/// </summary>
+	private void MakeArmy()
+	{
+		foreach (var neighbor in CellNeighborhood.NeighborhoodDict.Values)
+		{
+			if (neighbor.IsAlive && neighbor != this &&
+							neighbor.CellType == CellType.Basic &&
+							neighbor.Nationality == Nationality)
+				neighbor.Conditions.Add("toWar");
+		}
+	}
 
-        /// <summary>
-        /// Converts the nearest cells from <see cref="OldNationality"/> into Warriors and Rebels,
-        /// switching their nationality to the Revolutionary's before promotion.
-        /// First step: 1 Warrior + 2 Rebels.  Subsequent steps: 1 Warrior + 1 Rebel.
-        /// </summary>
-        private void Recruit(Cell[,] cellGrid)
-        {
-                if (OldNationality < 0)
-                        return;
+	/// <summary>
+	/// Converts the nearest cells from <see cref="OldNationality"/> into Warriors and Rebels,
+	/// switching their nationality to the Revolutionary's before promotion.
+	/// First step: 1 Warrior + 2 Rebels.  Subsequent steps: 1 Warrior + 1 Rebel.
+	/// </summary>
+	private void Recruit(Cell[,] cellGrid)
+	{
+		if (OldNationality < 0)
+			return;
 
-                int wantWarriors = 1;
-                int wantRebels = 2;
+		int wantWarriors = 1;
+		int wantRebels = 2;
 
-                var candidates = GetAllCellsInRangeByRule(cellGrid,
-                        c => c.IsAlive &&
-                                 c.Nationality == OldNationality &&
-                                 c.CellType != CellType.King &&
-                                 c.CellType != CellType.Revolutionary,
-                        8);
+		var candidates = GetAllCellsInRangeByRule(cellGrid,
+						c => c.IsAlive &&
+										 c.Nationality == OldNationality &&
+										 c.CellType != CellType.King &&
+										 c.CellType != CellType.Revolutionary,
+						8);
 
-                candidates.Sort((a, b) =>
-                {
-                        int da = Math.Abs(a.Column - Column) + Math.Abs(a.Row - Row);
-                        int db = Math.Abs(b.Column - Column) + Math.Abs(b.Row - Row);
-                        return da.CompareTo(db);
-                });
+		candidates.Sort((a, b) =>
+		{
+			int da = Math.Abs(a.Column - Column) + Math.Abs(a.Row - Row);
+			int db = Math.Abs(b.Column - Column) + Math.Abs(b.Row - Row);
+			return da.CompareTo(db);
+		});
 
-                int idx = 0;
-                while (wantWarriors > 0 && idx < candidates.Count)
-                {
-                        var cell = candidates[idx++];
-                        cell.Nationality = Nationality;
-                        cell.Conditions.Add("toWar");
-                        wantWarriors--;
-                }
-                while (wantRebels > 0 && idx < candidates.Count)
-                {
-                        var cell = candidates[idx++];
-                        cell.Nationality = Nationality;
-                        cell.Conditions.Add("toRebel");
-                        wantRebels--;
-                }
+		int idx = 0;
+		while (wantWarriors > 0 && idx < candidates.Count)
+		{
+			var cell = candidates[idx++];
+			cell.Nationality = Nationality;
+			cell.Conditions.Add("toWar");
+			wantWarriors--;
+		}
+		while (wantRebels > 0 && idx < candidates.Count)
+		{
+			var cell = candidates[idx++];
+			cell.Nationality = Nationality;
+			cell.Conditions.Add("toRebel");
+			wantRebels--;
+		}
 
-                _firstStepDone = true;
-        }
+	}
 
-        /// <summary>Builds its army and recruits defectors from the old nation each step.</summary>
-        public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null)
-        {
-                if (!IsAlive || _specialPerformed)
-                        return;
-                _specialPerformed = true;
-                MakeArmy();
-                Recruit(cellGrid);
-        }
+	/// <summary>Builds its army and recruits defectors from the old nation each step.</summary>
+	public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null)
+	{
+		if (!IsAlive || _specialPerformed)
+			return;
+		_specialPerformed = true;
+		MakeArmy();
+		Recruit(cellGrid);
+	}
 }
