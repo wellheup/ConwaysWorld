@@ -180,6 +180,9 @@ public abstract class Cell
 			CellType.Wayfinder => new Cell_Wayfinder(col, row, isAlive),
 			CellType.Islander => new Cell_Islander(col, row, isAlive),
 			CellType.Barbarian => new Cell_Barbarian(col, row, isAlive),
+			CellType.Spy => new Cell_Spy(col, row, isAlive),
+			CellType.Soldier => new Cell_Soldier(col, row, isAlive),
+			CellType.Conquistador => new Cell_Conquistador(col, row, isAlive),
 			_ => new Cell_Basic(col, row, isAlive),
 		};
 		cell.Conditions = new HashSet<string>(oldCell.Conditions);

@@ -67,6 +67,15 @@ public enum CellType
 
 	/// <summary>Nationless aggressor spawned from Islanders. Converts adjacent Islanders and kills nearby nation cells each step; reverts to Islander when no targets remain.</summary>
 	Barbarian,
+
+	/// <summary>Infiltrates enemy territory; belongs to a minority nation; seeks the enemy King by swapping through living cells, converting each displaced cell into a Soldier.</summary>
+	Spy,
+
+	/// <summary>Combat cell created by Spies and Conquistadors; kills adjacent enemies and advances toward distant ones; triggers a nation-merge check when the last of its wave dies.</summary>
+	Soldier,
+
+	/// <summary>Like Voyager but on arrival teleports the nearest 10 home-nation cells to the landing zone and converts them (and itself) into Soldiers.</summary>
+	Conquistador,
 }
 /*
 - TODO: maybe cells should be more likely to survive death for every neighbor of the same nation?
@@ -76,21 +85,13 @@ public enum CellType
         - TODO: necromancer (revives neighbors the turn after they die) - I think this should wait til after refactor...
         - TODO: zombie (die if their necromancer dies, do not die from overpopulation)
         - TODO: mutant/ mutator (has a small chance every turn to Randomly alter surrounding cells to another cell type)
-        - TODO: islander (dies if there are more than x number of nearby cells within like 10 cells, moves til finding empty space if it's crowded)
         - TODO: savior (moves in a direction, cells follow it)
-        - TODO: conqueror (moves in a direction until it leave its nation, when hitting another nation, Random chance that it kills several of them, and if they killed a large enough percent of the island they're touching, the nation converts)
         - TODO: teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
         - TODO: irradiated (cell cannot live ever again except under certain circumstance)
-        - TODO: spy (similar to diplomat, but instead of moving directly toward target, must move through living neighbors)
         - TODO: god? (effects every living cell on the board in some way)
         - TODO: natural disasters? opportunity for largest island?
         - TODO: add coup event where 3 warriors spawn and try to kill a king
-        - TODO: add a behavior to diplomats to instigate a rebellion event where, if a nation is large enough, and significantly larger than others (if there are any), it will become a revolutionary cell
-        - TODO: revolutionary cells spawn a bunch of rebels and warriors for a new nation, which they become king of
-        - TODO: rebel cells are like diplomats with higher conversion rates but shorter lifespans but are hunted by other nations warriors and hunters
-                        - still not working quite right...
 - TODO: add an increased chance to spawn doctors near diseases
-- TODO: make minimum allowable grid size 5x5
 - TODO: utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
 - TODO: reset grid size after world ending events
 - TODO: make each update frame fade between the 2 more smoothly

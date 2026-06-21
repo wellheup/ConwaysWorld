@@ -55,6 +55,7 @@ public partial class Model
 	private int _currentPopulation;
 	private int _columns;
 	private int _rows;
+	private HashSet<(int, int)> _prevSoldierPairs = new();
 
 	// ── Public read-only accessors ────────────────────────────────────────────────
 
@@ -127,8 +128,8 @@ public partial class Model
 			return;   // nothing to spawn — grid too large for this population setting
 
 		int clusterCount = _settings.StartClusters > 0
-																																		? Math.Clamp(_settings.StartClusters, 1, livingBudget)
-																																		: Math.Max(1, _settings.MaxNations / 4);
+																																																																		? Math.Clamp(_settings.StartClusters, 1, livingBudget)
+																																																																		: Math.Max(1, _settings.MaxNations / 4);
 
 		// Choose cluster seed points (unique grid positions).
 		var seeds = new List<(int c, int r)>();
@@ -238,6 +239,7 @@ public partial class Model
 		UpdateCellConditions();
 		UpdateNeighborhoodsGrid();
 		UpdateSpecialActions();
+		CheckSoldierAttackOutcomes();
 		if (_settings.RandomLifeEnabled)
 			AddRandomLife();
 		UpdateNations();
@@ -368,7 +370,7 @@ public partial class Model
 					cell.Immaculate(CellGrid);
 
 				if (cell.IsAlive && cell.CellType == CellType.Explorer &&
-																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																				(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1))
 					needResize = true;
 
 				// Nation-join: nationless living cell scans within 3 Chebyshev tiles.
@@ -544,6 +546,84 @@ public partial class Model
 		CheckRevolution();
 	}
 
+	// ── Soldier attack outcome tracking ───────────────────────────────────────────
+
+	/// <summary>
+	/// Collects the set of active (attackerNation, targetNation) pairs from all live
+	/// <see cref="Cell_Soldier"/> cells on the grid.
+	/// </summary>
+	private HashSet<(int, int)> CollectActiveSoldierPairs()
+	{
+		var pairs = new HashSet<(int, int)>();
+		for (int c = 0; c < _columns; c++)
+			for (int r = 0; r < _rows; r++)
+			{
+				var cell = CellGrid[c, r];
+				if (cell.IsAlive && cell.CellType == CellType.Soldier && cell.Nationality >= 0 &&
+					cell is Cell_Soldier soldier && soldier.TargetNation >= 0)
+					pairs.Add((cell.Nationality, soldier.TargetNation));
+			}
+		return pairs;
+	}
+
+	/// <summary>
+	/// Detects when an attack wave ends (a previously-active soldier pair has no live
+	/// soldiers remaining) and conditionally merges the defeated nation into the victor.
+	/// A merge fires when the defender's population is below 75 % of the attacker's.
+	/// Called once per step, immediately after <see cref="UpdateSpecialActions"/>.
+	/// </summary>
+	private void CheckSoldierAttackOutcomes()
+	{
+		var current = CollectActiveSoldierPairs();
+		foreach (var (attacker, defender) in _prevSoldierPairs)
+		{
+			if (current.Contains((attacker, defender)))
+				continue;
+
+			if (!Nations.TryGetValue(attacker, out var attackNation) ||
+				!Nations.TryGetValue(defender, out var defendNation))
+				continue;
+
+			if (defendNation.CitizensList.Count > 0 &&
+				defendNation.CitizensList.Count < 0.75f * attackNation.CitizensList.Count)
+				MergeNationInto(defender, attacker);
+		}
+		_prevSoldierPairs = current;
+	}
+
+	/// <summary>
+	/// Absorbs <paramref name="loserNation"/> into <paramref name="winnerNation"/>:
+	/// kills the loser's King without succession, re-tags all loser cells as the winner,
+	/// removes the loser from <see cref="Nations"/>, and fires a <c>kingdom_destroyed</c> event.
+	/// </summary>
+	private void MergeNationInto(int loserNation, int winnerNation)
+	{
+		if (!Nations.ContainsKey(loserNation) || !Nations.ContainsKey(winnerNation))
+			return;
+
+		var loser = Nations[loserNation];
+
+		// Kill the king immediately — no succession.
+		if (loser.King != null && loser.King.IsAlive)
+		{
+			loser.King.Die();
+			loser.King.Conditions.Add("cleanup");
+		}
+		loser.King = null;
+
+		// Re-assign all surviving loser citizens to the winner.
+		for (int c = 0; c < _columns; c++)
+			for (int r = 0; r < _rows; r++)
+			{
+				var cell = CellGrid[c, r];
+				if (cell.IsAlive && cell.Nationality == loserNation)
+					cell.Nationality = winnerNation;
+			}
+
+		Nations.Remove(loserNation);
+		PendingEvents.Add($"kingdom_destroyed:Nation {loserNation} was conquered! Absorbed into Nation {winnerNation}.");
+	}
+
 	/// <summary>
 	/// Promotes a random eligible citizen of <paramref name="nation"/> to
 	/// <see cref="CellType.Revolutionary"/>, founding a new nation if a slot is available.
@@ -553,13 +633,13 @@ public partial class Model
 	private void TrySpawnRevolutionaryForNation(Cell_Nation nation)
 	{
 		var candidates = nation.CitizensList
-				.Where(c => c.IsAlive &&
-							c != nation.King &&
-							c.CellType != CellType.Warrior &&
-							c.CellType != CellType.Diplomat &&
-							c.CellType != CellType.Revolutionary &&
-							c.CellType != CellType.Rebel)
-				.ToList();
+						.Where(c => c.IsAlive &&
+												c != nation.King &&
+												c.CellType != CellType.Warrior &&
+												c.CellType != CellType.Diplomat &&
+												c.CellType != CellType.Revolutionary &&
+												c.CellType != CellType.Rebel)
+						.ToList();
 
 		if (candidates.Count == 0)
 			return;
@@ -583,9 +663,9 @@ public partial class Model
 		else if (Nations.Count >= 2)
 		{
 			var second = Nations.Values
-					.Where(n => n.NationNum != oldNation && n.CitizensList.Count > 0)
-					.OrderByDescending(n => n.CitizensList.Count)
-					.FirstOrDefault();
+							.Where(n => n.NationNum != oldNation && n.CitizensList.Count > 0)
+							.OrderByDescending(n => n.CitizensList.Count)
+							.FirstOrDefault();
 			if (second != null)
 			{
 				var warrior = Cell.ReplaceCell(chosen, CellType.Warrior, true);
@@ -651,8 +731,8 @@ public partial class Model
 					{
 						var neighbor = CellGrid[nc, nr];
 						if (!visited.Contains(neighbor) &&
-																						neighbor.IsAlive &&
-																						neighbor.Nationality < 0)
+																																						neighbor.IsAlive &&
+																																						neighbor.Nationality < 0)
 						{
 							visited.Add(neighbor);
 							queue.Enqueue(neighbor);
@@ -706,9 +786,9 @@ public partial class Model
 			return;
 
 		var sorted = Nations.Values
-																																																																																																																																		.Where(n => n.CitizensList.Count > 0)
-																																																																																																																																		.OrderByDescending(n => n.CitizensList.Count)
-																																																																																																																																		.ToList();
+																																																																																																																																																																																																																																																																		.Where(n => n.CitizensList.Count > 0)
+																																																																																																																																																																																																																																																																		.OrderByDescending(n => n.CitizensList.Count)
+																																																																																																																																																																																																																																																																		.ToList();
 
 		if (sorted.Count < 2)
 			return;
@@ -723,13 +803,13 @@ public partial class Model
 			return;
 
 		var candidates = dominant.CitizensList
-																																																																																																																																		.Where(c => c != dominant.King &&
-																																																																																																																																																																																																																																																																																																																																		c.CellType != CellType.Warrior &&
-																																																																																																																																																																																																																																																																																																																																		c.CellType != CellType.Diplomat &&
-																																																																																																																																																																																																																																																																																																																																		c.CellType != CellType.Revolutionary &&
-																																																																																																																																																																																																																																																																																																																																		c.CellType != CellType.Rebel &&
-																																																																																																																																																																																																																																																																																																																																		c.IsAlive)
-																																																																																																																																		.ToList();
+																																																																																																																																																																																																																																																																		.Where(c => c != dominant.King &&
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		c.CellType != CellType.Warrior &&
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		c.CellType != CellType.Diplomat &&
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		c.CellType != CellType.Revolutionary &&
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		c.CellType != CellType.Rebel &&
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		c.IsAlive)
+																																																																																																																																																																																																																																																																		.ToList();
 
 		if (candidates.Count == 0)
 			return;
