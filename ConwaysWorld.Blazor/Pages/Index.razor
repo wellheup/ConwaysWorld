@@ -207,10 +207,9 @@
                         <div class="cw-weight-row">
                             <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(kv.Key).jpg" alt="@kv.Key" />
                             <span class="cw-weight-name">@kv.Key</span>
-                            <input type="range" min="0" max="100"
+                            <input type="number" min="0" max="100"
                                    value="@kv.Value"
                                    @onchange="@(e => OnWeightChange(kv.Key, e))" />
-                            <span class="cw-cell-count">@kv.Value</span>
                         </div>
                     }
 
