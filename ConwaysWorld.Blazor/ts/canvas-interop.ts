@@ -82,6 +82,15 @@ interface DotNetRef {
         'Rebel',
         'Revolutionary',
         'Voyager',
+        'Wayfinder',
+        'Islander',
+        'Barbarian',
+        'Spy',
+        'Soldier',
+        'Conquistador',
+        'Savior',
+        'Follower',
+        'Zealot',
     ];
 
     const TYPE_COLORS: Record<number, string> = {
@@ -101,6 +110,15 @@ interface DotNetRef {
         13: '#ff5533',
         14: '#9b1a4a',
         15: '#00d4aa',
+        16: '#1e90ff',
+        17: '#c8a040',
+        18: '#bb2200',
+        19: '#3a3a5a',
+        20: '#5a9e20',
+        21: '#c87800',
+        22: '#ffffff',
+        23: '#b0e0ff',
+        24: '#ff4400',
     };
 
     const sprites: { [key: number]: HTMLImageElement } = {};

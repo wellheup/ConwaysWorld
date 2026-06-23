@@ -28,14 +28,14 @@ public class Cell_Warrior : Cell_Hunter
 
 	/// <summary>Creates a Warrior, overriding Hunter's prey list.</summary>
 	public Cell_Warrior(int column, int row, bool isAlive)
-									: base(column, row, isAlive)
+																	: base(column, row, isAlive)
 	{
 		Column = column;
 		Row = row;
 		IsAlive = isAlive;
 		CellType = CellType.Warrior;
 		Conditions = new HashSet<string>();
-		_warriorPreyTypes = new List<CellType> { CellType.Diseased, CellType.Plague, CellType.King, CellType.Rebel, CellType.Revolutionary, CellType.Spy };
+		_warriorPreyTypes = new List<CellType> { CellType.Diseased, CellType.Plague, CellType.King, CellType.Rebel, CellType.Revolutionary, CellType.Spy, CellType.Savior, CellType.Follower };
 	}
 
 	/// <summary>Increments age and assigns nationality; does not track isolation like a Traveler.</summary>
@@ -50,10 +50,16 @@ public class Cell_Warrior : Cell_Hunter
 	/// Returns <c>true</c> if <paramref name="c"/> is alive, belongs to a different nation,
 	/// and is a type in <see cref="_warriorPreyTypes"/>.
 	/// </summary>
-	private bool IsEnemy(Cell c) =>
-									c.IsAlive &&
-									c.Nationality != Nationality &&
-									_warriorPreyTypes.Contains(c.CellType);
+	private bool IsEnemy(Cell c)
+	{
+		if (!c.IsAlive || !_warriorPreyTypes.Contains(c.CellType))
+			return false;
+		// Saviors and Followers are hunted by the birth nation's Warriors regardless of the
+		// Warrior's own nation — they count as prey for all nations.
+		if (c.CellType == CellType.Savior || c.CellType == CellType.Follower)
+			return true;
+		return c.Nationality != Nationality;
+	}
 
 	/// <summary>
 	/// Compares the combat strength of this cell against <paramref name="target"/>.

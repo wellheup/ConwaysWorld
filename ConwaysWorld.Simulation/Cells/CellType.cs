@@ -76,6 +76,15 @@ public enum CellType
 
 	/// <summary>Like Voyager but on arrival teleports the nearest 10 home-nation cells to the landing zone and converts them (and itself) into Soldiers.</summary>
 	Conquistador,
+
+	/// <summary>At most one per grid. Flees its birth nation toward a random foreign nation, converting adjacent Basic cells into Followers. On reaching the target King: 50% assimilates (becomes Immortal, Followers become Basic in target nation) or 50% dies (Followers become Zealots).</summary>
+	Savior,
+
+	/// <summary>Created by a Savior. Waits 3 steps then follows the Savior's last broadcast direction. Reverts to Basic after 4 consecutive blocked steps. Immune to Conway crowding/isolation.</summary>
+	Follower,
+
+	/// <summary>Created when a Savior dies. Attacks any adjacent cell regardless of nation. Like a Soldier but with no nation allegiance checks.</summary>
+	Zealot,
 }
 /*
 - TODO: maybe cells should be more likely to survive death for every neighbor of the same nation?
@@ -95,7 +104,6 @@ public enum CellType
 - TODO: utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
 - TODO: reset grid size after world ending events
 - TODO: make each update frame fade between the 2 more smoothly
-- TODO: the system would be more stable and  likely faster if each cellType has its own phase of the update, so there is a heirarchical order to cell special actions
 - TODO: make doctors more aggressive. Maybe make range a modifiable number in ConwaysWorld?
 
 Visuals

@@ -113,44 +113,46 @@ public class SimulationSettings
 	/// Warriors, Diplomats, and Kings are intentionally absent — they are only promoted from existing cells.
 	/// </summary>
 	public Dictionary<CellType, int> SpawnWeights { get; set; } = new()
-								{
-																{ CellType.Basic,    50 },
-																{ CellType.Immortal,  2 },
-																{ CellType.Diseased, 15 },
-																{ CellType.Plague,    3 },
-																{ CellType.Traveler,  6 },
-																{ CellType.Explorer,  3 },
-																{ CellType.Doctor,    5 },
-																{ CellType.Hunter,    5 },
-																{ CellType.Bomber,    8 },
-																{ CellType.Voyager,   3 },
-																{ CellType.Wayfinder, 2 },
-																{ CellType.Islander,  5 },
-																{ CellType.Spy,       3 },
-																{ CellType.Conquistador, 2 },
-								};
+																{
+																																{ CellType.Basic,    50 },
+																																{ CellType.Immortal,  2 },
+																																{ CellType.Diseased, 15 },
+																																{ CellType.Plague,    3 },
+																																{ CellType.Traveler,  6 },
+																																{ CellType.Explorer,  3 },
+																																{ CellType.Doctor,    5 },
+																																{ CellType.Hunter,    5 },
+																																{ CellType.Bomber,    8 },
+																																{ CellType.Voyager,   3 },
+																																{ CellType.Wayfinder, 2 },
+																																{ CellType.Islander,  5 },
+																																{ CellType.Spy,       3 },
+																																{ CellType.Conquistador, 2 },
+																																{ CellType.Savior,    1 },
+																};
 
 	/// <summary>
 	/// The set of types that are eligible for spawning.
 	/// Only types present in both this set and <see cref="SpawnWeights"/> are considered.
 	/// </summary>
 	public HashSet<CellType> SpawnEnabled { get; set; } = new()
-								{
-																CellType.Basic,
-																CellType.Immortal,
-																CellType.Diseased,
-																CellType.Plague,
-																CellType.Traveler,
-																CellType.Explorer,
-																CellType.Doctor,
-																CellType.Hunter,
-																CellType.Bomber,
-																CellType.Voyager,
-																CellType.Wayfinder,
-																CellType.Islander,
-																CellType.Spy,
-																CellType.Conquistador,
-								};
+																{
+																																CellType.Basic,
+																																CellType.Immortal,
+																																CellType.Diseased,
+																																CellType.Plague,
+																																CellType.Traveler,
+																																CellType.Explorer,
+																																CellType.Doctor,
+																																CellType.Hunter,
+																																CellType.Bomber,
+																																CellType.Voyager,
+																																CellType.Wayfinder,
+																																CellType.Islander,
+																																CellType.Spy,
+																																CellType.Conquistador,
+																																CellType.Savior,
+																};
 
 	// ── Derived ──────────────────────────────────────────────────────────────────
 

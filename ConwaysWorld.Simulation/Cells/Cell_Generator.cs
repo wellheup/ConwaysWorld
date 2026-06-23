@@ -99,12 +99,12 @@ public class Cell_Generator
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-					? new Cell_Diseased(column, row, true)
-					: (Cell)new Cell_Plague(column, row, true),
+							? new Cell_Diseased(column, row, true)
+							: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-					? new Cell_Traveler(column, row, true)
-					: (Cell)new Cell_Explorer(column, row, true),
+							? new Cell_Traveler(column, row, true)
+							: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),
@@ -118,24 +118,31 @@ public class Cell_Generator
 	/// Dead rolls produce a dead Basic cell.  Some types produce mixed-variant results
 	/// (see class summary).
 	/// </summary>
+	/// <summary>Callback set by Model to gate Savior spawning (at most one per grid, requires ≥2 nations).</summary>
+	public Func<bool>? CanSpawnSavior { get; set; }
+
 	public Cell InitializeRandomCell(int column, int row)
 	{
 		float variant = SimRandom.Value;
-		return GetRandomCellType() switch
+		var type = GetRandomCellType();
+		if (type == CellType.Savior && (CanSpawnSavior == null || !CanSpawnSavior()))
+			type = CellType.Basic;
+		return type switch
 		{
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-					? new Cell_Diseased(column, row, true)
-					: (Cell)new Cell_Plague(column, row, true),
+							? new Cell_Diseased(column, row, true)
+							: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-					? new Cell_Traveler(column, row, true)
-					: (Cell)new Cell_Explorer(column, row, true),
+							? new Cell_Traveler(column, row, true)
+							: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),
 			CellType.Bomber => new Cell_Bomber(column, row, true),
+			CellType.Savior => new Cell_Savior(column, row, true),
 			_ => new Cell_Basic(column, row, false),
 		};
 	}

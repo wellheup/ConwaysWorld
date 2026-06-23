@@ -183,6 +183,9 @@ public abstract class Cell
 			CellType.Spy => new Cell_Spy(col, row, isAlive),
 			CellType.Soldier => new Cell_Soldier(col, row, isAlive),
 			CellType.Conquistador => new Cell_Conquistador(col, row, isAlive),
+			CellType.Savior => new Cell_Savior(col, row, isAlive),
+			CellType.Follower => new Cell_Follower(col, row, isAlive),
+			CellType.Zealot => new Cell_Zealot(col, row, isAlive),
 			_ => new Cell_Basic(col, row, isAlive),
 		};
 		cell.Conditions = new HashSet<string>(oldCell.Conditions);
