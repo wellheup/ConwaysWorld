@@ -186,6 +186,8 @@ public abstract class Cell
 			CellType.Savior => new Cell_Savior(col, row, isAlive),
 			CellType.Follower => new Cell_Follower(col, row, isAlive),
 			CellType.Zealot => new Cell_Zealot(col, row, isAlive),
+			CellType.Irradiated => new Cell_Irradiated(col, row, isAlive),
+			CellType.PlagueRat => new Cell_PlagueRat(col, row, isAlive),
 			_ => new Cell_Basic(col, row, isAlive),
 		};
 		cell.Conditions = new HashSet<string>(oldCell.Conditions);
@@ -202,6 +204,14 @@ public abstract class Cell
 	/// </summary>
 	public static void SwapCells(Cell origin, Cell dest, Cell[,] cellGrid)
 	{
+		// Irradiated tiles are impassable — any cell that tries to move onto one dies instantly.
+		// The Irradiated cell stays in place and is unaffected.
+		if (dest.CellType == CellType.Irradiated)
+		{
+			origin.Die();
+			return;
+		}
+
 		int oldCol = origin.Column;
 		int oldRow = origin.Row;
 

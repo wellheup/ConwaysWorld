@@ -85,6 +85,20 @@ public enum CellType
 
 	/// <summary>Created when a Savior dies. Attacks any adjacent cell regardless of nation. Like a Soldier but with no nation allegiance checks.</summary>
 	Zealot,
+
+	/// <summary>
+	/// Permanent hazard tile. Cannot be moved, killed, converted, or given conditions.
+	/// Does not count as a living cell for simulation-over checks.
+	/// Any cell that swaps onto this tile dies instantly; the Irradiated cell is unaffected.
+	/// </summary>
+	Irradiated,
+
+	/// <summary>
+	/// Spawns at the emptiest grid region, then travels in one direction for 1/3 of the
+	/// grid span, infecting only cells it physically swaps with (100% transmission, no roll).
+	/// Dies immediately when it stops. Nationless, cannot be converted.
+	/// </summary>
+	PlagueRat,
 }
 /*
 - TODO: maybe cells should be more likely to survive death for every neighbor of the same nation?
@@ -96,7 +110,7 @@ public enum CellType
         - TODO: mutant/ mutator (has a small chance every turn to Randomly alter surrounding cells to another cell type)
         - TODO: teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
         - TODO: irradiated (cell cannot live ever again except under certain circumstance)
-		- TODO: plague bearer cell, which spawns in the middle of nowhere and then marches in a direction, spreading plague to all cells it touches
+                - TODO: plague bearer cell, which spawns in the middle of nowhere and then marches in a direction, spreading plague to all cells it touches
         - TODO: god? (effects every living cell on the board in some way)
         - TODO: natural disasters? opportunity for largest island?
         - TODO: add coup event where 3 warriors spawn and try to kill a king

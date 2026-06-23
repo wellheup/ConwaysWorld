@@ -53,6 +53,8 @@ window.ConwaysInterop = (() => {
         'Savior',
         'Follower',
         'Zealot',
+        'Irradiated',
+        'PlagueRat',
     ];
     const TYPE_COLORS = {
         0: '#111',
@@ -80,6 +82,8 @@ window.ConwaysInterop = (() => {
         22: '#ffffff',
         23: '#b0e0ff',
         24: '#ff4400',
+        25: '#55ff00',
+        26: '#8b2020',
     };
     const sprites = {};
     function loadSprites() {

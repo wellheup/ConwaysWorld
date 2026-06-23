@@ -35,14 +35,14 @@ public class Cell_Hunter : Cell_Traveler
 
 	/// <summary>Creates a Hunter targeting Immortals and Kings.</summary>
 	public Cell_Hunter(int column, int row, bool isAlive)
-																																	: base(column, row, isAlive)
+																																																																	: base(column, row, isAlive)
 	{
 		Column = column;
 		Row = row;
 		IsAlive = isAlive;
 		CellType = CellType.Hunter;
 		Conditions = new HashSet<string>();
-		PreyTypes = new List<CellType> { CellType.Immortal, CellType.King, CellType.Rebel, CellType.Revolutionary, CellType.Spy, CellType.Savior, CellType.Follower };
+		PreyTypes = new List<CellType> { CellType.Immortal, CellType.King, CellType.Rebel, CellType.Revolutionary, CellType.Spy, CellType.Savior, CellType.Follower, CellType.PlagueRat };
 		CurrentPrey = null;
 	}
 
