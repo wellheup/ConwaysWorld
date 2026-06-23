@@ -2,20 +2,21 @@
 
 ## Overview
 
-A web-based implementation of Conway's World — a sophisticated Conway's Game of Life variant with 13 specialized cell types and a Nations system. The simulation logic is written in pure C# (Blazor WebAssembly), making it directly portable back to Unity.
+A web-based implementation of Conway's World — a sophisticated Conway's Game of Life variant with 24 specialized cell types and a Nations system. The simulation logic is written in pure C# (Blazor WebAssembly), making it directly portable back to Unity.
 
 ## Architecture
 
 ```
 ConwaysWorld.Simulation/   ← Pure C# simulation library (no Unity, no Blazor deps)
-  Cells/                   ← All 13 cell type implementations
+  Cells/                   ← All 24 cell type implementations
   Model.cs                 ← Simulation step orchestration
   Cell_Nation.cs           ← Nations: census, diplomat election, king crowning
   SimulationSettings.cs    ← All configurable parameters
 
 ConwaysWorld.Blazor/       ← Blazor WebAssembly frontend
   Pages/Index.razor        ← Main page: canvas, sidebar, toolbar, settings
-  wwwroot/canvas-interop.js ← JS: canvas rendering, zoom/pan, keyboard shortcuts
+  ts/canvas-interop.ts     ← TypeScript source: canvas rendering, zoom/pan, keyboard shortcuts
+  wwwroot/canvas-interop.js ← Compiled JS (always edit the .ts, then run npx tsc)
   wwwroot/css/app.css      ← All styles
 
 Assets/Scripts/            ← Original Unity C# source (reference only, not compiled)
@@ -35,31 +36,53 @@ Or just use the **Start application** workflow in Replit.
 
 ## Cell Types
 
-| Type | Behavior |
-|------|----------|
-| Basic | Standard Conway cells; 1/4 chance immune; 1/100 immaculate |
-| Immortal | Lives forever unless isolated for >8 steps; immune to disease |
-| Diseased | Spreads d_ strain; dies after 3-step countdown |
-| Plague | Like Diseased but 40% higher transmission rate |
-| Traveler | Moves each step; dies if isolated >3 steps or surrounded >3 steps |
-| Explorer | Like Traveler, triggers grid expansion at edges |
-| Doctor | Cures nearby disease; stamps vax_ markers; survives while active |
-| Warrior | Fights foreign Diseased/Plague; demotes to Basic after 3 idle steps |
-| Hunter | Hunts Immortals and Kings; demotes to Basic after 3 idle steps |
-| Bomber | Detonates at age 2, killing all cells in 2-cell radius |
-| Diplomat | Elected from large nations; travels to foreign nations and converts cells |
-| King | Crowned from large nations; turns neighboring Basics into Warriors |
+| # | Type | Color | Behavior |
+|---|------|-------|----------|
+| 1 | Basic | purple | Standard Conway cells; 25% immune chance; 1% immaculate at spawn |
+| 2 | Immortal | yellow | Lives forever unless isolated >8 steps; immune to disease |
+| 3 | Diseased | green | Spreads `d_` strain to neighbours; dies after 3-step countdown |
+| 4 | Plague | dark green | Like Diseased but 40% higher transmission rate (`p_` strain) |
+| 5 | Traveler | cyan | Moves each step; dies if isolated >3 steps or surrounded >3 steps |
+| 6 | Explorer | light cyan | Like Traveler; triggers grid expansion at edges |
+| 7 | Doctor | pink | Cures nearby disease; stamps `vax_` immunity markers; survives while active |
+| 8 | Warrior | red | Fights foreign Diseased/Plague within range 2; also hunts Saviors/Followers regardless of nation; demotes to Basic after 3 idle steps |
+| 9 | Hunter | orange | Hunts Immortals and Kings within range 5; also hunts Saviors/Followers regardless of nation; demotes to Basic after 3 idle steps |
+| 10 | Bomber | dark red | Detonates at age 2, killing all cells within a 2-cell radius |
+| 11 | Diplomat | blue | Elected from large nations; travels to foreign nations and converts adjacent cells |
+| 12 | King | gold | Crowned from nations with ≥5 citizens; marks neighbouring Basic cells with `toWar`; death triggers Basic-cell neutralisation cooldown for distant cells |
+| 13 | Rebel | light red | Short-lived diplomat variant with 3× conversion rate; created by Revolutionaries; hunted by Warriors and Hunters |
+| 14 | Revolutionary | dark purple | Defects from a dominant nation, founds a rival nation, recruits Warriors and Rebels from the old homeland |
+| 15 | Voyager | teal | Travels to a disconnected foreign nation; on arrival either spawns diplomats and warriors (→ Explorer) or seeds 4 Plague cells |
+| 16 | Wayfinder | light green | Finds the emptiest grid region and travels there; on arrival spawns 5 Islander cells |
+| 17 | Islander | sand | Nationless; lives by Conway rules but dies from overcrowding (20+ cells within 5 tiles); converts to Barbarian when touched by a nation cell |
+| 18 | Barbarian | brown | Nationless aggressor spawned from Islanders; converts adjacent Islanders and kills nearby nation cells; reverts to Islander when no targets remain |
+| 19 | Spy | grey-blue | Infiltrates enemy territory from a minority nation; seeks the enemy King by swapping through living cells, converting each displaced cell into a Soldier |
+| 20 | Soldier | steel blue | Combat cell created by Spies and Conquistadors; kills adjacent enemies and advances on distant ones; triggers a nation-merge check when the last of its wave dies |
+| 21 | Conquistador | dark orange | Like Voyager but on arrival teleports the nearest 10 home-nation cells to the landing zone and converts them (+ itself) into Soldiers |
+| 22 | Savior | white | At most one per grid; requires ≥2 nations. Flees its birth nation toward a random foreign nation, converting adjacent Basic cells into Followers (50% chance/step). On reaching the target King: 50% assimilates (→ Immortal, Followers → Basic in target nation) or 50% dies (Followers → Zealots). Immune to Conway rules; hunted by Warriors and Hunters of all nations |
+| 23 | Follower | light blue | Created by a Savior. Waits 3 steps then follows the Savior's last broadcast direction (1 cell/step). Blocked by Kings, Revolutionaries, and other Followers; reverts to Basic after 4 consecutive blocked steps. Immune to Conway rules; hunted by Warriors and Hunters of all nations |
+| 24 | Zealot | red-orange | Created when a Savior dies. Attacks any adjacent living cell regardless of nation; advances toward the nearest living cell if no adjacent target |
 
-## Key JS Improvements Preserved in C# Port
+## Nation System
+
+- **Census** — every step, cells are counted per nationality; Kings and Diplomats are elected/crowned from nations above population thresholds.
+- **King crowning** — a nation with ≥5 citizens may crown a King, which marks nearby Basic cells with `toWar` to promote them to Warriors.
+- **King-distance neutralisation** — Basic cells further than `(columns + rows) / 3` from their King lose their nationality and gain a 3-step `neutral_cooldown` tag. Once the cooldown expires they can naturally re-join a nearby nation via the standard nation-join mechanic.
+- **Diplomat election** — large nations elect a Diplomat that travels to the nearest foreign nation and converts adjacent cells.
+- **Revolutionary defection** — when a nation becomes too dominant, a member may become a Revolutionary, splitting off a rival nation.
+
+## Key Design Details
 
 - **Warrior/Hunter idle demotion** — demote to Basic after 3 idle steps
-- **Doctor vax_ vaccination** — `vax_<strain>` markers prevent re-infection; doctor only earns survival credit for new vaccinations
+- **Warrior/Hunter nation-agnostic prey** — Saviors and Followers are hunted by Warriors and Hunters of *any* nation (not just foreign)
+- **Doctor `vax_` vaccination** — `vax_<strain>` markers prevent re-infection; doctor only earns survival credit for new vaccinations
 - **Plague transmission** — 40% higher than Diseased (`Math.Round(base * 1.4)`)
-- **Immortal disease immunity** — immune to both spread and conversion
+- **Immortal disease immunity** — immune to both disease spread and conversion
 - **CrushCountDown** — Traveler/Explorer die if fully surrounded for >3 steps
 - **Conditions as HashSet** — O(1) lookup vs original List
 - **Separate start/max grid size** — `StartColumns/Rows` vs `MaxGridSize`
 - **Pop mode** — percent of grid or fixed cell count
+- **Single Savior guard** — `CanSpawnSaviorNow()` callback on the generator; returns false if a Savior is already alive or fewer than 2 nations exist
 
 ## Controls
 
@@ -72,6 +95,16 @@ Or just use the **Start application** workflow in Replit.
 | Double-click | Reset zoom/pan |
 | Left-click | Select cell |
 | Hover | Tooltip: type, nation, age, conditions |
+
+## Editing the TypeScript Canvas Layer
+
+The canvas renderer is written in TypeScript. Always edit the `.ts` source and recompile:
+
+```
+cd ConwaysWorld.Blazor && npx tsc
+```
+
+The compiled `wwwroot/canvas-interop.js` is what the app loads — never edit the `.js` directly.
 
 ## Unity Portability
 
