@@ -93,6 +93,8 @@ interface DotNetRef {
         'Zealot',
         'Irradiated',
         'PlagueRat',
+        'Zombie',
+        'Necromancer',
     ];
 
     const TYPE_COLORS: Record<number, string> = {
@@ -123,6 +125,8 @@ interface DotNetRef {
         24: '#ff4400',
         25: '#55ff00',
         26: '#8b2020',
+        27: '#111111',
+        28: '#111111',
     };
 
     const sprites: { [key: number]: HTMLImageElement } = {};

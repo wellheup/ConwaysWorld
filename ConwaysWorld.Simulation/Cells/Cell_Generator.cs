@@ -99,12 +99,12 @@ public class Cell_Generator
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-											? new Cell_Diseased(column, row, true)
-											: (Cell)new Cell_Plague(column, row, true),
+																			? new Cell_Diseased(column, row, true)
+																			: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-											? new Cell_Traveler(column, row, true)
-											: (Cell)new Cell_Explorer(column, row, true),
+																			? new Cell_Traveler(column, row, true)
+																			: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),
@@ -132,12 +132,12 @@ public class Cell_Generator
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-											? new Cell_Diseased(column, row, true)
-											: (Cell)new Cell_Plague(column, row, true),
+																			? new Cell_Diseased(column, row, true)
+																			: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-											? new Cell_Traveler(column, row, true)
-											: (Cell)new Cell_Explorer(column, row, true),
+																			? new Cell_Traveler(column, row, true)
+																			: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),
@@ -145,6 +145,7 @@ public class Cell_Generator
 			CellType.Savior => new Cell_Savior(column, row, true),
 			CellType.Irradiated => new Cell_Irradiated(column, row, true),
 			CellType.PlagueRat => new Cell_PlagueRat(column, row, true),
+			CellType.Necromancer => new Cell_Necromancer(column, row, true),
 			_ => new Cell_Basic(column, row, false),
 		};
 	}

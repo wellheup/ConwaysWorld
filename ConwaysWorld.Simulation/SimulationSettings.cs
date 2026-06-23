@@ -131,6 +131,7 @@ public class SimulationSettings
 																																																																{ CellType.Savior,    1 },
 																																																																{ CellType.Irradiated, 3 },
 																																																																{ CellType.PlagueRat,  2 },
+																																																																{ CellType.Necromancer, 2 },
 																																};
 
 	/// <summary>

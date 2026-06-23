@@ -13,6 +13,13 @@ public class Cell_Neighborhood
 	/// <summary>Number of living cells in the 8 surrounding slots (excludes center).</summary>
 	public int NumNeighbors { get; private set; }
 
+	/// <summary>
+	/// Like <see cref="NumNeighbors"/> but excludes Zombie cells.
+	/// Used by non-zombie living cells for Conway survival/birth checks so zombies are
+	/// invisible to normal cells' population counts.
+	/// </summary>
+	public int NumNonZombieNeighbors { get; private set; }
+
 	/// <summary>Column index of the center cell.</summary>
 	public int CenterColumn { get; }
 
@@ -51,11 +58,11 @@ public class Cell_Neighborhood
 	/// </summary>
 	public static readonly string[] NeighborHoodKeys =
 	{
-		"southWest", "west", "northWest",
-		"south",               "north",
-		"southEast", "east",  "northEast",
-		"center",
-	};
+				"southWest", "west", "northWest",
+				"south",               "north",
+				"southEast", "east",  "northEast",
+				"center",
+		};
 
 	/// <summary>
 	/// Builds the neighbourhood for cell at (<paramref name="column"/>, <paramref name="row"/>)
@@ -71,6 +78,7 @@ public class Cell_Neighborhood
 		NeighborhoodDict = new Dictionary<string, Cell>();
 		int keyIndex = 0;
 		NumNeighbors = 0;
+		NumNonZombieNeighbors = 0;
 		Center = cellGrid[column, row];
 
 		for (int colOff = -1; colOff <= 1; colOff++)
@@ -86,9 +94,14 @@ public class Cell_Neighborhood
 				}
 				else
 				{
-					if (cellGrid[nc, nr].IsAlive)
+					var neighbor = cellGrid[nc, nr];
+					if (neighbor.IsAlive)
+					{
 						NumNeighbors++;
-					NeighborhoodDict[NeighborHoodKeys[keyIndex++]] = cellGrid[nc, nr];
+						if (neighbor.CellType != CellType.Zombie)
+							NumNonZombieNeighbors++;
+					}
+					NeighborhoodDict[NeighborHoodKeys[keyIndex++]] = neighbor;
 				}
 			}
 		}

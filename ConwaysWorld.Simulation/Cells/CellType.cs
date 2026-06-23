@@ -87,6 +87,21 @@ public enum CellType
 	Zealot,
 
 	/// <summary>
+	/// Nationless undead cell. Immune to Conway rules, disease, and old age.
+	/// Invisible to other living cells' Conway neighbor counts but can see other zombies.
+	/// Belongs to its necromancer's "nation"; dies if its necromancer dies.
+	/// Killed by a Doctor (treated as curing a disease).
+	/// </summary>
+	Zombie,
+
+	/// <summary>
+	/// Spawns randomly; survives as long as it has ≥2 active zombies OR is explicitly killed.
+	/// On spawn, immediately resurrects the 3 nearest dead cells with a prior type as zombies.
+	/// Each step, resurrects the nearest dead cell that has a prior type as a zombie.
+	/// </summary>
+	Necromancer,
+
+	/// <summary>
 	/// Permanent hazard tile. Cannot be moved, killed, converted, or given conditions.
 	/// Does not count as a living cell for simulation-over checks.
 	/// Any cell that swaps onto this tile dies instantly; the Irradiated cell is unaffected.

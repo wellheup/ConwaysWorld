@@ -62,6 +62,10 @@ Or just use the **Start application** workflow in Replit.
 | 22 | Savior | white | At most one per grid; requires ≥2 nations. Flees its birth nation toward a random foreign nation, converting adjacent Basic cells into Followers (50% chance/step). On reaching the target King: 50% assimilates (→ Immortal, Followers → Basic in target nation) or 50% dies (Followers → Zealots). Immune to Conway rules; hunted by Warriors and Hunters of all nations |
 | 23 | Follower | light blue | Created by a Savior. Waits 3 steps then follows the Savior's last broadcast direction (1 cell/step). Blocked by Kings, Revolutionaries, and other Followers; reverts to Basic after 4 consecutive blocked steps. Immune to Conway rules; hunted by Warriors and Hunters of all nations |
 | 24 | Zealot | red-orange | Created when a Savior dies. Attacks any adjacent living cell regardless of nation; advances toward the nearest living cell if no adjacent target |
+| 25 | Irradiated | bright green | Permanent hazard tile; kills any cell that swaps onto it; not counted as living |
+| 26 | PlagueRat | dark red | Nationless roamer; spreads `r_` plague strain; hunted by Warriors & Hunters |
+| 27 | Zombie | near-black | Resurrected by a Necromancer; retains visual appearance of original type; immune to Conway rules, disease, old age; invisible to non-zombie cells' Conway counts; dies when its Necromancer dies; permanently destroyed (no revival) when killed by a Doctor/Warrior/Hunter |
+| 28 | Necromancer | near-black | Spawns randomly; on spawn resurrects nearest 3 dead cells with prior types as zombies; each step resurrects 1 more; survives while ≥2 zombies alive; death kills all its zombies |
 
 ## Nation System
 

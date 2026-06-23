@@ -92,6 +92,16 @@ public class Cell_Doctor : Cell
 			if (!target.IsAlive || target == this)
 				continue;
 
+			// Doctors treat Zombies as diseased: kill the zombie permanently.
+			if (target.CellType == CellType.Zombie)
+			{
+				var dead = ReplaceCell(target, CellType.Basic, false);
+				dead.LastType = null; // permanently destroyed
+				cellGrid[target.Column, target.Row] = dead;
+				SpecialPerformed = true;
+				continue;
+			}
+
 			foreach (var disease in _knownDiseases)
 			{
 				if (target.Conditions.Contains(disease))

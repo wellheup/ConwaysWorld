@@ -46,6 +46,13 @@ public abstract class Cell
 	/// <summary>The runtime type tag, kept in sync when a cell is promoted or converted.</summary>
 	public CellType CellType = CellType.Dead;
 
+	/// <summary>
+	/// The cell type that last inhabited this slot before it became dead.
+	/// <c>null</c> if this cell has never been alive.
+	/// Used by the Necromancer for resurrection targeting.
+	/// </summary>
+	public CellType? LastType = null;
+
 	/// <summary>Steps this cell has been continuously alive.  Reset to 0 on death.</summary>
 	public int Age = 0;
 
@@ -108,6 +115,8 @@ public abstract class Cell
 	/// </summary>
 	public virtual void Die()
 	{
+		if (IsAlive && CellType != CellType.Dead)
+			LastType = CellType;
 		IsAlive = false;
 		Age = 0;
 		Nationality = -1;
@@ -131,13 +140,19 @@ public abstract class Cell
 	/// </summary>
 	protected virtual bool LiveBasic()
 	{
-		if (IsAlive && CellNeighborhood.NumNeighbors < MinLivingNeighbors)
+		// Non-zombie cells use NumNonZombieNeighbors so zombies are invisible to their
+		// Conway survival/birth checks. Zombie cells use NumNeighbors (they see each other).
+		int n = CellType == CellType.Zombie
+				? CellNeighborhood.NumNeighbors
+				: CellNeighborhood.NumNonZombieNeighbors;
+
+		if (IsAlive && n < MinLivingNeighbors)
 			return false;
-		if (IsAlive && CellNeighborhood.NumNeighbors <= MaxLivingNeighbors)
+		if (IsAlive && n <= MaxLivingNeighbors)
 			return true;
 		if (IsAlive)
 			return false;
-		if (!IsAlive && CellNeighborhood.NumNeighbors == MinLivingNeighbors)
+		if (!IsAlive && n == MinLivingNeighbors)
 			return true;
 		return IsAlive;
 	}
@@ -188,11 +203,14 @@ public abstract class Cell
 			CellType.Zealot => new Cell_Zealot(col, row, isAlive),
 			CellType.Irradiated => new Cell_Irradiated(col, row, isAlive),
 			CellType.PlagueRat => new Cell_PlagueRat(col, row, isAlive),
+			CellType.Zombie => new Cell_Basic(col, row, isAlive),    // zombies replaced via Necromancer only
+			CellType.Necromancer => new Cell_Necromancer(col, row, isAlive),
 			_ => new Cell_Basic(col, row, isAlive),
 		};
 		cell.Conditions = new HashSet<string>(oldCell.Conditions);
 		cell.CellNeighborhood = oldCell.CellNeighborhood;
 		cell.Nationality = isAlive ? oldCell.Nationality : -1;
+		cell.LastType = oldCell.LastType;
 		return cell;
 	}
 

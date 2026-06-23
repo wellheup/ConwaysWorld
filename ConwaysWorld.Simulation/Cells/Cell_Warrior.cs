@@ -28,14 +28,14 @@ public class Cell_Warrior : Cell_Hunter
 
 	/// <summary>Creates a Warrior, overriding Hunter's prey list.</summary>
 	public Cell_Warrior(int column, int row, bool isAlive)
-																																	: base(column, row, isAlive)
+																																																																	: base(column, row, isAlive)
 	{
 		Column = column;
 		Row = row;
 		IsAlive = isAlive;
 		CellType = CellType.Warrior;
 		Conditions = new HashSet<string>();
-		_warriorPreyTypes = new List<CellType> { CellType.Diseased, CellType.Plague, CellType.King, CellType.Rebel, CellType.Revolutionary, CellType.Spy, CellType.Savior, CellType.Follower, CellType.PlagueRat };
+		_warriorPreyTypes = new List<CellType> { CellType.Diseased, CellType.Plague, CellType.King, CellType.Rebel, CellType.Revolutionary, CellType.Spy, CellType.Savior, CellType.Follower, CellType.PlagueRat, CellType.Zombie, CellType.Necromancer };
 	}
 
 	/// <summary>Increments age and assigns nationality; does not track isolation like a Traveler.</summary>
