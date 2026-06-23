@@ -94,9 +94,9 @@ public enum CellType
         - TODO: necromancer (revives neighbors the turn after they die) - I think this should wait til after refactor...
         - TODO: zombie (die if their necromancer dies, do not die from overpopulation)
         - TODO: mutant/ mutator (has a small chance every turn to Randomly alter surrounding cells to another cell type)
-        - TODO: savior (moves in a direction, cells follow it)
         - TODO: teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
         - TODO: irradiated (cell cannot live ever again except under certain circumstance)
+		- TODO: plague bearer cell, which spawns in the middle of nowhere and then marches in a direction, spreading plague to all cells it touches
         - TODO: god? (effects every living cell on the board in some way)
         - TODO: natural disasters? opportunity for largest island?
         - TODO: add coup event where 3 warriors spawn and try to kill a king
