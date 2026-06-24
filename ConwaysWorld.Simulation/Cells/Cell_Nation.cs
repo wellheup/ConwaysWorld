@@ -61,28 +61,28 @@ public class Cell_Nation
 	/// The count here determines the maximum number of concurrent nations.
 	/// </summary>
 	public static readonly List<string> NationColors = new()
-				{
-												"#bc00ff",
-												"#471415",
-												"#a3181c",
-												"#00f542",
-												"#617f1c",
-												"#f50005",
-												"#473d14",
-												"#17a33d",
-												"#a38517",
-												"#299bae",
-												"#00dbff",
-												"#f5bf00",
-												"#232b75",
-												"#ff7000",
-												"#0019f5",
-												"#adff00",
-												"#7f4719",
-												"#671f80",
-												"#1c2bb8",
-												"#1c4724",
-				};
+								{
+																								"#bc00ff",
+																								"#471415",
+																								"#a3181c",
+																								"#00f542",
+																								"#617f1c",
+																								"#f50005",
+																								"#473d14",
+																								"#17a33d",
+																								"#a38517",
+																								"#299bae",
+																								"#00dbff",
+																								"#f5bf00",
+																								"#232b75",
+																								"#ff7000",
+																								"#0019f5",
+																								"#adff00",
+																								"#7f4719",
+																								"#671f80",
+																								"#1c2bb8",
+																								"#1c4724",
+								};
 
 	/// <summary>Creates a new nation with the given index.</summary>
 	public Cell_Nation(int nationNum)
@@ -141,7 +141,12 @@ public class Cell_Nation
 	/// </summary>
 	private void ElectDiplomat(Cell[,] cellGrid)
 	{
-		if (DiplomatsList.Count >= 0.05f * CitizensList.Count || CitizensList.Count < 10)
+		// A nation must have a living King before it can send Diplomats.
+		if (King == null || !King.IsAlive)
+			return;
+		// Threshold: at most 1 Diplomat per 20 citizens; minimum 20 citizens required.
+		int maxDiplomats = Math.Max(0, CitizensList.Count / 20);
+		if (DiplomatsList.Count >= maxDiplomats || CitizensList.Count < 20)
 			return;
 
 		Cell? elect = null;
@@ -149,18 +154,18 @@ public class Cell_Nation
 		{
 			elect = CitizensList[SimRandom.Range(0, CitizensList.Count)];
 			if (elect != King &&
-					!DiplomatsList.Contains(elect) &&
-					elect.CellType != CellType.Warrior &&
-					elect.CellType != CellType.Rebel &&
-					elect.CellType != CellType.Revolutionary)
+							!DiplomatsList.Contains(elect) &&
+							elect.CellType != CellType.Warrior &&
+							elect.CellType != CellType.Rebel &&
+							elect.CellType != CellType.Revolutionary)
 				break;
 			elect = null;
 		}
 
 		if (elect != null && elect != King && elect.IsAlive && !DiplomatsList.Contains(elect) &&
-				elect.CellType != CellType.Warrior &&
-				elect.CellType != CellType.Rebel &&
-				elect.CellType != CellType.Revolutionary)
+						elect.CellType != CellType.Warrior &&
+						elect.CellType != CellType.Rebel &&
+						elect.CellType != CellType.Revolutionary)
 		{
 			var diplomat = Cell.ReplaceCell(elect, CellType.Diplomat, true);
 			cellGrid[diplomat.Column, diplomat.Row] = diplomat;
@@ -194,13 +199,13 @@ public class Cell_Nation
 		if (AgedOutKingColumn >= 0)
 		{
 			var nearby = CitizensList
-					.Where(c => c.IsAlive &&
-											c.CellType != CellType.King &&
-											c.CellType != CellType.Revolutionary &&
-											c.CellType != CellType.Diplomat &&
-											Math.Abs(c.Column - AgedOutKingColumn) <= 5 &&
-											Math.Abs(c.Row - AgedOutKingRow) <= 5)
-					.ToList();
+							.Where(c => c.IsAlive &&
+																			c.CellType != CellType.King &&
+																			c.CellType != CellType.Revolutionary &&
+																			c.CellType != CellType.Diplomat &&
+																			Math.Abs(c.Column - AgedOutKingColumn) <= 5 &&
+																			Math.Abs(c.Row - AgedOutKingRow) <= 5)
+							.ToList();
 
 			if (nearby.Count > 0)
 				newKing = nearby[SimRandom.Range(0, nearby.Count)];

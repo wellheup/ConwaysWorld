@@ -17,7 +17,11 @@
     <input type="range" min="50" max="2000" step="50"
            value="@_intervalMs"
            @onchange="OnSpeedChange" />
-    <span style="color:#888;font-size:11px;min-width:40px">@(_intervalMs)ms</span>
+    <input type="number" min="50" max="10000" step="50"
+           value="@_intervalMs"
+           @onchange="OnSpeedInputChange"
+           style="width:64px;background:#1a1a1a;border:1px solid #333;color:#aaa;font-size:11px;padding:1px 4px;border-radius:3px;text-align:right" />
+    <span style="color:#888;font-size:11px">ms</span>
 
     <button @onclick="() => _showSettings = true">⚙ Settings</button>
     <span style="margin-left:auto;color:#666;font-size:11px">
@@ -206,6 +210,12 @@
                             Enable Random Life Injection
                         </label>
                     </div>
+                    <div class="cw-field">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                            <input type="checkbox" @bind="_allowGridExpansion" />
+                            Allow grid expansion (Explorer cells expand grid at edges)
+                        </label>
+                    </div>
                 }
                 else
                 {
@@ -271,6 +281,7 @@
     private int _famineDuration = 10;
     private bool _floodEnabled = true;
     private bool _randomLifeEnabled = false;
+    private bool _allowGridExpansion = true;
     private Dictionary<string, int> _spawnWeights = new();
     private bool _showExtinctPopup = false;
 
@@ -314,8 +325,9 @@
         [JsonPropertyName("famineCooldown")]   public int FamineCooldown { get; set; } = 15;
         [JsonPropertyName("famineDuration")]   public int FamineDuration { get; set; } = 10;
         [JsonPropertyName("floodEnabled")]        public bool FloodEnabled { get; set; } = true;
-        [JsonPropertyName("randomLifeEnabled")] public bool RandomLifeEnabled { get; set; } = false;
-        [JsonPropertyName("spawnWeights")]        public Dictionary<string, int>? SpawnWeights { get; set; }
+        [JsonPropertyName("randomLifeEnabled")]    public bool RandomLifeEnabled { get; set; } = false;
+        [JsonPropertyName("allowGridExpansion")]   public bool AllowGridExpansion { get; set; } = true;
+        [JsonPropertyName("spawnWeights")]         public Dictionary<string, int>? SpawnWeights { get; set; }
     }
 
     protected override void OnInitialized()
@@ -348,8 +360,9 @@
             FamineEnabled     = _famineEnabled,
             FamineCooldown    = Math.Max(1, _famineCooldown),
             FamineDuration    = Math.Max(1, _famineDuration),
-            FloodEnabled      = _floodEnabled,
-            RandomLifeEnabled = _randomLifeEnabled,
+            FloodEnabled        = _floodEnabled,
+            RandomLifeEnabled   = _randomLifeEnabled,
+            AllowGridExpansion  = _allowGridExpansion,
         };
         foreach (var kv in _spawnWeights)
             if (Enum.TryParse<CellType>(kv.Key, out var ct))
@@ -388,8 +401,9 @@
             _famineEnabled    = s.FamineEnabled;
             _famineCooldown   = Math.Max(1, s.FamineCooldown);
             _famineDuration   = Math.Max(1, s.FamineDuration);
-            _floodEnabled     = s.FloodEnabled;
-            _randomLifeEnabled = s.RandomLifeEnabled;
+            _floodEnabled        = s.FloodEnabled;
+            _randomLifeEnabled   = s.RandomLifeEnabled;
+            _allowGridExpansion  = s.AllowGridExpansion;
             // Only restore saved spawn weights when the version matches;
             // a mismatch means defaults may have changed and stale weights should be dropped.
             if (s.SpawnWeights != null && s.Version >= SettingsVersion)
@@ -419,9 +433,10 @@
             FamineEnabled    = _famineEnabled,
             FamineCooldown   = _famineCooldown,
             FamineDuration   = _famineDuration,
-            FloodEnabled      = _floodEnabled,
-            RandomLifeEnabled = _randomLifeEnabled,
-            SpawnWeights      = new Dictionary<string, int>(_spawnWeights),
+            FloodEnabled         = _floodEnabled,
+            RandomLifeEnabled    = _randomLifeEnabled,
+            AllowGridExpansion   = _allowGridExpansion,
+            SpawnWeights         = new Dictionary<string, int>(_spawnWeights),
         };
         return JsonSerializer.Serialize(s);
     }
@@ -700,8 +715,17 @@
     {
         if (int.TryParse(e.Value?.ToString(), out var v))
         {
-            _intervalMs = v;
-            _timer.Interval = v;
+            _intervalMs = Math.Clamp(v, 50, 10000);
+            _timer.Interval = _intervalMs;
+        }
+    }
+
+    private void OnSpeedInputChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            _intervalMs = Math.Clamp(v, 50, 10000);
+            _timer.Interval = _intervalMs;
         }
     }
 
@@ -800,8 +824,9 @@
         _famineEnabled    = true;
         _famineCooldown   = 15;
         _famineDuration   = 10;
-        _floodEnabled      = true;
-        _randomLifeEnabled = false;
+        _floodEnabled       = true;
+        _randomLifeEnabled  = false;
+        _allowGridExpansion = true;
 
         var defaultSettings = new SimulationSettings();
         _spawnWeights = defaultSettings.SpawnWeights
