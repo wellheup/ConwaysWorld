@@ -19,9 +19,11 @@
            @onchange="OnSpeedChange" />
     <span style="color:#888;font-size:11px;min-width:40px">@(_intervalMs)ms</span>
 
+    <button @onclick="() => _showSettings = true">⚙ Settings</button>
     <span style="margin-left:auto;color:#666;font-size:11px">
         Gen @_model.Generation &nbsp;|&nbsp;
         Pop @_model.CurrentPopulation &nbsp;|&nbsp;
+        Nations @_model.Nations.Count &nbsp;|&nbsp;
         Grid @_model.Columns×@_model.Rows
     </span>
 </div>
@@ -65,143 +67,134 @@
     </div>
 
     <div class="cw-sidebar">
-        <div class="cw-panel">
-            <h3>Population</h3>
-            <div class="cw-stats-grid">
-                <div class="cw-stat"><span>Generation</span><span>@_model.Generation</span></div>
-                <div class="cw-stat"><span>Population</span><span>@_model.CurrentPopulation</span></div>
-                <div class="cw-stat"><span>Grid</span><span>@_model.Columns×@_model.Rows</span></div>
-                <div class="cw-stat"><span>Nations</span><span>@_model.Nations.Count</span></div>
-            </div>
-        </div>
-
-        <div class="cw-tab-bar">
-            <button class="cw-tab @(!_showSettings ? "cw-tab-active" : "")"
-                    @onclick="() => _showSettings = false">Stats</button>
-            <button class="cw-tab @(_showSettings ? "cw-tab-active" : "")"
-                    @onclick="() => _showSettings = true">⚙ Settings</button>
-        </div>
-
         <div class="cw-content-area">
-            @if (!_showSettings)
-            {
-                <div class="cw-panel">
-                    <h3>Cell Types</h3>
-                    <div class="cw-cell-list">
-                        @foreach (var entry in _typeCounts)
-                        {
-                            <div class="cw-cell-row">
-                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg" alt="@entry.Name" />
-                                <span>@entry.Name</span>
-                                <span class="cw-cell-count">@entry.Count</span>
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                <div class="cw-panel">
-                    <h3>Nations</h3>
-                    <div class="cw-nation-list">
-                        @foreach (var n in _model.Nations.Values.OrderByDescending(n => n.CitizensList.Count))
-                        {
-                            <div class="cw-nation-row">
-                                <div class="cw-nation-swatch"
-                                     style="background:@Cell_Nation.NationColors[n.NationNum % Cell_Nation.NationColors.Count]">
-                                </div>
-                                <span>Nation @n.NationNum</span>
-                                <span style="margin-left:auto;color:#777">@n.CitizensList.Count</span>
-                            </div>
-                        }
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="cw-settings-scroll">
-                    <div class="cw-field">
-                        <label>Start columns</label>
-                        <input type="number" min="5" max="300" @bind="_startCols" />
-                    </div>
-                    <div class="cw-field">
-                        <label>Start rows</label>
-                        <input type="number" min="5" max="300" @bind="_startRows" />
-                    </div>
-                    <div class="cw-field">
-                        <label>Max grid size (0 = unlimited)</label>
-                        <input type="number" min="0" max="500" @bind="_maxGrid" />
-                    </div>
-                    <div class="cw-field">
-                        <label>Max nations (1–20)</label>
-                        <input type="number" min="1" max="20" @bind="_maxNations" />
-                    </div>
-                    <div class="cw-field">
-                        <label>Start clusters (0 = MaxNations ÷ 4)</label>
-                        <input type="number" min="0" max="20" @bind="_startClusters" />
-                    </div>
-                    <div class="cw-field">
-                        <label>Initial population</label>
-                        <div class="cw-pop-fields">
-                            <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
-                                   value="@_popPercent.ToString("F1")"
-                                   @onchange="OnPopPercentChange"
-                                   @onkeydown="@(e => { if (e.Key == "Enter") OnPopPercentChange(new ChangeEventArgs { Value = _popPercentStr }); })" />
-                            <span class="cw-pop-sep">%</span>
-                            <input type="number" class="cw-pop-input" min="0" max="@(_startCols * _startRows)"
-                                   value="@_popCount"
-                                   @onchange="OnPopCountChange"
-                                   @onkeydown="@(e => { if (e.Key == "Enter") OnPopCountChange(new ChangeEventArgs { Value = _popCount.ToString() }); })" />
-                            <span class="cw-pop-sep">/ @(_startCols * _startRows)</span>
-                        </div>
-                    </div>
-                    <div class="cw-field">
-                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                            <input type="checkbox" @bind="_animationEnabled" />
-                            Enable movement animation
-                        </label>
-                    </div>
-
-                    <h3 style="margin:10px 0 6px">Conway Rules</h3>
-                    <div class="cw-field">
-                        <label>Min living neighbors (survive &amp; birth)</label>
-                        <input type="number" min="0" max="7" @bind="_minNeighbors" />
-                    </div>
-                    <div class="cw-field">
-                        <label>Max living neighbors (survive)</label>
-                        <input type="number" min="0" max="8" @bind="_maxNeighbors" />
-                    </div>
-
-                    <h3 style="margin:10px 0 6px">World Events</h3>
-                    <div class="cw-field">
-                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                            <input type="checkbox" @bind="_famineEnabled" />
-                            Enable Famine
-                        </label>
-                    </div>
-                    @if (_famineEnabled)
+            <div class="cw-panel">
+                <h3>Cell Types</h3>
+                <div class="cw-cell-list">
+                    @foreach (var entry in _typeCounts)
                     {
-                        <div class="cw-field">
-                            <label>Min steps between famines</label>
-                            <input type="number" min="1" max="500" @bind="_famineCooldown" />
-                        </div>
-                        <div class="cw-field">
-                            <label>Famine duration (steps)</label>
-                            <input type="number" min="1" max="100" @bind="_famineDuration" />
+                        <div class="cw-cell-row">
+                            <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg" alt="@entry.Name" />
+                            <span>@entry.Name</span>
+                            <span class="cw-cell-count">@entry.Count</span>
                         </div>
                     }
-                    <div class="cw-field">
-                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                            <input type="checkbox" @bind="_floodEnabled" />
-                            Enable Flood
-                        </label>
-                    </div>
-                    <div class="cw-field">
-                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                            <input type="checkbox" @bind="_randomLifeEnabled" />
-                            Enable Random Life Injection
-                        </label>
-                    </div>
+                </div>
+            </div>
 
-                    <h3 style="margin:10px 0 6px">Spawn Weights</h3>
+            <div class="cw-panel">
+                <h3>Nations</h3>
+                <div class="cw-nation-list">
+                    @foreach (var n in _model.Nations.Values.OrderByDescending(n => n.CitizensList.Count))
+                    {
+                        <div class="cw-nation-row">
+                            <div class="cw-nation-swatch"
+                                 style="background:@Cell_Nation.NationColors[n.NationNum % Cell_Nation.NationColors.Count]">
+                            </div>
+                            <span>Nation @n.NationNum</span>
+                            <span style="margin-left:auto;color:#777">@n.CitizensList.Count</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (_showSettings)
+{
+    <div class="cw-modal-overlay" @onclick="() => _showSettings = false">
+        <div class="cw-modal" @onclick:stopPropagation>
+            <div class="cw-modal-header">
+                <span>Settings</span>
+                <button class="cw-modal-close" @onclick="() => _showSettings = false">✕</button>
+            </div>
+            <div class="cw-settings-scroll">
+                <div class="cw-field">
+                    <label>Start columns</label>
+                    <input type="number" min="5" max="300" @bind="_startCols" />
+                </div>
+                <div class="cw-field">
+                    <label>Start rows</label>
+                    <input type="number" min="5" max="300" @bind="_startRows" />
+                </div>
+                <div class="cw-field">
+                    <label>Max grid size (0 = unlimited)</label>
+                    <input type="number" min="0" max="500" @bind="_maxGrid" />
+                </div>
+                <div class="cw-field">
+                    <label>Max nations (1–20)</label>
+                    <input type="number" min="1" max="20" @bind="_maxNations" />
+                </div>
+                <div class="cw-field">
+                    <label>Start clusters (0 = MaxNations ÷ 4)</label>
+                    <input type="number" min="0" max="20" @bind="_startClusters" />
+                </div>
+                <div class="cw-field">
+                    <label>Initial population</label>
+                    <div class="cw-pop-fields">
+                        <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
+                               value="@_popPercent.ToString("F1")"
+                               @onchange="OnPopPercentChange"
+                               @onkeydown="@(e => { if (e.Key == "Enter") OnPopPercentChange(new ChangeEventArgs { Value = _popPercentStr }); })" />
+                        <span class="cw-pop-sep">%</span>
+                        <input type="number" class="cw-pop-input" min="0" max="@(_startCols * _startRows)"
+                               value="@_popCount"
+                               @onchange="OnPopCountChange"
+                               @onkeydown="@(e => { if (e.Key == "Enter") OnPopCountChange(new ChangeEventArgs { Value = _popCount.ToString() }); })" />
+                        <span class="cw-pop-sep">/ @(_startCols * _startRows)</span>
+                    </div>
+                </div>
+                <div class="cw-field">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                        <input type="checkbox" @bind="_animationEnabled" />
+                        Enable movement animation
+                    </label>
+                </div>
+
+                <h3 style="margin:10px 0 6px">Conway Rules</h3>
+                <div class="cw-field">
+                    <label>Min living neighbors (survive &amp; birth)</label>
+                    <input type="number" min="0" max="7" @bind="_minNeighbors" />
+                </div>
+                <div class="cw-field">
+                    <label>Max living neighbors (survive)</label>
+                    <input type="number" min="0" max="8" @bind="_maxNeighbors" />
+                </div>
+
+                <h3 style="margin:10px 0 6px">World Events</h3>
+                <div class="cw-field">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                        <input type="checkbox" @bind="_famineEnabled" />
+                        Enable Famine
+                    </label>
+                </div>
+                @if (_famineEnabled)
+                {
+                    <div class="cw-field">
+                        <label>Min steps between famines</label>
+                        <input type="number" min="1" max="500" @bind="_famineCooldown" />
+                    </div>
+                    <div class="cw-field">
+                        <label>Famine duration (steps)</label>
+                        <input type="number" min="1" max="100" @bind="_famineDuration" />
+                    </div>
+                }
+                <div class="cw-field">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                        <input type="checkbox" @bind="_floodEnabled" />
+                        Enable Flood
+                    </label>
+                </div>
+                <div class="cw-field">
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                        <input type="checkbox" @bind="_randomLifeEnabled" />
+                        Enable Random Life Injection
+                    </label>
+                </div>
+
+                <h3 style="margin:10px 0 6px">Spawn Weights</h3>
+                <div class="cw-weights-grid">
                     @foreach (var kv in _spawnWeights)
                     {
                         <div class="cw-weight-row">
@@ -212,16 +205,16 @@
                                    @onchange="@(e => OnWeightChange(kv.Key, e))" />
                         </div>
                     }
-
-                    <div style="display:flex;gap:8px;margin-top:12px">
-                        <button class="cw-apply-btn" style="flex:1" @onclick="ApplyAndRestart">Apply & Restart</button>
-                        <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="ResetToDefaults">Reset Defaults</button>
-                    </div>
                 </div>
-            }
+
+                <div style="display:flex;gap:8px;margin-top:12px">
+                    <button class="cw-apply-btn" style="flex:1" @onclick="ApplyAndRestart">Apply & Restart</button>
+                    <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="ResetToDefaults">Reset Defaults</button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+}
 
 @code {
     private Model _model = null!;
