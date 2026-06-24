@@ -279,8 +279,13 @@
 
     private static readonly System.Random _uiRandom = new();
 
+    // Bump this whenever spawn-weight defaults change so stale localStorage weights
+    // are ignored and fresh code defaults are used instead.
+    private const int SettingsVersion = 1;
+
     private class SavedSettings
     {
+        [JsonPropertyName("v")]                public int Version { get; set; } = 0;
         [JsonPropertyName("startCols")]        public int StartCols { get; set; } = 40;
         [JsonPropertyName("startRows")]        public int StartRows { get; set; } = 40;
         [JsonPropertyName("maxGrid")]          public int MaxGrid { get; set; } = 120;
@@ -372,7 +377,9 @@
             _famineDuration   = Math.Max(1, s.FamineDuration);
             _floodEnabled     = s.FloodEnabled;
             _randomLifeEnabled = s.RandomLifeEnabled;
-            if (s.SpawnWeights != null)
+            // Only restore saved spawn weights when the version matches;
+            // a mismatch means defaults may have changed and stale weights should be dropped.
+            if (s.SpawnWeights != null && s.Version >= SettingsVersion)
                 foreach (var kv in s.SpawnWeights)
                     if (_spawnWeights.ContainsKey(kv.Key))
                         _spawnWeights[kv.Key] = kv.Value;
@@ -384,6 +391,7 @@
     {
         var s = new SavedSettings
         {
+            Version          = SettingsVersion,
             StartCols        = _startCols,
             StartRows        = _startRows,
             MaxGrid          = _maxGrid,
