@@ -27,13 +27,6 @@
     </span>
 </div>
 
-<div class="cw-nations-bar">
-    @foreach (var n in _model.Nations.Values.OrderBy(n => n.NationNum))
-    {
-        <span style="color:@Cell_Nation.NationColors[n.NationNum % Cell_Nation.NationColors.Count]">@n.CitizensList.Count</span>
-    }
-</div>
-
 <div class="cw-body">
     <div class="cw-main">
         <div class="cw-canvas-wrap" id="canvas-wrap">
@@ -90,6 +83,13 @@
 
         </div>
     </div>
+</div>
+
+<div class="cw-nations-bar">
+    @foreach (var n in _model.Nations.Values.OrderBy(n => n.NationNum))
+    {
+        <span style="color:@Cell_Nation.NationColors[n.NationNum % Cell_Nation.NationColors.Count]">@n.CitizensList.Count</span>
+    }
 </div>
 
 @if (_showSettings)

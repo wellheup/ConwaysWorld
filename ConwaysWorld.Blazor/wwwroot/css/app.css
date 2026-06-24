@@ -45,15 +45,27 @@ html, body {
 .cw-nations-bar {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 0;
     padding: 3px 14px;
-    background: #0e0e0e;
-    border-bottom: 1px solid #1e1e1e;
+    background: #ffffff;
+    border-top: 1px solid #ddd;
     flex-shrink: 0;
     font-size: 12px;
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
+    font-weight: 700;
     min-height: 22px;
+}
+
+.cw-nations-bar span::after {
+    content: " |";
+    color: #bbb;
+    font-weight: 400;
+    margin-right: 10px;
+}
+
+.cw-nations-bar span:last-child::after {
+    content: "";
+    margin-right: 0;
 }
 
 .cw-body {
