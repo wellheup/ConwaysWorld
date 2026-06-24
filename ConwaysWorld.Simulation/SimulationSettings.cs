@@ -19,10 +19,10 @@ public class SimulationSettings
 	// ── Grid dimensions ──────────────────────────────────────────────────────────
 
 	/// <summary>Number of columns when the grid is first created.</summary>
-	public int StartColumns { get; set; } = 40;
+	public int StartColumns { get; set; } = 50;
 
 	/// <summary>Number of rows when the grid is first created.</summary>
-	public int StartRows { get; set; } = 40;
+	public int StartRows { get; set; } = 50;
 
 	/// <summary>
 	/// Maximum column/row count the grid may grow to via Explorer expansion.
@@ -33,11 +33,11 @@ public class SimulationSettings
 	// ── Initial population ───────────────────────────────────────────────────────
 
 	/// <summary>Whether <see cref="PopValue"/> is a percentage or an absolute count.</summary>
-	public PopMode PopMode { get; set; } = PopMode.Percent;
+	public PopMode PopMode { get; set; } = PopMode.Count;
 
 	/// <summary>
 	/// The seed population value interpreted according to <see cref="PopMode"/>.
-	/// At 10 % on a 40×40 grid this yields roughly 160 starting cells.
+	/// Default: 10 cells (Fixed mode) on a 50×50 grid.
 	/// </summary>
 	public int PopValue { get; set; } = 10;
 
@@ -113,51 +113,51 @@ public class SimulationSettings
 	/// Warriors, Diplomats, and Kings are intentionally absent — they are only promoted from existing cells.
 	/// </summary>
 	public Dictionary<CellType, int> SpawnWeights { get; set; } = new()
-																																{
-																																																																{ CellType.Basic,    50 },
-																																																																{ CellType.Immortal,  2 },
-																																																																{ CellType.Diseased, 15 },
-																																																																{ CellType.Plague,    3 },
-																																																																{ CellType.Traveler,  6 },
-																																																																{ CellType.Explorer,  3 },
-																																																																{ CellType.Doctor,    5 },
-																																																																{ CellType.Hunter,    5 },
-																																																																{ CellType.Bomber,    8 },
-																																																																{ CellType.Voyager,   3 },
-																																																																{ CellType.Wayfinder, 2 },
-																																																																{ CellType.Islander,  5 },
-																																																																{ CellType.Spy,       3 },
-																																																																{ CellType.Conquistador, 2 },
-																																																																{ CellType.Savior,    1 },
-																																																																{ CellType.Irradiated, 3 },
-																																																																{ CellType.PlagueRat,  2 },
-																																																																{ CellType.Necromancer, 2 },
-																																};
+																																																																{
+																																																																																																																																{ CellType.Basic,    50 },
+																																																																																																																																{ CellType.Immortal,  2 },
+																																																																																																																																{ CellType.Diseased, 15 },
+																																																																																																																																{ CellType.Plague,    3 },
+																																																																																																																																{ CellType.Traveler,  6 },
+																																																																																																																																{ CellType.Explorer,  3 },
+																																																																																																																																{ CellType.Doctor,    5 },
+																																																																																																																																{ CellType.Hunter,    5 },
+																																																																																																																																{ CellType.Bomber,    8 },
+																																																																																																																																{ CellType.Voyager,   3 },
+																																																																																																																																{ CellType.Wayfinder, 2 },
+																																																																																																																																{ CellType.Islander,  5 },
+																																																																																																																																{ CellType.Spy,       3 },
+																																																																																																																																{ CellType.Conquistador, 2 },
+																																																																																																																																{ CellType.Savior,    1 },
+																																																																																																																																{ CellType.Irradiated, 3 },
+																																																																																																																																{ CellType.PlagueRat,  2 },
+																																																																																																																																{ CellType.Necromancer, 2 },
+																																																																};
 
 	/// <summary>
 	/// The set of types that are eligible for spawning.
 	/// Only types present in both this set and <see cref="SpawnWeights"/> are considered.
 	/// </summary>
 	public HashSet<CellType> SpawnEnabled { get; set; } = new()
-																																{
-																																																																CellType.Basic,
-																																																																CellType.Immortal,
-																																																																CellType.Diseased,
-																																																																CellType.Plague,
-																																																																CellType.Traveler,
-																																																																CellType.Explorer,
-																																																																CellType.Doctor,
-																																																																CellType.Hunter,
-																																																																CellType.Bomber,
-																																																																CellType.Voyager,
-																																																																CellType.Wayfinder,
-																																																																CellType.Islander,
-																																																																CellType.Spy,
-																																																																CellType.Conquistador,
-																																																																CellType.Savior,
-																																																																CellType.Irradiated,
-																																																																CellType.PlagueRat,
-																																};
+																																																																{
+																																																																																																																																CellType.Basic,
+																																																																																																																																CellType.Immortal,
+																																																																																																																																CellType.Diseased,
+																																																																																																																																CellType.Plague,
+																																																																																																																																CellType.Traveler,
+																																																																																																																																CellType.Explorer,
+																																																																																																																																CellType.Doctor,
+																																																																																																																																CellType.Hunter,
+																																																																																																																																CellType.Bomber,
+																																																																																																																																CellType.Voyager,
+																																																																																																																																CellType.Wayfinder,
+																																																																																																																																CellType.Islander,
+																																																																																																																																CellType.Spy,
+																																																																																																																																CellType.Conquistador,
+																																																																																																																																CellType.Savior,
+																																																																																																																																CellType.Irradiated,
+																																																																																																																																CellType.PlagueRat,
+																																																																};
 
 	// ── Derived ──────────────────────────────────────────────────────────────────
 
