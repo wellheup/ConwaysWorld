@@ -42,6 +42,20 @@ html, body {
 .cw-toolbar label { color: #aaa; font-size: 12px; }
 .cw-toolbar input[type=range] { width: 90px; cursor: pointer; }
 
+.cw-nations-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 3px 14px;
+    background: #0e0e0e;
+    border-bottom: 1px solid #1e1e1e;
+    flex-shrink: 0;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    min-height: 22px;
+}
+
 .cw-body {
     display: flex;
     flex: 1;
