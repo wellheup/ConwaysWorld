@@ -247,14 +247,14 @@
     private const int MaxEventLog = 60;
     private bool _showEventLog = false;
 
-    private int _startCols = 40;
-    private int _startRows = 40;
+    private int _startCols = 50;
+    private int _startRows = 50;
     private int _maxGrid = 120;
     private int _maxNations = 4;
     private int _startClusters = 2;
-    private double _popPercent = 10.0;
-    private int _popCount = 160;
-    private string _popPercentStr = "10.0";
+    private double _popPercent = 0.4;
+    private int _popCount = 10;
+    private string _popPercentStr = "0.4";
     private int _minNeighbors = 2;
     private int _maxNeighbors = 3;
     private bool _famineEnabled = true;
@@ -290,6 +290,7 @@
         [JsonPropertyName("maxNations")]       public int MaxNations { get; set; } = 4;
         [JsonPropertyName("startClusters")]    public int StartClusters { get; set; } = 2;
         [JsonPropertyName("popPercent")]       public double PopPercent { get; set; } = 10.0;
+        [JsonPropertyName("popCount")]         public int PopCount { get; set; } = -1;
         [JsonPropertyName("intervalMs")]       public int IntervalMs { get; set; } = 1000;
         [JsonPropertyName("animationEnabled")] public bool AnimationEnabled { get; set; } = true;
         [JsonPropertyName("minNeighbors")]     public int MinNeighbors { get; set; } = 2;
@@ -352,9 +353,19 @@
             _maxGrid          = Math.Clamp(s.MaxGrid, 0, 500);
             _maxNations       = Math.Clamp(s.MaxNations, 1, 20);
             _startClusters    = Math.Max(0, s.StartClusters);
-            _popPercent       = s.PopPercent <= 0 ? 10.0 : Math.Clamp(s.PopPercent, 0.1, 100);
-            _popPercentStr    = _popPercent.ToString("F1");
-            _popCount         = (int)Math.Round(_popPercent / 100.0 * _startCols * _startRows);
+            if (s.PopCount >= 0)
+            {
+                _popCount      = Math.Clamp(s.PopCount, 0, _startCols * _startRows);
+                double pct     = _startCols * _startRows > 0 ? Math.Round(_popCount * 100.0 / (_startCols * _startRows), 1) : 0;
+                _popPercent    = pct;
+                _popPercentStr = pct.ToString("F1");
+            }
+            else
+            {
+                _popPercent       = s.PopPercent <= 0 ? 10.0 : Math.Clamp(s.PopPercent, 0.1, 100);
+                _popPercentStr    = _popPercent.ToString("F1");
+                _popCount         = (int)Math.Round(_popPercent / 100.0 * _startCols * _startRows);
+            }
             _intervalMs       = Math.Clamp(s.IntervalMs, 50, 5000);
             _animationEnabled = s.AnimationEnabled;
             _minNeighbors     = Math.Clamp(s.MinNeighbors, 0, 7);
@@ -382,6 +393,7 @@
             MaxNations       = _maxNations,
             StartClusters    = _startClusters,
             PopPercent       = _popPercent,
+            PopCount         = _popCount,
             IntervalMs       = _intervalMs,
             AnimationEnabled = _animationEnabled,
             MinNeighbors     = _minNeighbors,
@@ -748,14 +760,14 @@
         _timer.Stop();
         _running = false;
 
-        _startCols        = 40;
-        _startRows        = 40;
+        _startCols        = 50;
+        _startRows        = 50;
         _maxGrid          = 120;
         _maxNations       = 4;
         _startClusters    = 2;
-        _popPercent       = 10.0;
-        _popPercentStr    = "10.0";
-        _popCount         = 160;
+        _popPercent       = 0.4;
+        _popPercentStr    = "0.4";
+        _popCount         = 10;
         _intervalMs       = 1000;
         _animationEnabled = true;
         _minNeighbors     = 2;
