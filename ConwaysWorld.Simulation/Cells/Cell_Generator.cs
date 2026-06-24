@@ -25,7 +25,14 @@ public class Cell_Generator
 		public float Freq { get; init; }
 	}
 
+	/// <summary>Full probability table including Dead for <see cref="InitializeRandomCell"/>.</summary>
 	private readonly List<SpawnFrequency> _frequencies = new();
+
+	/// <summary>
+	/// Living-only probability table (normalised to 1.0) for <see cref="InitializeLivingCell"/>.
+	/// Keeps spawn weights accurate regardless of how sparse the overall population is.
+	/// </summary>
+	private readonly List<SpawnFrequency> _livingFrequencies = new();
 
 	/// <summary>
 	/// Constructs a generator and builds the frequency table from <paramref name="settings"/>.
@@ -38,10 +45,13 @@ public class Cell_Generator
 	/// <summary>
 	/// Computes each enabled type's share of <see cref="SimulationSettings.BasePercentLiving"/>
 	/// proportional to its weight, then appends a Dead entry for the dead-cell remainder.
+	/// Also builds a living-only table (normalised to 1.0) used by
+	/// <see cref="InitializeLivingCell"/> so spawn weights are honoured at any population density.
 	/// </summary>
 	private void BuildFrequencies(SimulationSettings settings)
 	{
 		_frequencies.Clear();
+		_livingFrequencies.Clear();
 
 		float basePct = settings.BasePercentLiving;
 		int totalWeight = 0;
@@ -56,6 +66,8 @@ public class Cell_Generator
 				continue;
 			float share = totalWeight > 0 ? (float)kv.Value / totalWeight : 0f;
 			_frequencies.Add(new SpawnFrequency { Type = kv.Key, Freq = livingBudget * share });
+			// Living table: normalised directly by weight share (sums to 1.0).
+			_livingFrequencies.Add(new SpawnFrequency { Type = kv.Key, Freq = share });
 		}
 
 		float deadPct = 1f - basePct;
@@ -63,7 +75,7 @@ public class Cell_Generator
 	}
 
 	/// <summary>
-	/// Draws a random cell type from the frequency table using a cumulative probability walk.
+	/// Draws a random cell type from the full frequency table (includes Dead).
 	/// </summary>
 	private CellType GetRandomCellType()
 	{
@@ -79,19 +91,33 @@ public class Cell_Generator
 	}
 
 	/// <summary>
+	/// Draws a random cell type from the living-only table (never returns Dead).
+	/// Used for guaranteed-living spawns so spawn weights are applied correctly
+	/// regardless of how sparse the population density is.
+	/// </summary>
+	private CellType GetRandomLivingCellType()
+	{
+		if (_livingFrequencies.Count == 0)
+			return CellType.Basic;
+		float roll = SimRandom.Value;
+		float cumulative = 0f;
+		foreach (var entry in _livingFrequencies)
+		{
+			cumulative += entry.Freq;
+			if (roll < cumulative)
+				return entry.Type;
+		}
+		return _livingFrequencies[_livingFrequencies.Count - 1].Type;
+	}
+
+	/// <summary>
 	/// Creates and returns a guaranteed living cell at (<paramref name="column"/>, <paramref name="row"/>).
-	/// The type is drawn from the weighted frequency table, re-rolling any Dead result,
-	/// so the returned cell is always alive.  Used during cluster spawning so every placed
-	/// cell counts toward the living budget.
+	/// Type is drawn from the living-only normalised table so spawn weights are always
+	/// honoured, even at very low population densities.
 	/// </summary>
 	public Cell InitializeLivingCell(int column, int row)
 	{
-		CellType type = GetRandomCellType();
-		// Re-roll once if we got Dead — cluster positions should be alive.
-		if (type == CellType.Dead)
-			type = GetRandomCellType();
-		if (type == CellType.Dead)
-			type = CellType.Basic;
+		CellType type = GetRandomLivingCellType();
 
 		float variant = SimRandom.Value;
 		return type switch
@@ -99,12 +125,12 @@ public class Cell_Generator
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-																			? new Cell_Diseased(column, row, true)
-																			: (Cell)new Cell_Plague(column, row, true),
+																																			? new Cell_Diseased(column, row, true)
+																																			: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-																			? new Cell_Traveler(column, row, true)
-																			: (Cell)new Cell_Explorer(column, row, true),
+																																			? new Cell_Traveler(column, row, true)
+																																			: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),
@@ -132,12 +158,12 @@ public class Cell_Generator
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-																			? new Cell_Diseased(column, row, true)
-																			: (Cell)new Cell_Plague(column, row, true),
+																																			? new Cell_Diseased(column, row, true)
+																																			: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-																			? new Cell_Traveler(column, row, true)
-																			: (Cell)new Cell_Explorer(column, row, true),
+																																			? new Cell_Traveler(column, row, true)
+																																			: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),

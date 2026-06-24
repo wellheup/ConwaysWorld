@@ -185,6 +185,33 @@ canvas#sim-canvas {
     justify-content: center;
 }
 
+.cw-extinct-popup {
+    background: #141414;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 36px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.8);
+    min-width: 260px;
+}
+.cw-extinct-icon  { font-size: 40px; line-height: 1; }
+.cw-extinct-title { color: #ddd; font-size: 18px; font-weight: 700; margin-top: 4px; }
+.cw-extinct-sub   { color: #666; font-size: 12px; }
+.cw-extinct-btn {
+    margin-top: 16px;
+    padding: 8px 28px;
+    background: #2a5a3a;
+    border: none;
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 14px;
+    cursor: pointer;
+}
+.cw-extinct-btn:hover { background: #336644; color: #fff; }
+
 .cw-modal {
     background: #141414;
     border: 1px solid #2a2a2a;

@@ -95,6 +95,18 @@
     }
 </div>
 
+@if (_showExtinctPopup)
+{
+    <div class="cw-modal-overlay" @onclick="async () => { _showExtinctPopup = false; await Restart(); }">
+        <div class="cw-extinct-popup" @onclick:stopPropagation>
+            <div class="cw-extinct-icon">💀</div>
+            <div class="cw-extinct-title">All cells have died</div>
+            <div class="cw-extinct-sub">The simulation has gone extinct.</div>
+            <button class="cw-extinct-btn" @onclick="async () => { _showExtinctPopup = false; await Restart(); }">↺ Restart</button>
+        </div>
+    </div>
+}
+
 @if (_showSettings)
 {
     <div class="cw-modal-overlay" @onclick="() => _showSettings = false">
@@ -260,6 +272,7 @@
     private bool _floodEnabled = true;
     private bool _randomLifeEnabled = false;
     private Dictionary<string, int> _spawnWeights = new();
+    private bool _showExtinctPopup = false;
 
     private static readonly string[] TypeNames = {
         "Dead","Basic","Immortal","Diseased","Plague",
@@ -524,6 +537,13 @@
             if (hadEvents) CollectEvents();
             await RenderFrame();
             UpdateTypeCounts();
+            // Detect extinction: no cells left and random life injection is off.
+            if (_model.CurrentPopulation == 0 && !_randomLifeEnabled)
+            {
+                _running = false;
+                _timer.Stop();
+                _showExtinctPopup = true;
+            }
             StateHasChanged();
             if (floodStarted)
                 await RunFloodAnimation();
