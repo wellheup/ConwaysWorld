@@ -30,27 +30,25 @@ public class Cell_Neighborhood
 	public Cell Center;
 
 	/// <summary>
+	/// The 8 surrounding neighbour cells (center excluded), in the same order as
+	/// <see cref="NeighborHoodKeys"/> (indices 0-7). Use this for fast iteration instead of
+	/// <see cref="NeighborhoodDict"/>.Values to avoid dictionary overhead.
+	/// </summary>
+	public readonly Cell[] NeighborCells = new Cell[8];
+
+	/// <summary>
 	/// All 9 cells in the 3×3 block including <c>"center"</c>.
 	/// Keys are compass directions: <c>"north"</c>, <c>"south"</c>, <c>"east"</c>, <c>"west"</c>,
 	/// <c>"northEast"</c>, <c>"northWest"</c>, <c>"southEast"</c>, <c>"southWest"</c>, <c>"center"</c>.
+	/// Pre-sized to capacity 9 to avoid bucket-array resizing.
 	/// </summary>
 	public Dictionary<string, Cell> NeighborhoodDict;
 
 	/// <summary>
 	/// The 8 surrounding cells only (center excluded).
-	/// Returns a copy of <see cref="NeighborhoodDict"/> with <c>"center"</c> removed.
+	/// Iterates <see cref="NeighborCells"/> without any dictionary allocation.
 	/// </summary>
-	public Dictionary<string, Cell> NeighborsDict
-	{
-		get
-		{
-			if (NeighborhoodDict == null)
-				return null!;
-			var d = new Dictionary<string, Cell>(NeighborhoodDict);
-			d.Remove("center");
-			return d;
-		}
-	}
+	public IEnumerable<Cell> NeighborValues => NeighborCells;
 
 	/// <summary>
 	/// Ordered key names for the 9-slot neighbourhood, matching the iteration order used in the
@@ -58,10 +56,10 @@ public class Cell_Neighborhood
 	/// </summary>
 	public static readonly string[] NeighborHoodKeys =
 	{
-				"southWest", "west", "northWest",
-				"south",               "north",
-				"southEast", "east",  "northEast",
-				"center",
+								"southWest", "west", "northWest",
+								"south",               "north",
+								"southEast", "east",  "northEast",
+								"center",
 		};
 
 	/// <summary>
@@ -75,18 +73,22 @@ public class Cell_Neighborhood
 	{
 		CenterColumn = column;
 		CenterRow = row;
-		NeighborhoodDict = new Dictionary<string, Cell>();
+		NeighborhoodDict = new Dictionary<string, Cell>(9);
 		int keyIndex = 0;
 		NumNeighbors = 0;
 		NumNonZombieNeighbors = 0;
 		Center = cellGrid[column, row];
 
+		// Cache dimensions once — avoids repeated GetLength() calls inside the inner loop.
+		int cols = cellGrid.GetLength(0);
+		int rows = cellGrid.GetLength(1);
+
 		for (int colOff = -1; colOff <= 1; colOff++)
 		{
 			for (int rowOff = -1; rowOff <= 1; rowOff++)
 			{
-				int nc = (column + colOff + cellGrid.GetLength(0)) % cellGrid.GetLength(0);
-				int nr = (row + rowOff + cellGrid.GetLength(1)) % cellGrid.GetLength(1);
+				int nc = (column + colOff + cols) % cols;
+				int nr = (row + rowOff + rows) % rows;
 
 				if (colOff == 0 && rowOff == 0)
 				{
@@ -101,7 +103,9 @@ public class Cell_Neighborhood
 						if (neighbor.CellType != CellType.Zombie)
 							NumNonZombieNeighbors++;
 					}
-					NeighborhoodDict[NeighborHoodKeys[keyIndex++]] = neighbor;
+					NeighborCells[keyIndex] = neighbor;
+					NeighborhoodDict[NeighborHoodKeys[keyIndex]] = neighbor;
+					keyIndex++;
 				}
 			}
 		}

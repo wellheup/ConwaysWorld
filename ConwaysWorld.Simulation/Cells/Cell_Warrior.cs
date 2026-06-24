@@ -28,7 +28,7 @@ public class Cell_Warrior : Cell_Hunter
 
 	/// <summary>Creates a Warrior, overriding Hunter's prey list.</summary>
 	public Cell_Warrior(int column, int row, bool isAlive)
-																																																																	: base(column, row, isAlive)
+																																																																																																																																	: base(column, row, isAlive)
 	{
 		Column = column;
 		Row = row;
@@ -86,7 +86,7 @@ public class Cell_Warrior : Cell_Hunter
 	private static int GetStrength(Cell cell)
 	{
 		int power = 0;
-		foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
+		foreach (var neighbor in cell.CellNeighborhood.NeighborValues)
 		{
 			if (neighbor.Nationality == cell.Nationality)
 			{

@@ -107,14 +107,14 @@ public partial class Model
 	/// <summary>Returns <c>true</c> if the cell at (<paramref name="col"/>, <paramref name="row"/>)
 	/// falls within the currently active famine quadrant.</summary>
 	private bool IsInFamineQuadrant(int col, int row, int halfCols, int halfRows) =>
-					_famineQuadrant switch
-					{
-						0 => col < halfCols && row < halfRows,
-						1 => col >= halfCols && row < halfRows,
-						2 => col < halfCols && row >= halfRows,
-						3 => col >= halfCols && row >= halfRows,
-						_ => false,
-					};
+									_famineQuadrant switch
+									{
+										0 => col < halfCols && row < halfRows,
+										1 => col >= halfCols && row < halfRows,
+										2 => col < halfCols && row >= halfRows,
+										3 => col >= halfCols && row >= halfRows,
+										_ => false,
+									};
 
 	// ── Flood ─────────────────────────────────────────────────────────────────────
 
@@ -199,7 +199,7 @@ public partial class Model
 				var cell = CellGrid[c, r];
 				if (!cell.IsAlive || cell.Nationality < 0)
 					continue;
-				foreach (var nb in cell.CellNeighborhood.NeighborsDict.Values)
+				foreach (var nb in cell.CellNeighborhood.NeighborValues)
 					if (nb.IsAlive && nb.Nationality >= 0 && nb.Nationality != cell.Nationality)
 					{
 						touchingNations.Add(cell.Nationality);
@@ -219,7 +219,7 @@ public partial class Model
 					continue;
 				if (!touchingNations.Contains(cell.Nationality))
 					continue;
-				foreach (var nb in cell.CellNeighborhood.NeighborsDict.Values)
+				foreach (var nb in cell.CellNeighborhood.NeighborValues)
 					if (nb.IsAlive && nb.Nationality >= 0 && nb.Nationality != cell.Nationality)
 					{
 						border.Add(cell);
@@ -247,10 +247,10 @@ public partial class Model
 				var cell = CellGrid[c, r];
 				if (!cell.IsAlive || cell.Nationality < 0)
 					continue;
-				foreach (var neighbor in cell.CellNeighborhood.NeighborsDict.Values)
+				foreach (var neighbor in cell.CellNeighborhood.NeighborValues)
 				{
 					if (neighbor.IsAlive && neighbor.Nationality >= 0 &&
-									neighbor.Nationality != cell.Nationality)
+													neighbor.Nationality != cell.Nationality)
 						return true;
 				}
 			}
