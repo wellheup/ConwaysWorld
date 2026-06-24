@@ -86,9 +86,12 @@
 </div>
 
 <div class="cw-nations-bar">
-    @foreach (var n in _model.Nations.Values.OrderBy(n => n.NationNum))
+    @{var nlist = _model.Nations.Values.OrderBy(n => n.NationNum).ToList();}
+    @for (int ni = 0; ni < nlist.Count; ni++)
     {
-        <span style="color:@Cell_Nation.NationColors[n.NationNum % Cell_Nation.NationColors.Count]">@n.CitizensList.Count</span>
+        var n = nlist[ni];
+        if (ni > 0) { <span class="cw-nation-sep"> | </span> }
+        <span class="cw-nation-count" style="color:@Cell_Nation.NationColors[n.NationNum % Cell_Nation.NationColors.Count]">@n.CitizensList.Count</span>
     }
 </div>
 
