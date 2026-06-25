@@ -512,6 +512,8 @@
             return new SimEvent(raw["flood_start:".Length..], "ev-flood");
         if (raw.StartsWith("flood_end:"))
             return new SimEvent(raw["flood_end:".Length..], "ev-flood-end");
+        if (raw.StartsWith("regicide_duel:"))
+            return new SimEvent(raw["regicide_duel:".Length..], "ev-duel");
         return new SimEvent(raw, "");
     }
 
