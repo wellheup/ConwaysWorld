@@ -129,7 +129,6 @@ public enum CellType
 - TODO: make MinLivingNeighbors and MaxLivingNeighbors for cells accessible and alterable in ConwaysWorld object
 - TODO: Add to Conway's world an event that uses a "find the largest island" algorithm
 - TODO: maybe if cells are too far from their king they die?
-        - TODO: mutant/ mutator (has a small chance every turn to Randomly alter surrounding cells to another cell type)
         - TODO: teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
         - TODO: god? (effects every living cell on the board in some way)
         - TODO: natural disasters? opportunity for largest island?
@@ -137,5 +136,6 @@ public enum CellType
 - TODO: add an increased chance to spawn doctors near diseases
 - TODO: utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
 - TODO: reset grid size after world ending events
-- TODO: make doctors more aggressive. Maybe make range a modifiable number in ConwaysWorld?
+- TODO: make doctors more aggressive. Maybe make range a modifiable number in ConwaysWorld? Make this a setting called responsive doctors, which 
+	will modulate doctor spawn weight depending on the number of diseases on the grid
 */

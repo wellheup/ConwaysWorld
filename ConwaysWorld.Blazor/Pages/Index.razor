@@ -716,6 +716,8 @@
         [JsonPropertyName("famineDuration")]   public int FamineDuration { get; set; } = 10;
         [JsonPropertyName("floodEnabled")]                     public bool FloodEnabled { get; set; } = true;
         [JsonPropertyName("randomLifeEnabled")]                public bool RandomLifeEnabled { get; set; } = false;
+        [JsonPropertyName("randomLifeThresholdPct")]           public double RandomLifeThresholdPct { get; set; } = 5.0;
+        [JsonPropertyName("autoContinue")]                     public bool AutoContinue { get; set; } = false;
         [JsonPropertyName("allowGridExpansion")]               public bool AllowGridExpansion { get; set; } = true;
         [JsonPropertyName("nationsEnabled")]                   public bool NationsEnabled { get; set; } = true;
         [JsonPropertyName("failurePopThreshold")]              public int FailurePopThreshold { get; set; } = 0;
@@ -756,6 +758,7 @@
             FamineDuration    = Math.Max(1, _famineDuration),
             FloodEnabled        = _floodEnabled,
             RandomLifeEnabled   = _randomLifeEnabled,
+            MinLifePercent      = (float)(_randomLifeThresholdPct / 100.0),
             AllowGridExpansion           = _allowGridExpansion,
             NationsEnabled               = _nationsEnabled,
             FailurePopThreshold          = _failurePopThreshold,
@@ -801,6 +804,8 @@
             _famineDuration   = Math.Max(1, s.FamineDuration);
             _floodEnabled                    = s.FloodEnabled;
             _randomLifeEnabled               = s.RandomLifeEnabled;
+            _randomLifeThresholdPct          = s.RandomLifeThresholdPct;
+            _autoContinue                    = s.AutoContinue;
             _allowGridExpansion              = s.AllowGridExpansion;
             _nationsEnabled                  = s.NationsEnabled;
             _failurePopThreshold             = s.FailurePopThreshold;
@@ -836,7 +841,9 @@
             FamineCooldown   = _famineCooldown,
             FamineDuration   = _famineDuration,
             FloodEnabled         = _floodEnabled,
-            RandomLifeEnabled    = _randomLifeEnabled,
+            RandomLifeEnabled         = _randomLifeEnabled,
+            RandomLifeThresholdPct    = _randomLifeThresholdPct,
+            AutoContinue              = _autoContinue,
             AllowGridExpansion                  = _allowGridExpansion,
             NationsEnabled                      = _nationsEnabled,
             FailurePopThreshold                 = _failurePopThreshold,
@@ -967,10 +974,19 @@
             {
                 _running = false;
                 _timer.Stop();
-                var reason = _model.FailureReason;
-                var colon = reason.IndexOf(':');
-                _failureMessage = colon >= 0 ? reason.Substring(colon + 1) : reason;
-                _showFailurePopup = true;
+                if (_autoContinue)
+                {
+                    await Restart();
+                    _running = true;
+                    _timer.Start();
+                }
+                else
+                {
+                    var reason = _model.FailureReason;
+                    var colon = reason.IndexOf(':');
+                    _failureMessage = colon >= 0 ? reason.Substring(colon + 1) : reason;
+                    _showFailurePopup = true;
+                }
             }
             StateHasChanged();
             if (floodStarted)
@@ -1265,7 +1281,9 @@
         _famineCooldown   = 15;
         _famineDuration   = 10;
         _floodEnabled       = true;
-        _randomLifeEnabled  = false;
+        _randomLifeEnabled         = false;
+        _randomLifeThresholdPct    = 5.0;
+        _autoContinue              = false;
         _allowGridExpansion = true;
         _nationsEnabled = true;
         _failurePopThreshold = 0;
