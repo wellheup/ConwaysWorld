@@ -340,9 +340,14 @@ interface DotNetRef {
         }
 
         if (selectedCell && col >= 0 && selectedCell.col === col && selectedCell.row === row) {
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 1 / scale;
-            ctx.strokeRect(px + 0.5, py + 0.5, w - 1, w - 1);
+            const lw = Math.max(2, Math.round(3 / scale));
+            const half = lw / 2;
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = lw;
+            ctx.strokeRect(px + half, py + half, w - lw, w - lw);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = Math.max(1, Math.round(1 / scale));
+            ctx.strokeRect(px + half + lw, py + half + lw, w - lw * 3, w - lw * 3);
         }
     }
 
@@ -564,6 +569,7 @@ interface DotNetRef {
     function renderFrame(
         cells: CellData[],
         nationColors: string[],
+        liveNationIndices: number[],
         newCols: number,
         newRows: number,
         moves: MoveData[],
@@ -578,11 +584,16 @@ interface DotNetRef {
     ): Promise<void> {
         if (!ctx) return Promise.resolve();
 
+        // Build a Set of currently-live nation indices so stale nationality tags
+        // on cells from dissolved nations render as nationless (#222 background).
+        const liveNatSet = new Set<number>(liveNationIndices);
+        const effectiveNationColors = nationColors.map((c, i) => (liveNatSet.has(i) ? c : ''));
+
         const gridChanged = newCols !== cols || newRows !== rows;
         cols = newCols;
         rows = newRows;
         cachedCells = cells;
-        cachedNationColors = nationColors;
+        cachedNationColors = effectiveNationColors;
         cachedFamine = famine ?? { active: false, quadrant: 0 };
         cachedFlood = flood ?? { active: false };
 

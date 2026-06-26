@@ -290,9 +290,14 @@ window.ConwaysInterop = (() => {
             }
         }
         if (selectedCell && col >= 0 && selectedCell.col === col && selectedCell.row === row) {
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 1 / scale;
-            ctx.strokeRect(px + 0.5, py + 0.5, w - 1, w - 1);
+            const lw = Math.max(2, Math.round(3 / scale));
+            const half = lw / 2;
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = lw;
+            ctx.strokeRect(px + half, py + half, w - lw, w - lw);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = Math.max(1, Math.round(1 / scale));
+            ctx.strokeRect(px + half + lw, py + half + lw, w - lw * 3, w - lw * 3);
         }
     }
     function drawCellScaled(col, row, cs, type, nat, nationColors, sizeFactor) {
@@ -473,14 +478,18 @@ window.ConwaysInterop = (() => {
         ctx.strokeRect(0, 0, cols * cs, rows * cs);
         ctx.restore();
     }
-    function renderFrame(cells, nationColors, newCols, newRows, moves, births, deaths, epicDeaths, coronations, animationEnabled, stepIntervalMs, famine, flood) {
+    function renderFrame(cells, nationColors, liveNationIndices, newCols, newRows, moves, births, deaths, epicDeaths, coronations, animationEnabled, stepIntervalMs, famine, flood) {
         if (!ctx)
             return Promise.resolve();
+        // Build a Set of currently-live nation indices so stale nationality tags
+        // on cells from dissolved nations render as nationless (#222 background).
+        const liveNatSet = new Set(liveNationIndices);
+        const effectiveNationColors = nationColors.map((c, i) => (liveNatSet.has(i) ? c : ''));
         const gridChanged = newCols !== cols || newRows !== rows;
         cols = newCols;
         rows = newRows;
         cachedCells = cells;
-        cachedNationColors = nationColors;
+        cachedNationColors = effectiveNationColors;
         cachedFamine = famine !== null && famine !== void 0 ? famine : { active: false, quadrant: 0 };
         cachedFlood = flood !== null && flood !== void 0 ? flood : { active: false };
         let doZoom = false;

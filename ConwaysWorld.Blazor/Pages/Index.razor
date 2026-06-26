@@ -514,6 +514,8 @@
             return new SimEvent(raw["flood_end:".Length..], "ev-flood-end");
         if (raw.StartsWith("regicide_duel:"))
             return new SimEvent(raw["regicide_duel:".Length..], "ev-duel");
+        if (raw.StartsWith("selected_cell:"))
+            return new SimEvent(raw["selected_cell:".Length..], "ev-selected");
         return new SimEvent(raw, "");
     }
 
@@ -665,9 +667,10 @@
         }
 
         var nationColors = Cell_Nation.NationColors;
+        var liveNationIndices = _model.Nations.Keys.ToList();
         var famine = new { active = _model.FamineActive, quadrant = _model.FamineQuadrant };
         var flood  = new { active = _model.FloodActive };
-        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, c, r, moves, births, deaths, epicDeaths, coronations, _animationEnabled, _intervalMs, famine, flood);
+        await JS.InvokeVoidAsync("ConwaysInterop.renderFrame", cells, nationColors, liveNationIndices, c, r, moves, births, deaths, epicDeaths, coronations, _animationEnabled, _intervalMs, famine, flood);
     }
 
     private void UpdateTypeCounts()
@@ -883,6 +886,8 @@
     [JSInvokable]
     public void OnCellClick(int col, int row)
     {
+        _model.SelectedCol = col;
+        _model.SelectedRow = row;
         InvokeAsync(StateHasChanged);
     }
 
