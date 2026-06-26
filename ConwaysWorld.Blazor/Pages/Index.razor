@@ -586,6 +586,19 @@
                 ["Irradiated"]=0,["PlagueRat"]=0,["Zombie"]=0,["Necromancer"]=0 }),
 
         new TestCase(
+            "Epidemic Response",
+            "Diseased and Plague cells sweep through a dense Basic population. Doctors race to vaccinate survivors before the outbreak becomes unstoppable.",
+            StartCols: 35, StartRows: 35, MaxGrid: 250, MaxNations: 2,
+            StartClusters: 2, PopCount: 150,
+            FamineEnabled: false, FloodEnabled: false, RandomLifeEnabled: false, AllowGridExpansion: false,
+            SpawnWeights: new() { ["Basic"]=55, ["Diseased"]=18, ["Plague"]=12, ["Doctor"]=15,
+                ["Immortal"]=0,["Traveler"]=0,["Explorer"]=0,["Warrior"]=0,["Hunter"]=0,["Bomber"]=0,
+                ["Diplomat"]=0,["King"]=0,["Rebel"]=0,["Revolutionary"]=0,["Voyager"]=0,["Wayfinder"]=0,
+                ["Islander"]=0,["Barbarian"]=0,["Spy"]=0,["Soldier"]=0,["Conquistador"]=0,
+                ["Savior"]=0,["Follower"]=0,["Zealot"]=0,["Irradiated"]=0,["PlagueRat"]=0,
+                ["Zombie"]=0,["Necromancer"]=0 }),
+
+        new TestCase(
             "Full Chaos",
             "All 28 cell types active simultaneously. Nations rise and fall amid disease, war, invasions, and supernatural events.",
             StartCols: 60, StartRows: 60, MaxGrid: 500, MaxNations: 6,
