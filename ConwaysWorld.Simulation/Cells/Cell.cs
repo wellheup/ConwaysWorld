@@ -143,8 +143,8 @@ public abstract class Cell
 		// Non-zombie cells use NumNonZombieNeighbors so zombies are invisible to their
 		// Conway survival/birth checks. Zombie cells use NumNeighbors (they see each other).
 		int n = CellType == CellType.Zombie
-				? CellNeighborhood.NumNeighbors
-				: CellNeighborhood.NumNonZombieNeighbors;
+						? CellNeighborhood.NumNeighbors
+						: CellNeighborhood.NumNonZombieNeighbors;
 
 		if (IsAlive && n < MinLivingNeighbors)
 			return false;
@@ -205,6 +205,7 @@ public abstract class Cell
 			CellType.PlagueRat => new Cell_PlagueRat(col, row, isAlive),
 			CellType.Zombie => new Cell_Basic(col, row, isAlive),    // zombies replaced via Necromancer only
 			CellType.Necromancer => new Cell_Necromancer(col, row, isAlive),
+			CellType.Mutant => new Cell_Mutant(col, row, isAlive),
 			_ => new Cell_Basic(col, row, isAlive),
 		};
 		cell.Conditions = new HashSet<string>(oldCell.Conditions);

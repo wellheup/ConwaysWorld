@@ -114,6 +114,15 @@ public enum CellType
 	/// Dies immediately when it stops. Nationless, cannot be converted.
 	/// </summary>
 	PlagueRat,
+
+	/// <summary>
+	/// Marks each of its 8 immediate neighbours with a <c>mutate_</c> condition each step.
+	/// On the following conditions pass the marked cells are replaced with a randomly chosen
+	/// living cell type (any type, including promoted types like Warrior, King, Diplomat).
+	/// Mutation supersedes all other scheduled changes for that step.
+	/// Dies after a 5-step countdown. Low default spawn weight.
+	/// </summary>
+	Mutant,
 }
 /*
 - TODO: maybe cells should be more likely to survive death for every neighbor of the same nation?
