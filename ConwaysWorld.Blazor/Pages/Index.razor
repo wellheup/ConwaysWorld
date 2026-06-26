@@ -226,8 +226,19 @@
                         @if (_randomLifeEnabled)
                         {
                             <div class="cw-field">
-                                <label>Inject when pop % below</label>
-                                <input type="number" min="0" max="100" step="0.5" @bind="_randomLifeThresholdPct" />
+                                <label>Inject when pop falls below</label>
+                                <div class="cw-pop-fields">
+                                    <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
+                                           value="@_randomLifeThresholdPct.ToString("F1")"
+                                           @onchange="OnRandomLifeThresholdPctChange"
+                                           @onkeydown="@(e => { if (e.Key == "Enter") OnRandomLifeThresholdPctChange(new ChangeEventArgs { Value = _randomLifeThresholdPctStr }); })" />
+                                    <span class="cw-pop-sep">%</span>
+                                    <input type="number" class="cw-pop-input" min="0" max="@(_startCols * _startRows)"
+                                           value="@_randomLifeThresholdCount"
+                                           @onchange="OnRandomLifeThresholdCountChange"
+                                           @onkeydown="@(e => { if (e.Key == "Enter") OnRandomLifeThresholdCountChange(new ChangeEventArgs { Value = _randomLifeThresholdCount.ToString() }); })" />
+                                    <span class="cw-pop-sep">/ @(_startCols * _startRows)</span>
+                                </div>
                             </div>
                         }
                         <div class="cw-field">
@@ -681,6 +692,8 @@
     private bool _floodEnabled = true;
     private bool _randomLifeEnabled = false;
     private double _randomLifeThresholdPct = 5.0;
+    private string _randomLifeThresholdPctStr = "5.0";
+    private int _randomLifeThresholdCount = 10;
     private bool _autoContinue = false;
     private bool _allowGridExpansion = true;
     private int _failurePopThreshold = 0;
@@ -820,6 +833,8 @@
             _floodEnabled                    = s.FloodEnabled;
             _randomLifeEnabled               = s.RandomLifeEnabled;
             _randomLifeThresholdPct          = s.RandomLifeThresholdPct;
+            _randomLifeThresholdPctStr       = _randomLifeThresholdPct.ToString("F1");
+            _randomLifeThresholdCount        = (int)Math.Round(_randomLifeThresholdPct / 100.0 * _startCols * _startRows);
             _autoContinue                    = s.AutoContinue;
             _allowGridExpansion              = s.AllowGridExpansion;
             _nationsEnabled                  = s.NationsEnabled;
@@ -887,6 +902,27 @@
             _popCount = Math.Clamp(cnt, 0, total);
             _popPercent = total > 0 ? Math.Round(_popCount * 100.0 / total, 1) : 0;
             _popPercentStr = _popPercent.ToString("F1");
+        }
+    }
+
+    private void OnRandomLifeThresholdPctChange(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var pct))
+        {
+            _randomLifeThresholdPct = Math.Clamp(pct, 0, 100);
+            _randomLifeThresholdPctStr = _randomLifeThresholdPct.ToString("F1");
+            _randomLifeThresholdCount = (int)Math.Round(_randomLifeThresholdPct / 100.0 * _startCols * _startRows);
+        }
+    }
+
+    private void OnRandomLifeThresholdCountChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var cnt))
+        {
+            int total = _startCols * _startRows;
+            _randomLifeThresholdCount = Math.Clamp(cnt, 0, total);
+            _randomLifeThresholdPct = total > 0 ? Math.Round(_randomLifeThresholdCount * 100.0 / total, 1) : 0;
+            _randomLifeThresholdPctStr = _randomLifeThresholdPct.ToString("F1");
         }
     }
 
@@ -1296,9 +1332,11 @@
         _famineCooldown   = 15;
         _famineDuration   = 10;
         _floodEnabled       = true;
-        _randomLifeEnabled         = false;
-        _randomLifeThresholdPct    = 5.0;
-        _autoContinue              = false;
+        _randomLifeEnabled            = false;
+        _randomLifeThresholdPct       = 5.0;
+        _randomLifeThresholdPctStr    = "5.0";
+        _randomLifeThresholdCount     = (int)Math.Round(5.0 / 100.0 * _startCols * _startRows);
+        _autoContinue                 = false;
         _allowGridExpansion = true;
         _nationsEnabled = true;
         _failurePopThreshold = 0;
