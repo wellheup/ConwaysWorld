@@ -7,5 +7,8 @@ dotnet format "ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj" --no-rest
 echo "==> Formatting ConwaysWorld.Blazor..."
 dotnet format "ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj" --no-restore
 
+echo "==> Writing build timestamp..."
+date +%s > ConwaysWorld.Blazor/wwwroot/_build.txt
+
 echo "==> Starting application..."
 exec dotnet run --project ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj --urls http://0.0.0.0:5000
