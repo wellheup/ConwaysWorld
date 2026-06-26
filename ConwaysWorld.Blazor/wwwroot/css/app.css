@@ -433,6 +433,79 @@ canvas#sim-canvas {
 }
 .cw-apply-btn:hover { background: #2a5a3a; }
 
+/* ── Test Cases modal ──────────────────────────────────────── */
+.cw-tc-modal { max-width: 520px; }
+
+.cw-tc-list {
+    overflow-y: auto;
+    max-height: 380px;
+    padding: 8px 0;
+}
+
+.cw-tc-row {
+    padding: 10px 14px;
+    border-bottom: 1px solid #222;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+.cw-tc-row:hover { background: #1a2a1a; }
+.cw-tc-selected { background: #1a3a1a !important; border-left: 3px solid #4a8a5a; }
+
+.cw-tc-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ccc;
+    margin-bottom: 3px;
+}
+
+.cw-tc-desc {
+    font-size: 11px;
+    color: #777;
+    line-height: 1.4;
+}
+
+.cw-tc-detail {
+    font-size: 10px;
+    color: #4a8a5a;
+    margin-top: 5px;
+}
+
+/* ── Hotkeys table ─────────────────────────────────────────── */
+.cw-hotkeys-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.cw-hotkeys-table th {
+    text-align: left;
+    padding: 6px 8px;
+    color: #888;
+    border-bottom: 1px solid #333;
+    font-weight: normal;
+}
+
+.cw-hotkeys-table td {
+    padding: 7px 8px;
+    border-bottom: 1px solid #1e1e1e;
+    color: #bbb;
+    vertical-align: middle;
+}
+
+.cw-hotkeys-table tr:last-child td { border-bottom: none; }
+
+kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: #222;
+    border: 1px solid #444;
+    border-radius: 3px;
+    font-family: monospace;
+    font-size: 11px;
+    color: #ccc;
+    white-space: nowrap;
+}
+
 .cw-tooltip {
     position: absolute;
     background: rgba(10,10,10,0.92);

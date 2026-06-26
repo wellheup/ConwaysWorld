@@ -24,6 +24,7 @@
     <span style="color:#888;font-size:11px">ms</span>
 
     <button @onclick="() => _showSettings = true">⚙ Settings</button>
+    <button @onclick="() => { _showTestCases = true; _selectedTestCase = 0; }">🧪 Test Cases</button>
     <span style="margin-left:auto;color:#666;font-size:11px">
         Gen @_model.Generation &nbsp;|&nbsp;
         Pop @_model.CurrentPopulation &nbsp;|&nbsp;
@@ -124,6 +125,8 @@
                         @onclick="() => _settingsTab = 0">General</button>
                 <button class="cw-modal-tab @(_settingsTab == 1 ? "cw-modal-tab-active" : "")"
                         @onclick="() => _settingsTab = 1">Spawn Weights</button>
+                <button class="cw-modal-tab @(_settingsTab == 2 ? "cw-modal-tab-active" : "")"
+                        @onclick="() => _settingsTab = 2">Hotkeys</button>
             </div>
             <div class="cw-settings-scroll">
                 @if (_settingsTab == 0)
@@ -217,7 +220,7 @@
                         </label>
                     </div>
                 }
-                else
+                else if (_settingsTab == 1)
                 {
                     <div class="cw-weights-grid">
                         @foreach (var kv in _spawnWeights)
@@ -232,10 +235,65 @@
                         }
                     </div>
                 }
+                else
+                {
+                    <table class="cw-hotkeys-table">
+                        <thead>
+                            <tr><th>Key / Input</th><th>Action</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><kbd>Space</kbd></td><td>Play / Pause</td></tr>
+                            <tr><td><kbd>R</kbd></td><td>Restart simulation</td></tr>
+                            <tr><td><kbd>Scroll wheel</kbd></td><td>Zoom in / out</td></tr>
+                            <tr><td><kbd>Right-click drag</kbd></td><td>Pan the grid</td></tr>
+                            <tr><td><kbd>Double-click</kbd></td><td>Reset zoom &amp; pan</td></tr>
+                            <tr><td><kbd>Left-click</kbd></td><td>Select a cell (shows events)</td></tr>
+                            <tr><td><kbd>Hover</kbd></td><td>Tooltip: type, nation, age, conditions</td></tr>
+                        </tbody>
+                    </table>
+                }
             </div>
             <div class="cw-modal-footer">
                 <button class="cw-apply-btn" style="flex:1" @onclick="ApplyAndRestart">Apply & Restart</button>
                 <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="ResetToDefaults">Reset Defaults</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (_showTestCases)
+{
+    <div class="cw-modal-overlay" @onclick="() => _showTestCases = false">
+        <div class="cw-modal cw-tc-modal" @onclick:stopPropagation>
+            <div class="cw-modal-header">
+                <span>Test Cases</span>
+                <button class="cw-modal-close" @onclick="() => _showTestCases = false">✕</button>
+            </div>
+            <div class="cw-tc-list">
+                @for (int i = 0; i < _testCases.Count; i++)
+                {
+                    var tc = _testCases[i];
+                    var idx = i;
+                    <div class="cw-tc-row @(_selectedTestCase == idx ? "cw-tc-selected" : "")"
+                         @onclick="() => _selectedTestCase = idx">
+                        <div class="cw-tc-name">@tc.Name</div>
+                        <div class="cw-tc-desc">@tc.Description</div>
+                        @if (_selectedTestCase == idx)
+                        {
+                            <div class="cw-tc-detail">
+                                Grid @tc.StartCols×@tc.StartRows &nbsp;·&nbsp;
+                                Max @tc.MaxGrid &nbsp;·&nbsp;
+                                Nations @tc.MaxNations &nbsp;·&nbsp;
+                                Clusters @tc.StartClusters &nbsp;·&nbsp;
+                                Pop @tc.PopCount
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="cw-modal-footer">
+                <button class="cw-apply-btn" style="flex:1" @onclick="ApplyTestCase">Apply &amp; Restart</button>
+                <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="() => _showTestCases = false">Cancel</button>
             </div>
         </div>
     </div>
@@ -248,6 +306,8 @@
     private DotNetObjectReference<Index>? _dotNetRef;
     private bool _running = false;
     private bool _showSettings = false;
+    private bool _showTestCases = false;
+    private int _selectedTestCase = 0;
     private int _settingsTab = 0;
     private int _intervalMs = 1000;
     private bool _animationEnabled = true;
@@ -265,6 +325,102 @@
     private List<SimEvent> _eventLog = new();
     private const int MaxEventLog = 60;
     private bool _showEventLog = false;
+
+    // ── Test Cases ──────────────────────────────────────────────────────────────
+    private record TestCase(
+        string Name,
+        string Description,
+        int StartCols, int StartRows,
+        int MaxGrid,
+        int MaxNations,
+        int StartClusters,
+        int PopCount,
+        bool FamineEnabled,
+        bool FloodEnabled,
+        bool RandomLifeEnabled,
+        bool AllowGridExpansion,
+        Dictionary<string, int> SpawnWeights);
+
+    private List<TestCase> _testCases = new()
+    {
+        new TestCase(
+            "Conway Basics",
+            "Pure Conway rules: only Basic cells, tiny grid. Observe classic birth/survival/death patterns.",
+            StartCols: 10, StartRows: 10, MaxGrid: 500, MaxNations: 2,
+            StartClusters: 1, PopCount: 10,
+            FamineEnabled: false, FloodEnabled: false, RandomLifeEnabled: false, AllowGridExpansion: false,
+            SpawnWeights: new() { ["Basic"]=50, ["Wayfinder"]=10,
+                ["Immortal"]=0,["Diseased"]=0,["Plague"]=0,["Traveler"]=0,["Explorer"]=0,["Doctor"]=0,
+                ["Warrior"]=0,["Hunter"]=0,["Bomber"]=0,["Diplomat"]=0,["King"]=0,["Rebel"]=0,
+                ["Revolutionary"]=0,["Voyager"]=0,["Islander"]=0,["Barbarian"]=0,
+                ["Spy"]=0,["Soldier"]=0,["Conquistador"]=0,["Savior"]=0,["Follower"]=0,["Zealot"]=0,
+                ["Irradiated"]=0,["PlagueRat"]=0,["Zombie"]=0,["Necromancer"]=0 }),
+
+        new TestCase(
+            "Disease Spread",
+            "Watch Diseased and Plague cells spread infection through a Basic population. Doctor cells attempt to vaccinate.",
+            StartCols: 30, StartRows: 30, MaxGrid: 200, MaxNations: 2,
+            StartClusters: 1, PopCount: 80,
+            FamineEnabled: false, FloodEnabled: false, RandomLifeEnabled: false, AllowGridExpansion: false,
+            SpawnWeights: new() { ["Basic"]=60, ["Diseased"]=15, ["Plague"]=10, ["Doctor"]=15,
+                ["Immortal"]=0,["Traveler"]=0,["Explorer"]=0,["Warrior"]=0,["Hunter"]=0,["Bomber"]=0,
+                ["Diplomat"]=0,["King"]=0,["Rebel"]=0,["Revolutionary"]=0,["Voyager"]=0,["Wayfinder"]=0,
+                ["Islander"]=0,["Barbarian"]=0,["Spy"]=0,["Soldier"]=0,["Conquistador"]=0,
+                ["Savior"]=0,["Follower"]=0,["Zealot"]=0,["Irradiated"]=0,["PlagueRat"]=0,
+                ["Zombie"]=0,["Necromancer"]=0 }),
+
+        new TestCase(
+            "Two-Nation War",
+            "Two nations grow until kings are crowned, then Warriors and Diplomats compete for territory.",
+            StartCols: 40, StartRows: 40, MaxGrid: 300, MaxNations: 2,
+            StartClusters: 2, PopCount: 120,
+            FamineEnabled: false, FloodEnabled: false, RandomLifeEnabled: false, AllowGridExpansion: false,
+            SpawnWeights: new() { ["Basic"]=70, ["Warrior"]=15, ["Diplomat"]=15,
+                ["Immortal"]=0,["Diseased"]=0,["Plague"]=0,["Traveler"]=0,["Explorer"]=0,["Doctor"]=0,
+                ["Hunter"]=0,["Bomber"]=0,["King"]=0,["Rebel"]=0,["Revolutionary"]=0,["Voyager"]=0,
+                ["Wayfinder"]=0,["Islander"]=0,["Barbarian"]=0,["Spy"]=0,["Soldier"]=0,
+                ["Conquistador"]=0,["Savior"]=0,["Follower"]=0,["Zealot"]=0,["Irradiated"]=0,
+                ["PlagueRat"]=0,["Zombie"]=0,["Necromancer"]=0 }),
+
+        new TestCase(
+            "Savior & Followers",
+            "One Savior spawns and moves across the grid, recruiting Followers, while Warriors hunt it.",
+            StartCols: 50, StartRows: 50, MaxGrid: 400, MaxNations: 3,
+            StartClusters: 2, PopCount: 200,
+            FamineEnabled: false, FloodEnabled: false, RandomLifeEnabled: false, AllowGridExpansion: false,
+            SpawnWeights: new() { ["Basic"]=60, ["Warrior"]=15, ["Savior"]=5, ["Follower"]=5, ["Hunter"]=15,
+                ["Immortal"]=0,["Diseased"]=0,["Plague"]=0,["Traveler"]=0,["Explorer"]=0,["Doctor"]=0,
+                ["Bomber"]=0,["Diplomat"]=0,["King"]=0,["Rebel"]=0,["Revolutionary"]=0,["Voyager"]=0,
+                ["Wayfinder"]=0,["Islander"]=0,["Barbarian"]=0,["Spy"]=0,["Soldier"]=0,
+                ["Conquistador"]=0,["Zealot"]=0,["Irradiated"]=0,["PlagueRat"]=0,
+                ["Zombie"]=0,["Necromancer"]=0 }),
+
+        new TestCase(
+            "Necromancer Rising",
+            "A Necromancer spawns and raises nearby dead cells as Zombies. Doctors, Warriors, and Hunters must contain it.",
+            StartCols: 40, StartRows: 40, MaxGrid: 300, MaxNations: 2,
+            StartClusters: 1, PopCount: 100,
+            FamineEnabled: false, FloodEnabled: false, RandomLifeEnabled: false, AllowGridExpansion: false,
+            SpawnWeights: new() { ["Basic"]=50, ["Doctor"]=10, ["Warrior"]=15, ["Hunter"]=15, ["Necromancer"]=10,
+                ["Immortal"]=0,["Diseased"]=0,["Plague"]=0,["Traveler"]=0,["Explorer"]=0,
+                ["Bomber"]=0,["Diplomat"]=0,["King"]=0,["Rebel"]=0,["Revolutionary"]=0,["Voyager"]=0,
+                ["Wayfinder"]=0,["Islander"]=0,["Barbarian"]=0,["Spy"]=0,["Soldier"]=0,
+                ["Conquistador"]=0,["Savior"]=0,["Follower"]=0,["Zealot"]=0,["Irradiated"]=0,
+                ["PlagueRat"]=0,["Zombie"]=0 }),
+
+        new TestCase(
+            "Islander Invasion",
+            "Nationless Islanders settle and form Barbarian raiders. A small nation must hold them off.",
+            StartCols: 50, StartRows: 50, MaxGrid: 400, MaxNations: 2,
+            StartClusters: 1, PopCount: 150,
+            FamineEnabled: false, FloodEnabled: false, RandomLifeEnabled: false, AllowGridExpansion: false,
+            SpawnWeights: new() { ["Basic"]=30, ["Islander"]=50, ["Barbarian"]=20,
+                ["Immortal"]=0,["Diseased"]=0,["Plague"]=0,["Traveler"]=0,["Explorer"]=0,["Doctor"]=0,
+                ["Warrior"]=0,["Hunter"]=0,["Bomber"]=0,["Diplomat"]=0,["King"]=0,["Rebel"]=0,
+                ["Revolutionary"]=0,["Voyager"]=0,["Wayfinder"]=0,["Spy"]=0,["Soldier"]=0,
+                ["Conquistador"]=0,["Savior"]=0,["Follower"]=0,["Zealot"]=0,["Irradiated"]=0,
+                ["PlagueRat"]=0,["Zombie"]=0,["Necromancer"]=0 }),
+    };
 
     private int _startCols = 50;
     private int _startRows = 50;
@@ -738,6 +894,32 @@
     {
         if (int.TryParse(e.Value?.ToString(), out var v))
             _spawnWeights[typeName] = v;
+    }
+
+    private async Task ApplyTestCase()
+    {
+        if (_selectedTestCase < 0 || _selectedTestCase >= _testCases.Count)
+            return;
+        var tc = _testCases[_selectedTestCase];
+        _startCols          = tc.StartCols;
+        _startRows          = tc.StartRows;
+        _maxGrid            = tc.MaxGrid;
+        _maxNations         = tc.MaxNations;
+        _startClusters      = tc.StartClusters;
+        _popCount           = tc.PopCount;
+        _popPercent         = Math.Round((double)tc.PopCount / (tc.StartCols * tc.StartRows) * 100.0, 1);
+        _popPercentStr      = _popPercent.ToString("F1");
+        _famineEnabled      = tc.FamineEnabled;
+        _floodEnabled       = tc.FloodEnabled;
+        _randomLifeEnabled  = tc.RandomLifeEnabled;
+        _allowGridExpansion = tc.AllowGridExpansion;
+        foreach (var kv in tc.SpawnWeights)
+        {
+            if (_spawnWeights.ContainsKey(kv.Key))
+                _spawnWeights[kv.Key] = kv.Value;
+        }
+        _showTestCases = false;
+        await ApplyAndRestart();
     }
 
     private async Task ApplyAndRestart()
