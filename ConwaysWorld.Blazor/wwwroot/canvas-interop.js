@@ -157,6 +157,11 @@ window.ConwaysInterop = (() => {
             scheduleRedraw();
         });
         window.addEventListener('keydown', onKeyDown);
+        document.addEventListener('fullscreenchange', () => {
+            if (dotnetRef) {
+                dotnetRef.invokeMethodAsync('OnFullscreenChange', !!document.fullscreenElement);
+            }
+        });
     }
     function scheduleRedraw() {
         if (isAnimating)
@@ -169,6 +174,14 @@ window.ConwaysInterop = (() => {
             drawFrame();
         });
     }
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => { });
+        }
+        else {
+            document.exitFullscreen().catch(() => { });
+        }
+    }
     function onKeyDown(e) {
         if (!dotnetRef)
             return;
@@ -178,6 +191,9 @@ window.ConwaysInterop = (() => {
         }
         else if (e.code === 'KeyR') {
             dotnetRef.invokeMethodAsync('OnKeyRestart');
+        }
+        else if (e.code === 'KeyF') {
+            toggleFullscreen();
         }
         else if (e.code === 'Escape') {
             dotnetRef.invokeMethodAsync('OnKeyEscape');
@@ -615,5 +631,14 @@ window.ConwaysInterop = (() => {
         }
         catch (_e) { }
     }
-    return { init, renderFrame, getCanvasSize, updateGridSize, saveSettings, loadSettings, clearSettings };
+    return {
+        init,
+        renderFrame,
+        getCanvasSize,
+        updateGridSize,
+        saveSettings,
+        loadSettings,
+        clearSettings,
+        toggleFullscreen,
+    };
 })();

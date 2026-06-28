@@ -32,6 +32,7 @@
 
     <button @onclick="() => _showSettings = true">⚙ Settings</button>
     <button @onclick="() => { _showTestCases = true; _selectedTestCase = 0; }">🧪 Test Cases</button>
+    <button title="Toggle fullscreen (F)" @onclick="ToggleFullscreen">@(_isFullscreen ? "⊡ Exit Full" : "⛶ Full")</button>
     <span style="margin-left:auto;color:#666;font-size:11px">
         Gen @_model.Generation &nbsp;|&nbsp;
         Pop @_model.CurrentPopulation &nbsp;|&nbsp;
@@ -303,6 +304,7 @@
                             <tr><td><kbd>Space</kbd></td><td>Play / Pause</td></tr>
                             <tr><td><kbd>R</kbd></td><td>Restart simulation</td></tr>
                             <tr><td><kbd>Escape</kbd></td><td>Close open modal</td></tr>
+                            <tr><td><kbd>F</kbd></td><td>Toggle fullscreen</td></tr>
                             <tr><td><kbd>Scroll wheel</kbd></td><td>Zoom in / out</td></tr>
                             <tr><td><kbd>Right-click drag</kbd></td><td>Pan the grid</td></tr>
                             <tr><td><kbd>Double-click</kbd></td><td>Reset zoom &amp; pan</td></tr>
@@ -395,6 +397,7 @@
     private bool _running = false;
     private bool _showSettings = false;
     private bool _showTestCases = false;
+    private bool _isFullscreen = false;
     private int _selectedTestCase = 0;
     private int _settingsTab = 0;
     private int _intervalMs = 1000;
@@ -1529,6 +1532,18 @@
         if (_showSettings) _showSettings = false;
         else if (_showTestCases) _showTestCases = false;
         else if (_showFailurePopup) _showFailurePopup = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleFullscreen()
+    {
+        await JS.InvokeVoidAsync("ConwaysInterop.toggleFullscreen");
+    }
+
+    [JSInvokable]
+    public void OnFullscreenChange(bool isFullscreen)
+    {
+        _isFullscreen = isFullscreen;
         InvokeAsync(StateHasChanged);
     }
 

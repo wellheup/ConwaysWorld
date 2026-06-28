@@ -197,6 +197,11 @@ interface DotNetRef {
             scheduleRedraw();
         });
         window.addEventListener('keydown', onKeyDown);
+        document.addEventListener('fullscreenchange', () => {
+            if (dotnetRef) {
+                dotnetRef.invokeMethodAsync('OnFullscreenChange', !!document.fullscreenElement);
+            }
+        });
     }
 
     function scheduleRedraw(): void {
@@ -209,6 +214,14 @@ interface DotNetRef {
         });
     }
 
+    function toggleFullscreen(): void {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+            document.exitFullscreen().catch(() => {});
+        }
+    }
+
     function onKeyDown(e: KeyboardEvent): void {
         if (!dotnetRef) return;
         if (e.code === 'Space') {
@@ -216,6 +229,8 @@ interface DotNetRef {
             dotnetRef.invokeMethodAsync('OnKeyTogglePlay');
         } else if (e.code === 'KeyR') {
             dotnetRef.invokeMethodAsync('OnKeyRestart');
+        } else if (e.code === 'KeyF') {
+            toggleFullscreen();
         } else if (e.code === 'Escape') {
             dotnetRef.invokeMethodAsync('OnKeyEscape');
         }
@@ -726,5 +741,14 @@ interface DotNetRef {
         } catch (_e) {}
     }
 
-    return { init, renderFrame, getCanvasSize, updateGridSize, saveSettings, loadSettings, clearSettings };
+    return {
+        init,
+        renderFrame,
+        getCanvasSize,
+        updateGridSize,
+        saveSettings,
+        loadSettings,
+        clearSettings,
+        toggleFullscreen,
+    };
 })();
