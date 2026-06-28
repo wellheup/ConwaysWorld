@@ -91,6 +91,8 @@ window.ConwaysInterop = (() => {
     };
     const sprites = {};
     function loadSprites() {
+        var _a, _b;
+        const base = (_b = (_a = document.querySelector('base')) === null || _a === void 0 ? void 0 : _a.href) !== null && _b !== void 0 ? _b : '/';
         const promises = SPRITE_NAMES.map((name, i) => new Promise(resolve => {
             const img = new Image();
             img.onload = () => {
@@ -98,7 +100,7 @@ window.ConwaysInterop = (() => {
                 resolve();
             };
             img.onerror = () => resolve();
-            img.src = `Assets/Sprites/Cell_${name}.jpg`;
+            img.src = `${base}Assets/Sprites/Cell_${name}.jpg`;
         }));
         return Promise.all(promises);
     }

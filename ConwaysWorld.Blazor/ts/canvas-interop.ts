@@ -132,6 +132,7 @@ interface DotNetRef {
     const sprites: { [key: number]: HTMLImageElement } = {};
 
     function loadSprites(): Promise<void[]> {
+        const base = (document.querySelector('base') as HTMLBaseElement)?.href ?? '/';
         const promises = SPRITE_NAMES.map(
             (name, i) =>
                 new Promise<void>(resolve => {
@@ -141,7 +142,7 @@ interface DotNetRef {
                         resolve();
                     };
                     img.onerror = () => resolve();
-                    img.src = `Assets/Sprites/Cell_${name}.jpg`;
+                    img.src = `${base}Assets/Sprites/Cell_${name}.jpg`;
                 }),
         );
         return Promise.all(promises);

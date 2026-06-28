@@ -29,12 +29,8 @@ jobs:
           dotnet publish ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj \
             -c Release \
             -o publish \
-            --nologo
-
-      - name: Patch base href for GitHub Pages sub-path
-        run: |
-          REPO="${{ github.event.repository.name }}"
-          sed -i "s|<base href=\"/\" />|<base href=\"/${REPO}/\" />|" publish/wwwroot/index.html
+            --nologo \
+            -p:StaticWebAssetBasePath="${{ github.event.repository.name }}"
 
       - name: Copy index.html → 404.html (SPA routing fallback)
         run: cp publish/wwwroot/index.html publish/wwwroot/404.html
