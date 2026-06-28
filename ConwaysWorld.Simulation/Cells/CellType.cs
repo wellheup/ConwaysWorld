@@ -124,16 +124,24 @@ public enum CellType
 	/// </summary>
 	Mutant,
 }
-/*
-- TODO: maybe cells should be more likely to survive death for every neighbor of the same nation?
-- TODO: Add to Conway's world an event that uses a "find the largest island" algorithm
-- TODO: add hover documentation for all cell types in both side panel and settings
-- TODO: add documentation for all rules
-- TODO: the sim seems to get stuck in cycles where there are a bunch of rebels and they won't die, then they kill off the population and the cycle repeats
-        - TODO: teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
-        - TODO: god? (effects every living cell on the board in some way)
-        - TODO: natural disasters? opportunity for largest island?
-- TODO: utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
-- TODO: make doctors more aggressive. Maybe make range a modifiable number in ConwaysWorld? Make this a setting called responsive doctors, which 
+/*TODO:
+- maybe cells should be more likely to survive death for every neighbor of the same nation?
+- Add to Conway's world an event that uses a "find the largest island" algorithm
+- add hover documentation for all cell types in both side panel and settings
+- add documentation for all rules
+- the sim seems to get stuck in cycles where there are a bunch of rebels and they won't die, then they kill off the population and the sim fails
+- simulation can get stuck in a fail state where it believes that it has been stuck at a certain cell pop even on reset
+- when the population goes extinct, the sim won't stop saying it has failed even on a restart. It only gets fixed when doing Apply & Restart in the settings
+- when you set a test case, the sim doesn't update the settings panel, so you can't tweak the test cases
+- the settings panel Apply & Restart button should close the settings weindow
+- cell images are still not showing up in the sim for the github pages hosting
+- make a fullscreen option for the sim
+- make the escape key exit from the test cases or settings menus
+- 
+		- teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
+		- god? (effects every living cell on the board in some way)
+		- natural disasters? opportunity for largest island?
+- utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
+- make doctors more aggressive. Maybe make range a modifiable number in ConwaysWorld? Make this a setting called responsive doctors, which 
 	will modulate doctor spawn weight depending on the number of diseases on the grid
 */

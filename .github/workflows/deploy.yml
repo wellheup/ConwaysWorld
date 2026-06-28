@@ -32,11 +32,18 @@ jobs:
             --nologo \
             -p:StaticWebAssetBasePath="${{ github.event.repository.name }}"
 
-      - name: Copy index.html → 404.html (SPA routing fallback)
-        run: cp publish/wwwroot/index.html publish/wwwroot/404.html
+      - name: Show publish output structure
+        run: find publish -maxdepth 4 | sort
+
+      - name: Locate wwwroot and copy index.html → 404.html
+        run: |
+          WWWROOT=$(find publish -maxdepth 4 -name "index.html" -printf "%h\n" | head -1)
+          echo "Detected wwwroot: $WWWROOT"
+          cp "$WWWROOT/index.html" "$WWWROOT/404.html"
+          echo "WWWROOT=$WWWROOT" >> $GITHUB_ENV
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: publish/wwwroot
+          publish_dir: ${{ env.WWWROOT }}
