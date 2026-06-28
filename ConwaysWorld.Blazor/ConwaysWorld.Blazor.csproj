@@ -13,7 +13,7 @@
     <ProjectReference Include="../ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj" />
   </ItemGroup>
 
-  <Target Name="CompileTypeScript" BeforeTargets="Build">
+  <Target Name="CompileTypeScript" BeforeTargets="Build" Condition="'$(GITHUB_ACTIONS)' != 'true'">
     <Exec Command="npm install --prefer-offline --silent" WorkingDirectory="$(MSBuildProjectDirectory)" />
     <Exec Command="npx prettier --write &quot;./ts/**/*.ts&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
     <Exec Command="npx tsc --project tsconfig.json" WorkingDirectory="$(MSBuildProjectDirectory)" />
