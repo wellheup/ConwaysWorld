@@ -1,0 +1,18 @@
+Run dotnet publish ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj \
+  dotnet publish ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj \
+    -c Release \
+    -o publish \
+    --nologo
+  shell: /usr/bin/bash -e {0}
+  env:
+    DOTNET_ROOT: /usr/share/dotnet
+  Determining projects to restore...
+Warning: /usr/share/dotnet/sdk/10.0.301/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.EolTargetFrameworks.targets(32,5): warning NETSDK1138: The target framework 'net7.0' is out of support and will not receive security updates in the future. Please refer to https://aka.ms/dotnet-core-support for more information about the support policy. [/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj]
+Warning: /usr/share/dotnet/sdk/10.0.301/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.EolTargetFrameworks.targets(32,5): warning NETSDK1138: The target framework 'net7.0' is out of support and will not receive security updates in the future. Please refer to https://aka.ms/dotnet-core-support for more information about the support policy. [/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj]
+  All projects are up-to-date for restore.
+Warning: /usr/share/dotnet/sdk/10.0.301/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.EolTargetFrameworks.targets(32,5): warning NETSDK1138: The target framework 'net7.0' is out of support and will not receive security updates in the future. Please refer to https://aka.ms/dotnet-core-support for more information about the support policy. [/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj]
+  ConwaysWorld.Simulation -> /home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/bin/Release/net7.0/ConwaysWorld.Simulation.dll
+  ConwaysWorld.Blazor -> /home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Blazor/bin/Release/net7.0/ConwaysWorld.Blazor.dll
+  ConwaysWorld.Blazor (Blazor output) -> /home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Blazor/bin/Release/net7.0/wwwroot
+/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj(17,5): error MSB3073: The command "npm install --prefer-offline --silent" exited with code 1.
+Error: Process completed with exit code 1.

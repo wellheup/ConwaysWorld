@@ -24,6 +24,10 @@ jobs:
       - name: Restore
         run: dotnet restore ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj
 
+      - name: Install npm dependencies (for TypeScript compilation)
+        run: npm install
+        working-directory: ConwaysWorld.Blazor
+
       - name: Publish
         run: |
           dotnet publish ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj \
