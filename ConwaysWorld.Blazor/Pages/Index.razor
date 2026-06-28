@@ -84,7 +84,7 @@
                 <div class="cw-cell-list">
                     @foreach (var entry in _typeCounts)
                     {
-                        <div class="cw-cell-row">
+                        <div class="cw-cell-row" title="@(CellDescriptions.GetValueOrDefault(entry.Name, ""))">
                             <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg" alt="@entry.Name" />
                             <span>@entry.Name</span>
                             <span class="cw-cell-count">@entry.Count</span>
@@ -140,38 +140,40 @@
                         @onclick="() => _settingsTab = 1">Spawn Weights</button>
                 <button class="cw-modal-tab @(_settingsTab == 2 ? "cw-modal-tab-active" : "")"
                         @onclick="() => _settingsTab = 2">Hotkeys</button>
+                <button class="cw-modal-tab @(_settingsTab == 3 ? "cw-modal-tab-active" : "")"
+                        @onclick="() => _settingsTab = 3">Rules</button>
             </div>
             <div class="cw-settings-scroll">
                 @if (_settingsTab == 0)
                 {
                     <div class="cw-settings-grid">
-                        <div class="cw-field">
+                        <div class="cw-field" title="Width of the starting grid in cells (5–300). Larger grids use more CPU.">
                             <label>Start columns</label>
                             <input type="number" min="5" max="300" @bind="_startCols" />
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Height of the starting grid in cells (5–300).">
                             <label>Start rows</label>
                             <input type="number" min="5" max="300" @bind="_startRows" />
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Maximum grid dimension after expansion. Set to 0 for no limit. The grid grows when Explorer cells reach an edge.">
                             <label>Max grid size (0 = unlimited)</label>
                             <input type="number" min="0" max="500" @bind="_maxGrid" />
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Maximum number of distinct nations that can coexist (1–20). Kings and Diplomats appear only when multiple nations are active.">
                             <label>Max nations (1–20)</label>
                             <input type="number" min="1" max="20" @bind="_maxNations" />
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Number of initial cell clusters placed at startup. Set to 0 to use MaxNations ÷ 4 automatically.">
                             <label>Start clusters (0 = MaxNations ÷ 4)</label>
                             <input type="number" min="0" max="20" @bind="_startClusters" />
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Toggle smooth movement animations for Traveler, Explorer, Spy, and other moving cell types.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_animationEnabled" />
                                 Movement animation
                             </label>
                         </div>
-                        <div class="cw-field cw-field-full">
+                        <div class="cw-field cw-field-full" title="How many cells are placed at the start of each run, expressed as a percentage of the grid or a fixed cell count.">
                             <label>Initial population</label>
                             <div class="cw-pop-fields">
                                 <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
@@ -188,23 +190,23 @@
                         </div>
 
                         <h3 class="cw-settings-section">Conway Rules</h3>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Minimum live neighbours a cell needs to survive, and minimum neighbours an empty cell needs to be born. Standard Conway value is 2.">
                             <label>Min neighbors (survive &amp; birth)</label>
                             <input type="number" min="0" max="7" @bind="_minNeighbors" />
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Maximum live neighbours a cell can have and still survive. Cells with more neighbours die of overcrowding. Standard Conway value is 3.">
                             <label>Max neighbors (survive)</label>
                             <input type="number" min="0" max="8" @bind="_maxNeighbors" />
                         </div>
 
                         <h3 class="cw-settings-section">World Events</h3>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Periodically kills cells in a random grid quadrant, simulating a food shortage. Controlled by Cooldown and Duration settings below.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_famineEnabled" />
                                 Enable Famine
                             </label>
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Periodically wipes the outer border ring of the grid, separating nation clusters and resetting expansion pressure.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_floodEnabled" />
                                 Enable Flood
@@ -212,22 +214,22 @@
                         </div>
                         @if (_famineEnabled)
                         {
-                            <div class="cw-field">
+                            <div class="cw-field" title="Minimum number of simulation steps that must pass before the next famine event can occur.">
                                 <label>Min steps between famines</label>
                                 <input type="number" min="1" max="500" @bind="_famineCooldown" />
                             </div>
-                            <div class="cw-field">
+                            <div class="cw-field" title="How many simulation steps a single famine event lasts.">
                                 <label>Famine duration (steps)</label>
                                 <input type="number" min="1" max="100" @bind="_famineDuration" />
                             </div>
                         }
-                        <div class="cw-field">
+                        <div class="cw-field" title="When population falls below the injection threshold, random cells are spawned to prevent total extinction.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_randomLifeEnabled" />
                                 Random Life Injection
                             </label>
                         </div>
-                        <div class="cw-field cw-field-full">
+                        <div class="cw-field cw-field-full" title="Population level (as % of grid or absolute count) below which new random cells are injected.">
                             <label>Inject when pop falls below</label>
                             <div class="cw-pop-fields">
                                 <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
@@ -242,13 +244,13 @@
                                 <span class="cw-pop-sep">/ @(_startCols * _startRows)</span>
                             </div>
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Allow Explorer cells to expand the grid beyond its starting size, up to the Max Grid Size limit.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_allowGridExpansion" />
                                 Allow grid expansion
                             </label>
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Enable the full nation system: proximity-based nationality, King crowning, Diplomat election, and Revolutionary defection.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_nationsEnabled" />
                                 Enable nations &amp; kings
@@ -256,19 +258,19 @@
                         </div>
 
                         <h3 class="cw-settings-section cw-field-full">Failure Conditions</h3>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Simulation ends if population drops to or below this count. Set to 0 to disable.">
                             <label>Min pop threshold (0 = off)</label>
                             <input type="number" min="0" max="10000" @bind="_failurePopThreshold" />
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Simulation ends if population collapses back below this count after previously growing above it. Set to 0 to disable.">
                             <label>Min pop after growth (0 = off)</label>
                             <input type="number" min="0" max="10000" @bind="_failurePopAfterGrowthThreshold" />
                         </div>
-                        <div class="cw-field">
+                        <div class="cw-field" title="Simulation ends if population stays at exactly the same count for this many consecutive steps. Set to 0 to disable.">
                             <label>Stagnation steps (0 = off)</label>
                             <input type="number" min="0" max="500" @bind="_stagnationSteps" />
                         </div>
-                        <div class="cw-field cw-field-full">
+                        <div class="cw-field cw-field-full" title="Automatically restart the simulation when a failure condition triggers, instead of showing the failure popup.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_autoContinue" />
                                 Auto-restart on failure
@@ -281,7 +283,7 @@
                     <div class="cw-weights-grid">
                         @foreach (var kv in _spawnWeights)
                         {
-                            <div class="cw-weight-row">
+                            <div class="cw-weight-row" title="@(CellDescriptions.GetValueOrDefault(kv.Key, ""))">
                                 <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(kv.Key).jpg" alt="@kv.Key" />
                                 <span class="cw-weight-name">@kv.Key</span>
                                 <input type="number" min="0" max="100"
@@ -291,7 +293,7 @@
                         }
                     </div>
                 }
-                else
+                else if (_settingsTab == 2)
                 {
                     <table class="cw-hotkeys-table">
                         <thead>
@@ -300,6 +302,7 @@
                         <tbody>
                             <tr><td><kbd>Space</kbd></td><td>Play / Pause</td></tr>
                             <tr><td><kbd>R</kbd></td><td>Restart simulation</td></tr>
+                            <tr><td><kbd>Escape</kbd></td><td>Close open modal</td></tr>
                             <tr><td><kbd>Scroll wheel</kbd></td><td>Zoom in / out</td></tr>
                             <tr><td><kbd>Right-click drag</kbd></td><td>Pan the grid</td></tr>
                             <tr><td><kbd>Double-click</kbd></td><td>Reset zoom &amp; pan</td></tr>
@@ -308,11 +311,40 @@
                         </tbody>
                     </table>
                 }
+                else if (_settingsTab == 3)
+                {
+                    <div class="cw-rules-list">
+                        <h3 class="cw-rules-section-head">Cell Types</h3>
+                        @foreach (var (name, desc) in CellRules)
+                        {
+                            <div class="cw-rules-entry">
+                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(name).jpg" alt="@name" />
+                                <div class="cw-rules-text">
+                                    <span class="cw-rules-name">@name</span>
+                                    <span class="cw-rules-desc">@desc</span>
+                                </div>
+                            </div>
+                        }
+                        <h3 class="cw-rules-section-head" style="margin-top:14px">Simulation Mechanics</h3>
+                        @foreach (var (label, desc) in SimulationEvents)
+                        {
+                            <div class="cw-rules-entry cw-rules-event">
+                                <div class="cw-rules-text">
+                                    <span class="cw-rules-name">@label</span>
+                                    <span class="cw-rules-desc">@desc</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
             </div>
-            <div class="cw-modal-footer">
-                <button class="cw-apply-btn" style="flex:1" @onclick="ApplyAndRestart">Apply & Restart</button>
-                <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="ResetToDefaults">Reset Defaults</button>
-            </div>
+            @if (_settingsTab != 3)
+            {
+                <div class="cw-modal-footer">
+                    <button class="cw-apply-btn" style="flex:1" @onclick="ApplyAndRestart">Apply & Restart</button>
+                    <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="ResetToDefaults">Reset Defaults</button>
+                </div>
+            }
         </div>
     </div>
 }
@@ -381,6 +413,58 @@
     private List<SimEvent> _eventLog = new();
     private const int MaxEventLog = 60;
     private bool _showEventLog = false;
+
+    // ── In-app documentation ────────────────────────────────────────────────────
+    private static readonly (string Name, string Desc)[] CellRules =
+    {
+        ("Basic",          "Standard Conway cells. 25% immune chance; 1% born immaculate (cannot be infected)."),
+        ("Immortal",       "Lives forever unless isolated for more than 8 consecutive steps. Immune to all disease strains."),
+        ("Diseased",       "Spreads the d_ infection strain to neighbours each step; dies after a 3-step countdown."),
+        ("Plague",         "Like Diseased but 40% higher transmission rate; spreads the p_ strain."),
+        ("Traveler",       "Moves one cell per step; dies if isolated more than 3 steps or fully surrounded for more than 3 steps."),
+        ("Explorer",       "Like Traveler; triggers grid expansion when it reaches an edge."),
+        ("Doctor",         "Cures disease in adjacent cells; stamps vax_ immunity markers to prevent re-infection; survives while actively vaccinating."),
+        ("Warrior",        "Fights foreign Diseased/Plague within range 2; hunts Saviors, Followers, and Rebels of any nation; demotes to Basic after 3 idle steps."),
+        ("Hunter",         "Hunts Immortals and Kings within range 5; also hunts Saviors, Followers, and Rebels of any nation; demotes to Basic after 3 idle steps."),
+        ("Bomber",         "Always nationless. Detonates at age 2, destroying all cells within a 2-cell radius."),
+        ("Diplomat",       "Elected from large nations; travels to the nearest foreign nation and converts adjacent cells to its own nationality."),
+        ("King",           "Crowned when a nation reaches ≥5 citizens. Marks neighbouring Basic cells with toWar, promoting them to Warriors. Death triggers a neutralisation cooldown for distant cells."),
+        ("Rebel",          "Short-lived Diplomat variant with 3× conversion rate; hunted by Warriors and Hunters of all nations."),
+        ("Revolutionary",  "Defects from the dominant nation, founds a rival nation, and recruits Warriors and Rebels from the old homeland."),
+        ("Voyager",        "Travels to a disconnected foreign nation. On arrival: 50% spawns Diplomats and Warriors, 50% seeds 4 Plague cells."),
+        ("Wayfinder",      "Finds the emptiest grid region and travels there. On arrival spawns 5 Islanders. Dies if ≥20 cells crowd within 5 tiles."),
+        ("Islander",       "Nationless; lives by Conway rules; dies from overcrowding (≥20 within 5 tiles); converts to Barbarian when touched by a nation cell."),
+        ("Barbarian",      "Nationless aggressor. Converts adjacent Islanders and kills nearby nation cells; reverts to Islander when no targets remain."),
+        ("Spy",            "Infiltrates enemy territory from a minority nation; swaps through living cells, converting each displaced cell into a Soldier."),
+        ("Soldier",        "Combat cell created by Spies and Conquistadors. Kills adjacent enemies; advances on distant ones; triggers a nation-merge check when its wave is wiped out."),
+        ("Conquistador",   "Like Voyager but on arrival teleports the 10 nearest home-nation cells to the landing zone and converts them all (plus itself) into Soldiers."),
+        ("Savior",         "At most one per grid. Flees toward a foreign nation, converting adjacent Basic cells into Followers. On reaching the target King: 50% assimilates (Immortal), 50% dies (→ Zealots). Hunted by all Warriors/Hunters."),
+        ("Follower",       "Created by a Savior. Waits 3 steps then follows the Savior's last broadcast direction. Reverts to Basic after 4 consecutive blocked steps. Hunted by all Warriors/Hunters."),
+        ("Zealot",         "Created when a Savior dies. Attacks any adjacent living cell regardless of nation; advances toward the nearest living cell when idle."),
+        ("Irradiated",     "Permanent hazard tile. Kills any cell that swaps onto it. Not counted as living; never dies."),
+        ("PlagueRat",      "Nationless roamer. Spreads the r_ plague strain. Hunted by Warriors and Hunters."),
+        ("Zombie",         "Resurrected from dead cells by a Necromancer; retains original type's appearance. Immune to Conway rules, disease, and old age; invisible to other cells' Conway neighbour counts. Permanently destroyed when killed by a Doctor, Warrior, or Hunter."),
+        ("Necromancer",    "Spawns randomly. On spawn resurrects the 3 nearest dead cells as Zombies; resurrects 1 more per step. Survives only while ≥2 Zombies are alive; death kills all its Zombies."),
+        ("Mutant",         "Randomly transforms into a different cell type each step. Highly unpredictable."),
+    };
+
+    private static readonly Dictionary<string, string> CellDescriptions =
+        CellRules.ToDictionary(r => r.Name, r => r.Desc);
+
+    private static readonly (string Label, string Desc)[] SimulationEvents =
+    {
+        ("Nations",                     "Cells in the same spawn cluster share a nationality. New cells join the nearest nation of the same colour within proximity range."),
+        ("Census",                      "Every step all living cells are counted per nation. Kings and Diplomats are elected or crowned when nations reach population thresholds."),
+        ("King Crowning",               "A nation with ≥5 citizens can crown a Basic cell as King. The King marks nearby Basic cells with 'toWar', promoting them to Warriors."),
+        ("King-Distance Neutralisation","Basic cells further than (columns+rows)/3 from their King lose nationality and gain a 3-step neutral cooldown before they can rejoin any nation."),
+        ("Diplomat Election",           "Large nations elect a Diplomat that travels to the nearest foreign nation and converts adjacent cells to its own nationality."),
+        ("Revolutionary Defection",     "When one nation becomes too dominant, a member may defect and become a Revolutionary, founding a rival nation and recruiting Rebels and Warriors."),
+        ("Famine",                      "Periodically kills cells in a random grid quadrant, simulating resource scarcity. Controlled by the Famine Cooldown and Famine Duration settings."),
+        ("Flood",                       "Periodically wipes the outer border ring of the grid, separating nation clusters and resetting expansion pressure."),
+        ("Random Life Injection",       "When population falls below the injection threshold, random cells are spawned to prevent total extinction. Threshold is set by % or absolute count."),
+        ("Grid Expansion",              "Explorer cells trigger the grid to grow when they reach an edge. Growth continues up to the Max Grid Size limit."),
+        ("Failure & Auto-Restart",      "The simulation ends (or auto-restarts) on: full extinction; population below Min Pop Threshold; population collapse after post-growth; or N-step stagnation."),
+    };
 
     // ── Test Cases ──────────────────────────────────────────────────────────────
     private record TestCase(

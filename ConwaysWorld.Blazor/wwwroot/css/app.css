@@ -535,6 +535,51 @@ kbd {
 .cw-tooltip .tt-type { font-weight: bold; color: #eee; }
 .cw-tooltip .tt-row { color: #aaa; }
 
+/* ── Rules tab ─────────────────────────────────────────────── */
+.cw-rules-list {
+    padding: 4px 0 8px;
+}
+
+.cw-rules-section-head {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #555;
+    margin: 6px 0 4px;
+}
+
+.cw-rules-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 5px 2px;
+    border-bottom: 1px solid #1c1c1c;
+}
+
+.cw-rules-entry:last-child { border-bottom: none; }
+
+.cw-rules-event { padding-left: 26px; }
+
+.cw-rules-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.cw-rules-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #ccc;
+    white-space: nowrap;
+}
+
+.cw-rules-desc {
+    font-size: 11px;
+    color: #666;
+    line-height: 1.45;
+}
+
 #blazor-error-ui {
     background: #5a1a1a;
     bottom: 0;
