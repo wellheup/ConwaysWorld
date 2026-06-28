@@ -5,6 +5,12 @@ namespace ConwaysWorld.Simulation;
 /// standard Conway survival rules during transit.  On arrival it becomes an Islander and
 /// seeds four additional Islander cells in nearby vacant slots.
 /// <para>
+/// Extends <see cref="Cell_ArrivalTraveler"/> which provides the <c>_specialPerformed</c>
+/// guard, transit survival (<see cref="Cell_ArrivalTraveler.CalcCellAliveNextGen"/>),
+/// <see cref="Cell.Live"/> / <see cref="Cell.Die"/> lifecycle, and the shared
+/// <see cref="Cell_ArrivalTraveler.NearestVacant"/> utility.
+/// </para>
+/// <para>
 /// Target selection: samples the grid at regular intervals to find the spot whose
 /// 5-tile Chebyshev neighbourhood has the fewest living cells.
 /// </para>
@@ -16,12 +22,11 @@ namespace ConwaysWorld.Simulation;
 /// Arrival: triggered when the Wayfinder reaches the target position (distance ≤ 1).
 /// </para>
 /// </summary>
-public class Cell_Wayfinder : Cell
+public class Cell_Wayfinder : Cell_ArrivalTraveler
 {
 	private int _targetCol = -1;
 	private int _targetRow = -1;
 	private bool _hasTarget = false;
-	private bool _specialPerformed = false;
 
 	/// <summary>Creates a Wayfinder cell at the given position.</summary>
 	public Cell_Wayfinder(int column, int row, bool isAlive)
@@ -33,22 +38,7 @@ public class Cell_Wayfinder : Cell
 		Conditions = new HashSet<string>();
 	}
 
-	/// <inheritdoc/>
-	public override void Live()
-	{
-		base.Live();
-		_specialPerformed = false;
-	}
-
-	/// <inheritdoc/>
-	public override void Die()
-	{
-		base.Die();
-		_specialPerformed = true;
-	}
-
-	/// <summary>Wayfingers ignore Conway rules during transit — they always survive.</summary>
-	public override bool CalcCellAliveNextGen() => IsAlive;
+	// Live(), Die(), CalcCellAliveNextGen(), and NearestVacant() inherited from Cell_ArrivalTraveler.
 
 	// ── Private helpers ───────────────────────────────────────────────────────────
 
@@ -154,32 +144,8 @@ public class Cell_Wayfinder : Cell
 	}
 
 	/// <summary>
-	/// Collects up to <paramref name="needed"/> vacant cells sorted outward from
-	/// (<paramref name="col"/>, <paramref name="row"/>) by Chebyshev ring.
-	/// </summary>
-	private static List<Cell> NearestVacant(Cell[,] cellGrid, int col, int row, int needed)
-	{
-		int cols = cellGrid.GetLength(0);
-		int rows = cellGrid.GetLength(1);
-		var vacant = new List<Cell>();
-		for (int range = 1; vacant.Count < needed && range < Math.Max(cols, rows); range++)
-			for (int co = -range; co <= range; co++)
-				for (int ro = -range; ro <= range; ro++)
-				{
-					if (Math.Abs(co) != range && Math.Abs(ro) != range)
-						continue;
-					int nc = (col + co + cols) % cols;
-					int nr = (row + ro + rows) % rows;
-					var c = cellGrid[nc, nr];
-					if (!c.IsAlive && !vacant.Contains(c))
-						vacant.Add(c);
-				}
-		return vacant;
-	}
-
-	/// <summary>
 	/// Resolves the arrival: the Wayfinder becomes an Islander and plants four more
-	/// Islanders in the nearest vacant slots.
+	/// Islanders in the nearest vacant slots (using <see cref="Cell_ArrivalTraveler.NearestVacant"/>).
 	/// </summary>
 	private void Arrive(Cell[,] cellGrid)
 	{

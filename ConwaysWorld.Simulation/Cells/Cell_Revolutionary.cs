@@ -25,12 +25,12 @@ namespace ConwaysWorld.Simulation;
 /// Revolutionaries are hunted by <see cref="Cell_Warrior"/> and <see cref="Cell_Hunter"/>.
 /// </para>
 /// </summary>
-public class Cell_Revolutionary : Cell
+public class Cell_Revolutionary : Cell_Converter
 {
 	/// <summary>The nation this Revolutionary defected from; used to identify recruit targets.</summary>
 	public int OldNationality { get; set; } = -1;
 
-	private bool _specialPerformed = false;
+	// Live() and Die() inherited from Cell_Converter.
 
 	/// <summary>Creates a Revolutionary cell at the given position.</summary>
 	public Cell_Revolutionary(int column, int row, bool isAlive)
@@ -42,20 +42,6 @@ public class Cell_Revolutionary : Cell
 		Conditions = new HashSet<string>();
 	}
 
-	/// <inheritdoc/>
-	public override void Live()
-	{
-		base.Live();
-		_specialPerformed = false;
-	}
-
-	/// <inheritdoc/>
-	public override void Die()
-	{
-		base.Die();
-		_specialPerformed = true;
-	}
-
 	/// <summary>
 	/// Marks every adjacent living Basic cell of the same nation with <c>"toWar"</c>,
 	/// mirroring <see cref="Cell_King"/> army-building behaviour.
@@ -65,8 +51,8 @@ public class Cell_Revolutionary : Cell
 		foreach (var neighbor in CellNeighborhood.NeighborhoodDict.Values)
 		{
 			if (neighbor.IsAlive && neighbor != this &&
-							neighbor.CellType == CellType.Basic &&
-							neighbor.Nationality == Nationality)
+											neighbor.CellType == CellType.Basic &&
+											neighbor.Nationality == Nationality)
 				neighbor.Conditions.Add("toWar");
 		}
 	}
@@ -85,11 +71,11 @@ public class Cell_Revolutionary : Cell
 		int wantRebels = 2;
 
 		var candidates = GetAllCellsInRangeByRule(cellGrid,
-						c => c.IsAlive &&
-										 c.Nationality == OldNationality &&
-										 c.CellType != CellType.King &&
-										 c.CellType != CellType.Revolutionary,
-						8);
+										c => c.IsAlive &&
+																		 c.Nationality == OldNationality &&
+																		 c.CellType != CellType.King &&
+																		 c.CellType != CellType.Revolutionary,
+										8);
 
 		candidates.Sort((a, b) =>
 		{

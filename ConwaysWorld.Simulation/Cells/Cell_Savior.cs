@@ -20,10 +20,10 @@ namespace ConwaysWorld.Simulation;
 /// </para>
 /// Warriors and Hunters of the Savior's birth nation treat it (and its Followers) as prey.
 /// </summary>
-public class Cell_Savior : Cell
+public class Cell_Savior : Cell_Converter
 {
 	private static readonly HashSet<CellType> _blockedTypes = new()
-				{ CellType.King, CellType.Revolutionary };
+					{ CellType.King, CellType.Revolutionary };
 
 	/// <summary>The nation this Savior was born into.</summary>
 	public int BirthNation { get; private set; } = -1;
@@ -39,8 +39,9 @@ public class Cell_Savior : Cell
 	public int LastDirR { get; private set; } = 0;
 
 	private bool _initialized = false;
-	private bool _specialPerformed = false;
 	private Cell? _targetKing = null;
+
+	// Die() inherited from Cell_Converter.
 
 	public Cell_Savior(int column, int row, bool isAlive)
 	{
@@ -54,6 +55,10 @@ public class Cell_Savior : Cell
 	/// <summary>Saviors ignore Conway rules.</summary>
 	public override bool CalcCellAliveNextGen() => IsAlive;
 
+	/// <summary>
+	/// Skips <see cref="Cell.ChooseNation"/> — the Savior manages its own nation
+	/// context via <see cref="BirthNation"/> and <see cref="TargetNation"/>.
+	/// </summary>
 	public override void Live()
 	{
 		IsAlive = true;
@@ -61,12 +66,6 @@ public class Cell_Savior : Cell
 		if (Age > MatureAge)
 			Conditions.Add("mature");
 		_specialPerformed = false;
-	}
-
-	public override void Die()
-	{
-		base.Die();
-		_specialPerformed = true;
 	}
 
 	// ── Helpers ───────────────────────────────────────────────────────────────────
@@ -319,8 +318,8 @@ public class Cell_Savior : Cell
 		{
 			// Head toward any cell in the target nation.
 			goal = SelectNearbyCellByRule(cellGrid,
-					c => c.IsAlive && c.Nationality == TargetNation,
-					int.MaxValue);
+							c => c.IsAlive && c.Nationality == TargetNation,
+							int.MaxValue);
 		}
 
 		if (goal != null)

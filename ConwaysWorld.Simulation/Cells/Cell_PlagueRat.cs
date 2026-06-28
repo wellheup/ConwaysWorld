@@ -10,19 +10,18 @@ namespace ConwaysWorld.Simulation;
 /// If it exhausts its movement budget, it dies immediately.
 /// </para>
 /// <para>
-/// Disease: uses a unique <c>r_</c> plague strain. Infection is applied to the swapped cell
-/// only, with 100% transmission (no roll) — it directly adds the strain tag.
+/// Disease: uses a unique <c>r_</c> plague strain (see <see cref="Cell_Spreader.StrainId"/>).
+/// Infection is applied to the swapped cell only, with 100% transmission (no roll) —
+/// it directly adds the strain tag.  The <see cref="Cell_Spreader.CanInfect"/> guard
+/// (alive, not Immortal, not Irradiated, not immune, not vaccinated) is checked before tagging.
 /// </para>
 /// <para>
 /// Nationless, cannot be converted to another type, and is a valid target for any
 /// cell that kills others (Warriors, Hunters, Bombers, Soldiers, Barbarians, Zealots).
 /// </para>
 /// </summary>
-public class Cell_PlagueRat : Cell
+public class Cell_PlagueRat : Cell_Spreader
 {
-	/// <summary>Unique plague strain tag (prefix <c>r_</c>) spread by this PlagueRat.</summary>
-	public string Disease { get; private set; }
-
 	/// <summary>Direction column component (-1, 0, or 1).</summary>
 	private int _dirC;
 
@@ -41,16 +40,15 @@ public class Cell_PlagueRat : Cell
 	private int _targetCol = -1;
 	private int _targetRow = -1;
 
-	/// <summary>Creates a PlagueRat cell at the given position.</summary>
+	/// <summary>
+	/// Creates a PlagueRat cell.  Passes <c>'r'</c> to <see cref="Cell_Spreader"/> which
+	/// generates the unique <see cref="Cell_Spreader.StrainId"/> tag automatically.
+	/// </summary>
 	public Cell_PlagueRat(int column, int row, bool isAlive)
+		: base(column, row, isAlive, 'r')
 	{
-		Column = column;
-		Row = row;
-		IsAlive = isAlive;
 		CellType = CellType.PlagueRat;
-		Conditions = new HashSet<string>();
 		Nationality = -1;
-		Disease = RandomCondition('r');
 		_hasArrived = false;
 		_specialPerformed = false;
 		_dirC = 0;
@@ -161,8 +159,9 @@ public class Cell_PlagueRat : Cell
 			return;
 		}
 
-		// Infect the cell we are about to swap with (if it is a valid infection target).
-		InfectCell(next, cellGrid, nc, nr);
+		// Infect the cell we are about to swap with (using Cell_Spreader.CanInfect guard).
+		if (CanInfect(next))
+			cellGrid[nc, nr].Conditions.Add(StrainId);
 
 		moves?.Add(new MoveRecord(StepStartColumn, StepStartRow, nc, nr, (int)CellType, Nationality));
 		SwapCells(this, next, cellGrid);
@@ -245,28 +244,8 @@ public class Cell_PlagueRat : Cell
 
 		// Budget = 1/3 of the dominant axis size.
 		int span = Math.Abs(_dirC) > 0 && Math.Abs(_dirR) > 0
-				? Math.Min(cols, rows)
-				: (Math.Abs(_dirC) > 0 ? cols : rows);
+						? Math.Min(cols, rows)
+						: (Math.Abs(_dirC) > 0 ? cols : rows);
 		_movesLeft = Math.Max(1, span / 3);
-	}
-
-	/// <summary>
-	/// Infects <paramref name="target"/> with this rat's strain if it is alive and not immune/Immortal.
-	/// Directly adds the strain tag — no roll required.
-	/// </summary>
-	private void InfectCell(Cell target, Cell[,] cellGrid, int nc, int nr)
-	{
-		if (!target.IsAlive)
-			return;
-		if (target.CellType == CellType.Immortal)
-			return;
-		if (target.CellType == CellType.Irradiated)
-			return;
-		if (target.Conditions.Contains("immune"))
-			return;
-		if (target.Conditions.Contains("vax_" + Disease))
-			return;
-
-		cellGrid[nc, nr].Conditions.Add(Disease);
 	}
 }

@@ -16,11 +16,11 @@ public class Cell_Plague : Cell_Diseased
 	/// Generates a unique <c>p_</c> strain tag distinct from <c>d_</c> Diseased strains.
 	/// </summary>
 	public Cell_Plague(int column, int row, bool isAlive)
-			: base(column, row, isAlive)
+					: base(column, row, isAlive)
 	{
 		TransmissionRate = (int)Math.Round(10 * 1.4);
 		CellType = CellType.Plague;
-		Disease = RandomCondition('p');
+		StrainId = RandomCondition('p');
 	}
 
 	/// <inheritdoc/>
@@ -38,7 +38,7 @@ public class Cell_Plague : Cell_Diseased
 	public override void Die()
 	{
 		IsAlive = false;
-		Conditions.Remove(Disease);
+		Conditions.Remove(StrainId);
 		Nationality = -1;
 	}
 

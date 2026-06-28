@@ -15,7 +15,7 @@ namespace ConwaysWorld.Simulation;
 /// </list>
 /// </para>
 /// </summary>
-public class Cell_Diseased : Cell
+public class Cell_Diseased : Cell_Spreader
 {
 	/// <summary>Steps remaining before this cell dies. Decremented in <see cref="CalcCellAliveNextGen"/>.</summary>
 	protected int CountDown = 3;
@@ -23,21 +23,14 @@ public class Cell_Diseased : Cell
 	/// <summary>Per-neighbour infection probability out of 100 (10 % for Diseased, 14 % for Plague).</summary>
 	protected int TransmissionRate = 10;
 
-	/// <summary>Unique strain identifier generated at spawn (e.g. <c>d_38291047</c>).</summary>
-	public string Disease;
-
 	/// <summary>
-	/// Creates a Diseased cell and generates its unique strain tag.
-	/// The tag is added to the cell's own conditions to mark it as the carrier.
+	/// Creates a Diseased cell.  Passes <c>'d'</c> to <see cref="Cell_Spreader"/> which
+	/// generates the unique <see cref="Cell_Spreader.StrainId"/> tag automatically.
 	/// </summary>
 	public Cell_Diseased(int column, int row, bool isAlive)
+			: base(column, row, isAlive, 'd')
 	{
-		Column = column;
-		Row = row;
-		IsAlive = isAlive;
 		CellType = CellType.Diseased;
-		Conditions = new HashSet<string>();
-		Disease = RandomCondition('d');
 	}
 
 	/// <inheritdoc/>
@@ -55,7 +48,7 @@ public class Cell_Diseased : Cell
 	public override void Die()
 	{
 		IsAlive = false;
-		Conditions.Remove(Disease);
+		Conditions.Remove(StrainId);
 		base.Die();
 	}
 
@@ -124,11 +117,11 @@ public class Cell_Diseased : Cell
 				continue;
 			if (target.Conditions.Contains("immune"))
 				continue;
-			var vaxKey = "vax_" + Disease;
+			var vaxKey = "vax_" + StrainId;
 			if (target.Conditions.Contains(vaxKey))
 				continue;
 
-			cellGrid[nc, nr].Conditions.Add(Disease);
+			cellGrid[nc, nr].Conditions.Add(StrainId);
 		}
 	}
 }

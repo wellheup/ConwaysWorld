@@ -7,9 +7,9 @@ namespace ConwaysWorld.Simulation;
 /// kills adjacent targets first, then advances toward the nearest living cell in range.
 /// Standard Conway survival rules apply between steps.
 /// </summary>
-public class Cell_Zealot : Cell
+public class Cell_Zealot : Cell_Combatant
 {
-	private bool _specialPerformed = false;
+	// Live() and Die() inherited from Cell_Combatant.
 
 	public Cell_Zealot(int column, int row, bool isAlive)
 	{
@@ -18,22 +18,6 @@ public class Cell_Zealot : Cell
 		IsAlive = isAlive;
 		CellType = CellType.Zealot;
 		Conditions = new HashSet<string>();
-	}
-
-	public override void Live()
-	{
-		IsAlive = true;
-		Age++;
-		if (Age > MatureAge)
-			Conditions.Add("mature");
-		ChooseNation();
-		_specialPerformed = false;
-	}
-
-	public override void Die()
-	{
-		base.Die();
-		_specialPerformed = true;
 	}
 
 	public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null)

@@ -11,10 +11,8 @@ namespace ConwaysWorld.Simulation;
 /// Between special actions, Barbarians obey standard Conway survival rules and never join
 /// a nation.
 /// </summary>
-public class Cell_Barbarian : Cell
+public class Cell_Barbarian : Cell_Combatant
 {
-	private bool _specialPerformed = false;
-
 	/// <summary>Creates a Barbarian cell at the given position.</summary>
 	public Cell_Barbarian(int column, int row, bool isAlive)
 	{
@@ -27,8 +25,7 @@ public class Cell_Barbarian : Cell
 	}
 
 	/// <summary>
-	/// Like the base <see cref="Cell.Live"/> but skips <see cref="Cell.ChooseNation"/>
-	/// so Barbarians never inherit a nationality.
+	/// Skips <see cref="Cell.ChooseNation"/> so Barbarians remain permanently nationless.
 	/// </summary>
 	public override void Live()
 	{
@@ -39,12 +36,7 @@ public class Cell_Barbarian : Cell
 		_specialPerformed = false;
 	}
 
-	/// <inheritdoc/>
-	public override void Die()
-	{
-		base.Die();
-		_specialPerformed = true;
-	}
+	// Die() inherited from Cell_Combatant.
 
 	/// <inheritdoc/>
 	public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null)
@@ -55,9 +47,9 @@ public class Cell_Barbarian : Cell
 
 		// Step 1 — convert every Islander within 3 tiles into a Barbarian.
 		var islanders = GetAllCellsInRangeByRule(
-						cellGrid,
-						c => c.IsAlive && c.CellType == CellType.Islander,
-						3);
+										cellGrid,
+										c => c.IsAlive && c.CellType == CellType.Islander,
+										3);
 		foreach (var isle in islanders)
 		{
 			var barb = ReplaceCell(isle, CellType.Barbarian, true);
@@ -67,11 +59,11 @@ public class Cell_Barbarian : Cell
 
 		// Step 2 — kill the nearest non-Islander, non-Barbarian within 2 tiles.
 		var target = SelectNearbyCellByRule(
-						cellGrid,
-						c => c.IsAlive &&
-								 c.CellType != CellType.Islander &&
-								 c.CellType != CellType.Barbarian,
-						3); // maxRange is exclusive; 3 covers Chebyshev range 2
+										cellGrid,
+										c => c.IsAlive &&
+														 c.CellType != CellType.Islander &&
+														 c.CellType != CellType.Barbarian,
+										3); // maxRange is exclusive; 3 covers Chebyshev range 2
 
 		if (target == null)
 		{

@@ -11,7 +11,7 @@ namespace ConwaysWorld.Simulation;
 /// When the last Soldier from a given (attacker, defender) nation pair dies the <see cref="Model"/>
 /// checks whether the defender should be absorbed into the attacker.
 /// </summary>
-public class Cell_Soldier : Cell
+public class Cell_Soldier : Cell_Combatant
 {
 	/// <summary>
 	/// The nation this Soldier was dispatched to fight.
@@ -19,8 +19,6 @@ public class Cell_Soldier : Cell
 	/// A value of -1 means the target nation is unspecified (Soldier will attack any enemy).
 	/// </summary>
 	public int TargetNation { get; set; } = -1;
-
-	private bool _specialPerformed = false;
 
 	/// <summary>Creates a Soldier cell at the given position.</summary>
 	public Cell_Soldier(int column, int row, bool isAlive)
@@ -32,25 +30,8 @@ public class Cell_Soldier : Cell
 		Conditions = new HashSet<string>();
 	}
 
-	/// <summary>Standard Live — Soldiers inherit nations normally and track maturity.</summary>
-	public override void Live()
-	{
-		IsAlive = true;
-		Age++;
-		if (Age > MatureAge)
-			Conditions.Add("mature");
-		ChooseNation();
-		_specialPerformed = false;
-	}
-
-	/// <inheritdoc/>
-	public override void Die()
-	{
-		base.Die();
-		_specialPerformed = true;
-	}
-
 	// Standard Conway survival rules (CalcCellAliveNextGen inherited from Cell_Basic logic via base).
+	// Live() and Die() inherited from Cell_Combatant.
 
 	/// <inheritdoc/>
 	public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null)
@@ -79,9 +60,9 @@ public class Cell_Soldier : Cell
 
 		// Step 2 — advance toward the nearest enemy within range 5.
 		var target = SelectNearbyCellByRule(
-				cellGrid,
-				c => c.IsAlive && c.Nationality >= 0 && c.Nationality != Nationality,
-				6);
+						cellGrid,
+						c => c.IsAlive && c.Nationality >= 0 && c.Nationality != Nationality,
+						6);
 
 		if (target == null)
 			return;

@@ -17,7 +17,7 @@ namespace ConwaysWorld.Simulation;
 /// when a nation reaches at least 10 citizens and has fewer Diplomats than 5 % of its population.
 /// </para>
 /// </summary>
-public class Cell_Diplomat : Cell
+public class Cell_Diplomat : Cell_Converter
 {
 	/// <summary>The foreign cell currently being pursued.  Refreshed when it becomes invalid.</summary>
 	private Cell? _target;
@@ -25,8 +25,7 @@ public class Cell_Diplomat : Cell
 	/// <summary>Consecutive steps without a successful conversion.  Currently tracked but not yet used for demotion.</summary>
 	private int _idleTurns = 0;
 
-	/// <summary>Prevents <see cref="SpecialActions"/> from running twice in one step when the Diplomat moves to a later grid position.</summary>
-	private bool _specialPerformed = false;
+	// Live() and Die() inherited from Cell_Converter.
 
 	/// <summary>Creates a Diplomat cell at the given position.</summary>
 	public Cell_Diplomat(int column, int row, bool isAlive)
@@ -39,26 +38,12 @@ public class Cell_Diplomat : Cell
 		_target = null;
 	}
 
-	/// <inheritdoc/>
-	public override void Live()
-	{
-		base.Live();
-		_specialPerformed = false;
-	}
-
-	/// <inheritdoc/>
-	public override void Die()
-	{
-		base.Die();
-		_specialPerformed = true;
-	}
-
 	/// <summary>
 	/// Returns <c>true</c> if <paramref name="c"/> is alive, belongs to a different nation,
 	/// and has a valid nation index.
 	/// </summary>
 	private bool IsForeignAlive(Cell c) =>
-																																	c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
+																																																																	c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
 
 	/// <summary>
 	/// Returns <c>true</c> when a conversion attempt should succeed.
