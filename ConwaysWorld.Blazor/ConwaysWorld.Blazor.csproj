@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ConwaysWorld.Blazor</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="7.0.20" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="7.0.20" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj" />
+  </ItemGroup>
+
+  <Target Name="CompileTypeScript" BeforeTargets="Build">
+    <Exec Command="npm install --prefer-offline --silent" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Exec Command="npx prettier --write &quot;./ts/**/*.ts&quot;" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Exec Command="npx tsc --project tsconfig.json" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+</Project>
