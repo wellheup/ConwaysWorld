@@ -26,13 +26,16 @@ public class Cell_Bomber : Cell
 		IsAlive = isAlive;
 		CellType = CellType.Bomber;
 		Conditions = new HashSet<string>();
+		Nationality = -1;
 	}
 
 	/// <summary>
-	/// Always votes to stay alive so the Bomber reaches age 2 before detonating.
+	/// Votes to stay alive only while already alive (so the Bomber reaches age 2 before detonating).
+	/// A dead Bomber slot defers to standard Conway birth rules — this prevents the oscillation
+	/// bug where a dead Bomber with ≥3 live neighbours endlessly re-spawns every other step.
 	/// Detonation is handled in <see cref="SpecialActions"/>, not here.
 	/// </summary>
-	public override bool CalcCellAliveNextGen() => true;
+	public override bool CalcCellAliveNextGen() => IsAlive;
 
 	/// <inheritdoc/>
 	public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null) => Detonate(cellGrid);

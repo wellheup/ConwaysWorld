@@ -21,12 +21,19 @@ namespace ConwaysWorld.Simulation;
 /// <para>
 /// Arrival: triggered when the Wayfinder reaches the target position (distance ≤ 1).
 /// </para>
+/// <para>
+/// Crowding: dies if ≥ 20 living cells exist within 5 tiles (same rule as Islanders).
+/// Idle reversion: reverts to a Barbarian after 3 consecutive steps without movement.
+/// </para>
 /// </summary>
 public class Cell_Wayfinder : Cell_ArrivalTraveler
 {
 	private int _targetCol = -1;
 	private int _targetRow = -1;
 	private bool _hasTarget = false;
+
+	/// <summary>Counts consecutive steps on which the Wayfinder could not move.</summary>
+	private int _idleMoveTurns = 0;
 
 	/// <summary>Creates a Wayfinder cell at the given position.</summary>
 	public Cell_Wayfinder(int column, int row, bool isAlive)
@@ -106,7 +113,8 @@ public class Cell_Wayfinder : Cell_ArrivalTraveler
 	/// Steps toward the stored target position by up to 2 cells this turn.
 	/// Tries the 2-cell jump first; falls back to 1 cell if blocked; stays if both are blocked.
 	/// </summary>
-	private void MoveTowardTarget(Cell[,] cellGrid, List<MoveRecord>? moves)
+	/// <returns><c>true</c> if the Wayfinder actually moved; <c>false</c> if both destinations were blocked.</returns>
+	private bool MoveTowardTarget(Cell[,] cellGrid, List<MoveRecord>? moves)
 	{
 		int cols = cellGrid.GetLength(0);
 		int rows = cellGrid.GetLength(1);
@@ -121,7 +129,7 @@ public class Cell_Wayfinder : Cell_ArrivalTraveler
 		int dirC = Math.Sign(dc);
 		int dirR = Math.Sign(dr);
 		if (dirC == 0 && dirR == 0)
-			return;
+			return false;
 
 		int col2 = (Column + dirC * 2 + cols) % cols;
 		int row2 = (Row + dirR * 2 + rows) % rows;
@@ -135,12 +143,15 @@ public class Cell_Wayfinder : Cell_ArrivalTraveler
 		{
 			moves?.Add(new MoveRecord(StepStartColumn, StepStartRow, col2, row2, (int)CellType, Nationality));
 			SwapCells(this, dest2, cellGrid);
+			return true;
 		}
 		else if (!dest1.IsAlive && dest1 != this)
 		{
 			moves?.Add(new MoveRecord(StepStartColumn, StepStartRow, col1, row1, (int)CellType, Nationality));
 			SwapCells(this, dest1, cellGrid);
+			return true;
 		}
+		return false;
 	}
 
 	/// <summary>
@@ -179,6 +190,13 @@ public class Cell_Wayfinder : Cell_ArrivalTraveler
 			return;
 		_specialPerformed = true;
 
+		// Crowding death: die if ≥ 20 live cells exist within 5 tiles.
+		if (CountLivingInRadius(cellGrid, Column, Row, 5) >= 20)
+		{
+			Die();
+			return;
+		}
+
 		if (!_hasTarget)
 			SelectTarget(cellGrid);
 
@@ -194,6 +212,21 @@ public class Cell_Wayfinder : Cell_ArrivalTraveler
 			return;
 		}
 
-		MoveTowardTarget(cellGrid, moves);
+		bool moved = MoveTowardTarget(cellGrid, moves);
+		if (moved)
+		{
+			_idleMoveTurns = 0;
+		}
+		else
+		{
+			_idleMoveTurns++;
+			// Revert to a Barbarian after 3 consecutive blocked steps.
+			if (_idleMoveTurns >= 3)
+			{
+				var barb = ReplaceCell(this, CellType.Barbarian, true);
+				barb.Nationality = -1;
+				cellGrid[Column, Row] = barb;
+			}
+		}
 	}
 }

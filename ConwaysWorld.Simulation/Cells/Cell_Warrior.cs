@@ -28,7 +28,7 @@ public class Cell_Warrior : Cell_Hunter
 
 	/// <summary>Creates a Warrior, overriding Hunter's prey list.</summary>
 	public Cell_Warrior(int column, int row, bool isAlive)
-																																																																																																																																	: base(column, row, isAlive)
+																																																																																																																																																																																																																																																																	: base(column, row, isAlive)
 	{
 		Column = column;
 		Row = row;
@@ -54,9 +54,9 @@ public class Cell_Warrior : Cell_Hunter
 	{
 		if (!c.IsAlive || !_warriorPreyTypes.Contains(c.CellType))
 			return false;
-		// Saviors and Followers are hunted by the birth nation's Warriors regardless of the
-		// Warrior's own nation — they count as prey for all nations.
-		if (c.CellType == CellType.Savior || c.CellType == CellType.Follower)
+		// Saviors, Followers, and Rebels are hunted by Warriors regardless of the
+		// Warrior's own nation — they are nation-agnostic prey for all nations.
+		if (c.CellType == CellType.Savior || c.CellType == CellType.Follower || c.CellType == CellType.Rebel)
 			return true;
 		return c.Nationality != Nationality;
 	}
