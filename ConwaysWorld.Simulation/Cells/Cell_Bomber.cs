@@ -18,40 +18,53 @@ namespace ConwaysWorld.Simulation;
 /// </summary>
 public class Cell_Bomber : Cell
 {
-	/// <summary>Creates a Bomber cell at the given position.</summary>
-	public Cell_Bomber(int column, int row, bool isAlive)
-	{
-		Column = column;
-		Row = row;
-		IsAlive = isAlive;
-		CellType = CellType.Bomber;
-		Conditions = new HashSet<string>();
-		Nationality = -1;
-	}
+        /// <summary>Creates a Bomber cell at the given position.</summary>
+        public Cell_Bomber(int column, int row, bool isAlive)
+        {
+                Column = column;
+                Row = row;
+                IsAlive = isAlive;
+                CellType = CellType.Bomber;
+                Conditions = new HashSet<string>();
+                Nationality = -1;
+        }
 
-	/// <summary>
-	/// Votes to stay alive only while already alive (so the Bomber reaches age 2 before detonating).
-	/// A dead Bomber slot defers to standard Conway birth rules — this prevents the oscillation
-	/// bug where a dead Bomber with ≥3 live neighbours endlessly re-spawns every other step.
-	/// Detonation is handled in <see cref="SpecialActions"/>, not here.
-	/// </summary>
-	public override bool CalcCellAliveNextGen() => IsAlive;
+        /// <summary>
+        /// Votes to stay alive only while already alive (so the Bomber reaches age 2 before detonating).
+        /// A dead Bomber slot defers to standard Conway birth rules — this prevents the oscillation
+        /// bug where a dead Bomber with ≥3 live neighbours endlessly re-spawns every other step.
+        /// Detonation is handled in <see cref="SpecialActions"/>, not here.
+        /// </summary>
+        public override bool CalcCellAliveNextGen() => IsAlive;
 
-	/// <inheritdoc/>
-	public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null) => Detonate(cellGrid);
+        /// <summary>
+        /// Increments age but skips <see cref="Cell.ChooseNation"/> so Bombers remain
+        /// permanently nationless regardless of their neighbours.
+        /// </summary>
+        public override void Live()
+        {
+                IsAlive = true;
+                Age++;
+                if (Age > MatureAge)
+                        Conditions.Add("mature");
+                // ChooseNation() intentionally omitted — Bombers are always nationless.
+        }
 
-	/// <summary>
-	/// Kills all living cells within range 2 (Chebyshev) and then kills the Bomber itself.
-	/// Does nothing if <see cref="Cell.Age"/> is less than 2.
-	/// </summary>
-	private void Detonate(Cell[,] cellGrid)
-	{
-		if (Age < 2)
-			return;
+        /// <inheritdoc/>
+        public override void SpecialActions(Cell[,] cellGrid, List<MoveRecord>? moves = null) => Detonate(cellGrid);
 
-		var victims = GetAllCellsInRangeByRule(cellGrid, c => c.IsAlive, 2);
-		foreach (var v in victims)
-			v.Die();
-		Die();
-	}
+        /// <summary>
+        /// Kills all living cells within range 2 (Chebyshev) and then kills the Bomber itself.
+        /// Does nothing if <see cref="Cell.Age"/> is less than 2.
+        /// </summary>
+        private void Detonate(Cell[,] cellGrid)
+        {
+                if (Age < 2)
+                        return;
+
+                var victims = GetAllCellsInRangeByRule(cellGrid, c => c.IsAlive, 2);
+                foreach (var v in victims)
+                        v.Die();
+                Die();
+        }
 }
