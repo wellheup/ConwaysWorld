@@ -1,0 +1,46 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 7
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '7.0.x'
+
+      - name: Restore
+        run: dotnet restore ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj
+
+      - name: Publish
+        run: |
+          dotnet publish ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj \
+            -c Release \
+            -o publish \
+            --nologo
+
+      - name: Patch base href for GitHub Pages sub-path
+        run: |
+          REPO="${{ github.event.repository.name }}"
+          sed -i "s|<base href=\"/\" />|<base href=\"/${REPO}/\" />|" publish/wwwroot/index.html
+
+      - name: Copy index.html → 404.html (SPA routing fallback)
+        run: cp publish/wwwroot/index.html publish/wwwroot/404.html
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: publish/wwwroot
