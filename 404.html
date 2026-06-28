@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conway's World</title>
+    <base href="/ConwaysWorld/" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link href="css/app.css?v=3" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link href="ConwaysWorld.Blazor.styles.css?v=3" rel="stylesheet" />
+</head>
+<body>
+    <div id="app">
+        <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a;color:#aaa;font-family:monospace;">
+            Loading Conway's World…
+        </div>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">✕</a>
+    </div>
+    <script src="canvas-interop.js?v=4"></script>
+    <script>
+        // Auto-reload when a new build is deployed: run.sh writes a fresh
+        // timestamp to _build.txt on every restart; we poll it and reload once
+        // we see the timestamp change. A 10s guard prevents reload storms.
+        (function () {
+            var lastStamp = null;
+            var reloadedAt = 0;
+            function checkBuild() {
+                fetch('_build.txt?_=' + Date.now(), { cache: 'no-store' })
+                    .then(function (r) { return r.text(); })
+                    .then(function (text) {
+                        var stamp = text.trim();
+                        if (lastStamp !== null && stamp !== lastStamp && Date.now() - reloadedAt > 10000) {
+                            reloadedAt = Date.now();
+                            location.reload();
+                        }
+                        lastStamp = stamp;
+                    })
+                    .catch(function () { });
+            }
+            checkBuild();
+            setInterval(checkBuild, 3000);
+        })();
+    </script>
+    <script src="_framework/blazor.webassembly.js" autostart="false"></script>
+    <script>
+        Blazor.start({
+            loadBootResource: function (type, name, defaultUri, integrity) {
+                return defaultUri + (defaultUri.indexOf('?') < 0 ? '?' : '&') + '_cb=' + Date.now();
+            }
+        });
+    </script>
+</body>
+</html>
