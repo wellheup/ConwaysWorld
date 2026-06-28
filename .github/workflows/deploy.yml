@@ -25,7 +25,9 @@ jobs:
         run: dotnet restore ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj
 
       - name: Install npm dependencies (for TypeScript compilation)
-        run: npm install
+        run: |
+          npm config set registry https://registry.npmjs.org
+          npm install
         working-directory: ConwaysWorld.Blazor
 
       - name: Publish
