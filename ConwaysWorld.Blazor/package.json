@@ -6,7 +6,7 @@
     "check": "prettier --check \"./ts/**/*.ts\""
   },
   "devDependencies": {
-    "prettier": "^3.3.2",
-    "typescript": "^5.4.5"
+    "prettier": "^3.5.0",
+    "typescript": "^5.8.0"
   }
 }
