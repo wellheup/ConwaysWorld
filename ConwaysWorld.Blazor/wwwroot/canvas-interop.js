@@ -179,6 +179,9 @@ window.ConwaysInterop = (() => {
         else if (e.code === 'KeyR') {
             dotnetRef.invokeMethodAsync('OnKeyRestart');
         }
+        else if (e.code === 'Escape') {
+            dotnetRef.invokeMethodAsync('OnKeyEscape');
+        }
     }
     function onWheel(e) {
         e.preventDefault();

@@ -216,6 +216,8 @@ interface DotNetRef {
             dotnetRef.invokeMethodAsync('OnKeyTogglePlay');
         } else if (e.code === 'KeyR') {
             dotnetRef.invokeMethodAsync('OnKeyRestart');
+        } else if (e.code === 'Escape') {
+            dotnetRef.invokeMethodAsync('OnKeyEscape');
         }
     }
 

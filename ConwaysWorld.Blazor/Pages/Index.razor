@@ -98,7 +98,7 @@
 </div>
 
 <div class="cw-nations-bar">
-    @{var nlist = _model.Nations.Values.OrderBy(n => n.NationNum).ToList();}
+    @{var nlist = _model.Nations.Values.Where(n => n.CitizensList.Count > 0).OrderBy(n => n.NationNum).ToList();}
     @for (int ni = 0; ni < nlist.Count; ni++)
     {
         var n = nlist[ni];
@@ -111,9 +111,13 @@
 {
     <div class="cw-modal-overlay" @onclick="() => _showFailurePopup = false">
         <div class="cw-extinct-popup" @onclick:stopPropagation>
-            <div class="cw-extinct-icon">⚠️</div>
-            <div class="cw-extinct-title">Simulation Ended</div>
+            <div class="cw-extinct-icon">@_failureIcon</div>
+            <div class="cw-extinct-title">@_failureTitle</div>
             <div class="cw-extinct-sub">@_failureMessage</div>
+            @if (!string.IsNullOrEmpty(_failureStats))
+            {
+                <div class="cw-extinct-stats">@_failureStats</div>
+            }
             <button class="cw-extinct-btn" @onclick="() => _showFailurePopup = false">Dismiss</button>
         </div>
     </div>
@@ -344,7 +348,7 @@
                 }
             </div>
             <div class="cw-modal-footer">
-                <button class="cw-apply-btn" style="flex:1" @onclick="ApplyTestCase">Apply &amp; Restart</button>
+                <button class="cw-apply-btn" style="flex:1" @onclick="ApplyTestCase">Apply to Settings</button>
                 <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="() => _showTestCases = false">Cancel</button>
             </div>
         </div>
@@ -697,7 +701,10 @@
     private int _failurePopAfterGrowthThreshold = 0;
     private int _stagnationSteps = 10;
     private bool _showFailurePopup = false;
+    private string _failureIcon = "⚠️";
+    private string _failureTitle = "Simulation Ended";
     private string _failureMessage = "";
+    private string _failureStats = "";
     private Dictionary<string, int> _spawnWeights = new();
 
     private static readonly string[] TypeNames = {
@@ -1030,9 +1037,7 @@
                 }
                 else
                 {
-                    var reason = _model.FailureReason;
-                    var colon = reason.IndexOf(':');
-                    _failureMessage = colon >= 0 ? reason.Substring(colon + 1) : reason;
+                    ParseFailureReason(_model.FailureReason!, _model.Generation);
                     _showFailurePopup = true;
                 }
             }
@@ -1181,6 +1186,9 @@
     {
         _timer.Stop();
         _running = false;
+        _showFailurePopup = false;
+        _failureMessage = "";
+        _failureStats = "";
         _eventLog.Clear();
         _model.Restart();
         _prevCellMap.Clear();
@@ -1213,7 +1221,7 @@
             _spawnWeights[typeName] = v;
     }
 
-    private async Task ApplyTestCase()
+    private void ApplyTestCase()
     {
         if (_selectedTestCase < 0 || _selectedTestCase >= _testCases.Count)
             return;
@@ -1235,14 +1243,20 @@
             if (_spawnWeights.ContainsKey(kv.Key))
                 _spawnWeights[kv.Key] = kv.Value;
         }
+        // Close test-cases modal and open settings so the user can inspect / tweak before running.
         _showTestCases = false;
-        await ApplyAndRestart();
+        _settingsTab   = 0;
+        _showSettings  = true;
     }
 
     private async Task ApplyAndRestart()
     {
         _timer.Stop();
         _running = false;
+        _showSettings      = false;
+        _showFailurePopup  = false;
+        _failureMessage    = "";
+        _failureStats      = "";
 
         InitSettings();
         _eventLog.Clear();
@@ -1411,6 +1425,9 @@
     {
         _timer.Stop();
         _running = false;
+        _showFailurePopup = false;
+        _failureMessage = "";
+        _failureStats = "";
         _model.Restart();
         _prevCellMap.Clear();
         _ = InvokeAsync(async () =>
@@ -1420,6 +1437,61 @@
             UpdateTypeCounts();
             StateHasChanged();
         });
+    }
+
+    [JSInvokable]
+    public void OnKeyEscape()
+    {
+        if (_showSettings) _showSettings = false;
+        else if (_showTestCases) _showTestCases = false;
+        else if (_showFailurePopup) _showFailurePopup = false;
+        InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Parses a FailureReason string into structured popup fields.
+    /// Formats: extinction:…  failure_pop:…  failure_pop_growth:…  failure_stagnation:…
+    /// </summary>
+    private void ParseFailureReason(string reason, int generation)
+    {
+        int colon = reason.IndexOf(':');
+        string prefix  = colon >= 0 ? reason[..colon] : "";
+        string body    = colon >= 0 ? reason[(colon + 1)..].Trim() : reason;
+        int    pop     = _model.CurrentPopulation;
+
+        switch (prefix)
+        {
+            case "extinction":
+                _failureIcon    = "💀";
+                _failureTitle   = "Extinction";
+                _failureMessage = "All cells have died — the simulation has gone extinct.";
+                _failureStats   = $"Generation {generation}  ·  Final pop 0";
+                break;
+            case "failure_pop":
+                _failureIcon    = "📉";
+                _failureTitle   = "Population Threshold";
+                _failureMessage = body;
+                _failureStats   = $"Generation {generation}  ·  Pop {pop}  ·  Threshold {_failurePopThreshold}";
+                break;
+            case "failure_pop_growth":
+                _failureIcon    = "📉";
+                _failureTitle   = "Post-Growth Collapse";
+                _failureMessage = body;
+                _failureStats   = $"Generation {generation}  ·  Pop {pop}  ·  Threshold {_failurePopAfterGrowthThreshold}";
+                break;
+            case "failure_stagnation":
+                _failureIcon    = "⏸";
+                _failureTitle   = "Stagnation";
+                _failureMessage = body;
+                _failureStats   = $"Generation {generation}  ·  Pop {pop}  ·  Idle steps {_stagnationSteps}";
+                break;
+            default:
+                _failureIcon    = "⚠️";
+                _failureTitle   = "Simulation Ended";
+                _failureMessage = body.Length > 0 ? body : reason;
+                _failureStats   = $"Generation {generation}  ·  Pop {pop}";
+                break;
+        }
     }
 
     public async ValueTask DisposeAsync()
