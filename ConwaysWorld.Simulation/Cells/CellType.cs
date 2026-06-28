@@ -128,7 +128,8 @@ public enum CellType
 - maybe cells should be more likely to survive death for every neighbor of the same nation?
 - Add to Conway's world an event that uses a "find the largest island" algorithm
 - add hover documentation for all cell types in both side panel and settings
-- add documentation for all rules
+- add documentation for all rules in a new tab in the settings menu so you can see what all cells do, what events do, etc.
+- add context on hover for all of the settings in the settings menu
 - the sim seems to get stuck in cycles where there are a bunch of rebels and they won't die, then they kill off the population and the sim fails
 - simulation can get stuck in a fail state where it believes that it has been stuck at a certain cell pop even on reset
 - when the population goes extinct, the sim won't stop saying it has failed even on a restart. It only gets fixed when doing Apply & Restart in the settings
@@ -137,8 +138,16 @@ public enum CellType
 - cell images are still not showing up in the sim for the github pages hosting
 - make a fullscreen option for the sim
 - make the escape key exit from the test cases or settings menus
-- 
-		- teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
+- when nations have 0 population, remove them from the nation counts at the bottom of the screen
+- I need better error logging for when the simulation fails
+- it looks like when cell populations initially spawn they are overwriting each other, so that the most recently spawned cluster is overwriting earlier spawned 
+- it looks like the simulation does not wrap around the edges of the grid when spawning initial population clusters
+- I ended up with 360 wayfinders in a population of 14000 all clusterd in a grid without spaces, which is way too many. I need a way for wayfinders to die when they are too close to neighbors
+- some of the bombers have nations, which is not supposed to happen I think
+- bombers spawn out in the middle of nowhere all of the time and I don't think I like it
+- wayfinders should follow similar crowding rules to islanders, also if they are not moving they should revert to barbiarians after 3 turns
+- add to the plan that we need to change the wayfinder cell so that instead of checking for empty spots at intervals, just check for one at spawn, then travel towards it, but when reaching within a 5-tile chebyshev neighbourhood of that destination, check if that destination still has no population in the 5-tile radius. If there are cells there, then set a new destionation, otherwise proceed with the arrival behavior when reaching the destination
+-	 teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
 		- god? (effects every living cell on the board in some way)
 		- natural disasters? opportunity for largest island?
 - utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
