@@ -127,6 +127,9 @@ public enum CellType
 /*
 - TODO: maybe cells should be more likely to survive death for every neighbor of the same nation?
 - TODO: Add to Conway's world an event that uses a "find the largest island" algorithm
+- TODO: add hover documentation for all cell types in both side panel and settings
+- TODO: add documentation for all rules
+- TODO: the sim seems to get stuck in cycles where there are a bunch of rebels and they won't die, then they kill off the population and the cycle repeats
         - TODO: teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
         - TODO: god? (effects every living cell on the board in some way)
         - TODO: natural disasters? opportunity for largest island?
