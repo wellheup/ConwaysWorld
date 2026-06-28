@@ -202,7 +202,17 @@ public class Cell_Wayfinder : Cell_ArrivalTraveler
                         SelectTarget(cellGrid);
 
                 if (!_hasTarget)
+                {
+                        // No target found this step — still counts as idle.
+                        _idleMoveTurns++;
+                        if (_idleMoveTurns >= 3)
+                        {
+                                var barb = ReplaceCell(this, CellType.Barbarian, true);
+                                barb.Nationality = -1;
+                                cellGrid[Column, Row] = barb;
+                        }
                         return;
+                }
 
                 int cols = cellGrid.GetLength(0);
                 int rows = cellGrid.GetLength(1);
