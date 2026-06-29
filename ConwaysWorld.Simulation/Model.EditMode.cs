@@ -96,6 +96,9 @@ public partial class Model
 		return cleared;
 	}
 
+	/// <summary>Alias for <see cref="ClearAllCells"/>.</summary>
+	public List<(int Col, int Row, CellType Type, int Nat)> ClearGrid() => ClearAllCells();
+
 	/// <summary>Restores a single cell to a snapshot state (used for undo and redo).</summary>
 	public void RestoreCell(int col, int row, bool alive, CellType type, int nat)
 	{

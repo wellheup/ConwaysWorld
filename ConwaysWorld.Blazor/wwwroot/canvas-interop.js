@@ -25,7 +25,8 @@ window.ConwaysInterop = (() => {
     let editMode = false;
     let editMoveMode = false;
     let editButtonDown = false;
-    let editMoveSource = null;
+    let editEraseButtonDown = false;
+    let editMoveSelected = null; // persistent move-mode selection
     let cachedCells = [];
     let cachedNationColors = [];
     let cachedFamine = { active: false, quadrant: 0 };
@@ -270,23 +271,25 @@ window.ConwaysInterop = (() => {
     }
     function onMouseDown(e) {
         if (e.button === 2) {
-            userHasTransformed = true;
-            isPanning = true;
-            panStart = { x: e.clientX - tx, y: e.clientY - ty };
-            canvas.style.cursor = 'grabbing';
+            if (editMode) {
+                e.preventDefault();
+                editEraseButtonDown = true;
+                const cell = screenToCell(e);
+                if (cell && dotnetRef)
+                    dotnetRef.invokeMethodAsync('OnEditErase', cell.col, cell.row);
+            }
+            else {
+                userHasTransformed = true;
+                isPanning = true;
+                panStart = { x: e.clientX - tx, y: e.clientY - ty };
+                canvas.style.cursor = 'grabbing';
+            }
         }
-        else if (e.button === 0 && editMode) {
+        else if (e.button === 0 && editMode && !editMoveMode) {
             editButtonDown = true;
             const cell = screenToCell(e);
-            if (editMoveMode) {
-                editMoveSource = cell;
-                if (cell)
-                    scheduleRedraw();
-            }
-            else if (cell) {
-                if (dotnetRef)
-                    dotnetRef.invokeMethodAsync('OnEditPaint', cell.col, cell.row);
-            }
+            if (cell && dotnetRef)
+                dotnetRef.invokeMethodAsync('OnEditPaint', cell.col, cell.row);
         }
     }
     function onMouseMove(e) {
@@ -311,6 +314,10 @@ window.ConwaysInterop = (() => {
                     if (dotnetRef)
                         dotnetRef.invokeMethodAsync('OnEditPaint', cell.col, cell.row);
                 }
+                if (editEraseButtonDown) {
+                    if (dotnetRef)
+                        dotnetRef.invokeMethodAsync('OnEditErase', cell.col, cell.row);
+                }
             }
         }
         else if (!cell && hoveredCell !== null) {
@@ -328,26 +335,20 @@ window.ConwaysInterop = (() => {
     }
     function onMouseUp(e) {
         if (e.button === 2) {
-            isPanning = false;
-            canvas.style.cursor = 'crosshair';
-        }
-        else if (e.button === 0 && editMode) {
-            editButtonDown = false;
-            if (editMoveMode) {
-                const dropCell = screenToCell(e);
-                if (editMoveSource &&
-                    dropCell &&
-                    (editMoveSource.col !== dropCell.col || editMoveSource.row !== dropCell.row)) {
-                    if (dotnetRef)
-                        dotnetRef.invokeMethodAsync('OnEditMoveDrop', editMoveSource.col, editMoveSource.row, dropCell.col, dropCell.row);
-                }
-                editMoveSource = null;
-                scheduleRedraw();
-            }
-            else {
+            if (editMode) {
+                editEraseButtonDown = false;
                 if (dotnetRef)
                     dotnetRef.invokeMethodAsync('OnEditStrokeEnd');
             }
+            else {
+                isPanning = false;
+                canvas.style.cursor = 'crosshair';
+            }
+        }
+        else if (e.button === 0 && editMode && !editMoveMode) {
+            editButtonDown = false;
+            if (dotnetRef)
+                dotnetRef.invokeMethodAsync('OnEditStrokeEnd');
         }
     }
     function onDblClick() {
@@ -356,6 +357,26 @@ window.ConwaysInterop = (() => {
         scheduleRedraw();
     }
     function onClick(e) {
+        if (editMode && editMoveMode) {
+            const cell = screenToCell(e);
+            if (!cell)
+                return;
+            if (!editMoveSelected) {
+                editMoveSelected = cell;
+                scheduleRedraw();
+            }
+            else if (editMoveSelected.col === cell.col && editMoveSelected.row === cell.row) {
+                editMoveSelected = null;
+                scheduleRedraw();
+            }
+            else {
+                if (dotnetRef)
+                    dotnetRef.invokeMethodAsync('OnEditMoveDrop', editMoveSelected.col, editMoveSelected.row, cell.col, cell.row);
+                editMoveSelected = null;
+                scheduleRedraw();
+            }
+            return;
+        }
         if (editMode)
             return;
         const cell = screenToCell(e);
@@ -365,6 +386,10 @@ window.ConwaysInterop = (() => {
             if (dotnetRef)
                 dotnetRef.invokeMethodAsync('OnCellClick', cell.col, cell.row);
         }
+    }
+    function onContextMenu(e) {
+        if (editMode)
+            e.preventDefault();
     }
     function screenToCell(e) {
         if (!canvas)
@@ -517,16 +542,16 @@ window.ConwaysInterop = (() => {
         ctx.lineWidth = 2 / scale;
         ctx.strokeRect(0, 0, cols * cs, rows * cs);
         if (editMode && hoveredCell) {
-            ctx.strokeStyle = editMoveMode && editMoveSource ? '#ffaa00' : '#00e5ff';
+            ctx.strokeStyle = '#00e5ff';
             ctx.lineWidth = 2 / scale;
             ctx.strokeRect(hoveredCell.col * cs, hoveredCell.row * cs, cs - 1, cs - 1);
         }
-        if (editMode && editMoveMode && editMoveSource) {
+        if (editMode && editMoveMode && editMoveSelected) {
             const lw = Math.max(2, Math.round(3 / scale));
             const half = lw / 2;
             ctx.strokeStyle = '#ffff00';
             ctx.lineWidth = lw;
-            ctx.strokeRect(editMoveSource.col * cs + half, editMoveSource.row * cs + half, cs - 1 - lw, cs - 1 - lw);
+            ctx.strokeRect(editMoveSelected.col * cs + half, editMoveSelected.row * cs + half, cs - 1 - lw, cs - 1 - lw);
         }
         ctx.restore();
     }
@@ -714,7 +739,8 @@ window.ConwaysInterop = (() => {
         editMode = enabled;
         editMoveMode = moveMode;
         editButtonDown = false;
-        editMoveSource = null;
+        editEraseButtonDown = false;
+        editMoveSelected = null;
         if (!enabled)
             hoveredCell = null;
         scheduleRedraw();

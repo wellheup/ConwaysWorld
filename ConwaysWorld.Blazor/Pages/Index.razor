@@ -460,6 +460,7 @@
 
     // ── Edit Mode ────────────────────────────────────────────────────────────────
     private bool _editMode = false;
+    private bool _editWasRunning = false;
     private int _editSidebarTab = 0;
     private int _editBrushType = 1;  // -1 = eraser; >=1 = CellType int value
     private int _editNation = -1;    // -1 = Nationless
@@ -474,8 +475,8 @@
     {
         CellType.Basic, CellType.Immortal, CellType.Diseased, CellType.Plague,
         CellType.Traveler, CellType.Explorer, CellType.Doctor, CellType.Warrior,
-        CellType.Hunter, CellType.Bomber, CellType.Diplomat, CellType.King,
-        CellType.Rebel, CellType.Revolutionary, CellType.Voyager, CellType.Wayfinder,
+        CellType.Hunter, CellType.Diplomat, CellType.King,
+        CellType.Rebel, CellType.Revolutionary, CellType.Voyager,
         CellType.Spy, CellType.Soldier, CellType.Conquistador, CellType.Savior,
         CellType.Follower, CellType.Zealot,
     };
@@ -1338,6 +1339,7 @@
         _editMode = !_editMode;
         if (_editMode)
         {
+            _editWasRunning = _running;
             _running = false;
             _timer.Stop();
             _editSidebarTab = 1;
@@ -1348,6 +1350,11 @@
         {
             _editMoveMode = false;
             _currentStrokeCells.Clear();
+            if (_editWasRunning)
+            {
+                _running = true;
+                _timer.Start();
+            }
         }
         await JS.InvokeVoidAsync("ConwaysInterop.setEditMode", _editMode, false);
         StateHasChanged();
@@ -1410,6 +1417,27 @@
         }
 
         _currentStrokeCells[(col, row)] = new EditSnapshot(col, row, oldAlive, oldType, oldNat, newAlive, newType, newNat);
+
+        _ = InvokeAsync(async () =>
+        {
+            await RenderFrame();
+            UpdateTypeCounts();
+            StateHasChanged();
+        });
+    }
+
+    [JSInvokable]
+    public void OnEditErase(int col, int row)
+    {
+        if (col < 0 || row < 0 || col >= _model.Columns || row >= _model.Rows) return;
+        if (_currentStrokeCells.ContainsKey((col, row))) return;
+
+        var oldCell = _model.CellGrid[col, row];
+        if (!oldCell.IsAlive) return;
+
+        var snap = new EditSnapshot(col, row, true, oldCell.CellType, oldCell.Nationality, false, CellType.Dead, -1);
+        _model.RemoveCell(col, row);
+        _currentStrokeCells[(col, row)] = snap;
 
         _ = InvokeAsync(async () =>
         {
