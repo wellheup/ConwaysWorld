@@ -1,0 +1,36 @@
+1. Entering/exiting Edit Mode
+Should it be a toolbar button, a keyboard shortcut (like E), or both? Should the simulation auto-pause when you enter?
+- It should be both, and the simulation tool shoudl auto-pause when edit mode is entered.
+
+2. Cell type picker UI
+When choosing what to paint, would you prefer a sidebar palette showing all 28 types (with their colors), a dropdown list, or a floating panel that only appears while in Edit Mode?
+-In edit mode, fill the cell types panel on the right with all of the different cell types, not just the ones present in the current sim. For painting nations, there should be a nations dropdown which can select the nation from the number of nations available in the current settings and apply it to the cells painted onto on the board for cells which are able to have nations. 
+
+3. Painting behaviour
+Click to place one cell, or click-and-drag to paint continuously across cells?
+Any interest in a brush radius (e.g. paint a 3×3 blob at once)?
+-click to place 1 cell, click and drag to continuously place cells across the grid, no need for brush size at this time but it could be noted as a later followup
+
+4. Moving cells
+Click-and-drag, or click-source then click-destination? Or is erasing + repainting sufficient and you'd skip a dedicated move tool?
+-this will require a 'move cells' button to deselect any current brush, the ability to select individual cells, and the ability to deselect individual cells. select a cell, Once the cell is selected, it can be clicked and dragged to a new location and released. when the move cells button is active, no brushes can be selected, instead only cells on the grid can be selected, deselected, and dragged to new locations
+
+5. Nation painting
+Separate "nation brush" mode where you pick a nation slot/colour then paint that nation onto existing cells?
+Or, when you paint a cell you also choose its nation from a small dropdown inline?
+Or both?
+-separate. see what I wrote in the answer to question 2
+
+6. Erasing
+Right-click to erase a cell? An Eraser entry in the type palette? A "Clear All" button? Some combination?
+- add an eraser entry to the type palette and a clear all button
+
+7. Undo
+Do you want Ctrl+Z undo inside Edit Mode, or is that overkill?
+-it would be fine to have undo and redo buttons but I think hotkeys are too far for edit mode right now
+
+8. Painted cells when simulation resumes
+Should painted cells behave exactly like naturally-spawned cells (age, die, join nations)? Or do you want any "locked" / pinned behaviour where a painted cell stays put regardless of Conway rules?
+-cells placed on the grid should behave as if they have just been spawned when the simulation resumes
+
+ask me any more questions if you need further clarification
