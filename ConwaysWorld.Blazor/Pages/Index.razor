@@ -129,7 +129,6 @@
                         </div>
                         @for (int ti = 1; ti < TypeNames.Length; ti++)
                         {
-                            if (TypeNames[ti] == "Zombie") continue;
                             var tIdx = ti;
                             var tName = TypeNames[ti];
                             <div class="cw-edit-palette-item @(_editBrushType == tIdx ? "selected" : "")"
@@ -471,6 +470,7 @@
     private readonly Stack<List<EditSnapshot>> _undoStack = new();
     private readonly Stack<List<EditSnapshot>> _redoStack = new();
 
+    // Nationless-by-design: Islander, Barbarian, Wayfinder, PlagueRat, Zombie, Necromancer, Bomber, Irradiated.
     private static readonly HashSet<CellType> NationCapableTypes = new()
     {
         CellType.Basic, CellType.Immortal, CellType.Diseased, CellType.Plague,
@@ -478,7 +478,7 @@
         CellType.Hunter, CellType.Diplomat, CellType.King,
         CellType.Rebel, CellType.Revolutionary, CellType.Voyager,
         CellType.Spy, CellType.Soldier, CellType.Conquistador, CellType.Savior,
-        CellType.Follower, CellType.Zealot,
+        CellType.Follower, CellType.Zealot, CellType.Mutant,
     };
 
     private Dictionary<(int col, int row), (int type, int nat)> _prevCellMap = new();
@@ -584,7 +584,7 @@
         "Traveler","Explorer","Doctor","Warrior","Hunter",
         "Bomber","Diplomat","King","Rebel","Revolutionary","Voyager",
         "Wayfinder","Islander","Barbarian","Spy","Soldier","Conquistador",
-        "Savior","Follower","Zealot","Irradiated","PlagueRat","Zombie","Necromancer","Mutant"
+        "Savior","Follower","Zealot","Zombie","Necromancer","Irradiated","PlagueRat","Mutant"
     };
 
     private static readonly string[] TypeColors = {
@@ -592,7 +592,7 @@
         "#4090d0","#20c0e0","#e050a0","#d08020","#c04040",
         "#e0a000","#a060e0","#f0d000","#ff5533","#9b1a4a","#00d4aa",
         "#1e90ff","#c8a040","#bb2200","#3a3a5a","#5a9e20","#c87800",
-        "#ffffff","#b0e0ff","#ff4400","#55ff00","#8b2020","#111111","#111111","#cc44ff"
+        "#ffffff","#b0e0ff","#ff4400","#111111","#111111","#55ff00","#8b2020","#cc44ff"
     };
 
     private static readonly System.Random _uiRandom = new();
@@ -1467,6 +1467,7 @@
         if (fromCol == toCol && fromRow == toRow) return;
 
         var fromCell = _model.CellGrid[fromCol, fromRow];
+        if (!fromCell.IsAlive) return;
         var toCell   = _model.CellGrid[toCol,   toRow];
 
         var snapshots = new List<EditSnapshot>
