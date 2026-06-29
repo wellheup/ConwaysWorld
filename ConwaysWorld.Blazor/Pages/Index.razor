@@ -320,7 +320,10 @@
                         @foreach (var (name, desc) in CellRules)
                         {
                             <div class="cw-rules-entry">
-                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(name).jpg" alt="@name" />
+                                <div class="cw-sprite-wrap">
+                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(name).jpg" alt="@name" />
+                                    <img class="cw-sprite-zoom-popup" src="Assets/Sprites/Cell_@(name).jpg" alt="" />
+                                </div>
                                 <div class="cw-rules-text">
                                     <span class="cw-rules-name">@name</span>
                                     <span class="cw-rules-desc">@desc</span>
