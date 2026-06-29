@@ -21,6 +21,11 @@ window.ConwaysInterop = (() => {
     let hoveredCell = null;
     let selectedCell = null;
     let isAnimating = false;
+    // ── Edit mode state ───────────────────────────────────────────────────────
+    let editMode = false;
+    let editMoveMode = false;
+    let editButtonDown = false;
+    let editMoveSource = null;
     let cachedCells = [];
     let cachedNationColors = [];
     let cachedFamine = { active: false, quadrant: 0 };
@@ -235,6 +240,9 @@ window.ConwaysInterop = (() => {
         else if (e.code === 'Escape') {
             dotnetRef.invokeMethodAsync('OnKeyEscape');
         }
+        else if (e.code === 'KeyE') {
+            dotnetRef.invokeMethodAsync('OnKeyEdit');
+        }
     }
     function onWheel(e) {
         e.preventDefault();
@@ -267,6 +275,19 @@ window.ConwaysInterop = (() => {
             panStart = { x: e.clientX - tx, y: e.clientY - ty };
             canvas.style.cursor = 'grabbing';
         }
+        else if (e.button === 0 && editMode) {
+            editButtonDown = true;
+            const cell = screenToCell(e);
+            if (editMoveMode) {
+                editMoveSource = cell;
+                if (cell)
+                    scheduleRedraw();
+            }
+            else if (cell) {
+                if (dotnetRef)
+                    dotnetRef.invokeMethodAsync('OnEditPaint', cell.col, cell.row);
+            }
+        }
     }
     function onMouseMove(e) {
         if (isPanning) {
@@ -284,11 +305,20 @@ window.ConwaysInterop = (() => {
             hoveredCell = cell;
             if (dotnetRef)
                 dotnetRef.invokeMethodAsync('OnHover', cell.col, cell.row, mx, my);
+            if (editMode) {
+                scheduleRedraw();
+                if (editButtonDown && !editMoveMode) {
+                    if (dotnetRef)
+                        dotnetRef.invokeMethodAsync('OnEditPaint', cell.col, cell.row);
+                }
+            }
         }
         else if (!cell && hoveredCell !== null) {
             hoveredCell = null;
             if (dotnetRef)
                 dotnetRef.invokeMethodAsync('OnHover', -1, -1, 0, 0);
+            if (editMode)
+                scheduleRedraw();
         }
     }
     function onMouseLeave() {
@@ -301,6 +331,24 @@ window.ConwaysInterop = (() => {
             isPanning = false;
             canvas.style.cursor = 'crosshair';
         }
+        else if (e.button === 0 && editMode) {
+            editButtonDown = false;
+            if (editMoveMode) {
+                const dropCell = screenToCell(e);
+                if (editMoveSource &&
+                    dropCell &&
+                    (editMoveSource.col !== dropCell.col || editMoveSource.row !== dropCell.row)) {
+                    if (dotnetRef)
+                        dotnetRef.invokeMethodAsync('OnEditMoveDrop', editMoveSource.col, editMoveSource.row, dropCell.col, dropCell.row);
+                }
+                editMoveSource = null;
+                scheduleRedraw();
+            }
+            else {
+                if (dotnetRef)
+                    dotnetRef.invokeMethodAsync('OnEditStrokeEnd');
+            }
+        }
     }
     function onDblClick() {
         userHasTransformed = false;
@@ -308,6 +356,8 @@ window.ConwaysInterop = (() => {
         scheduleRedraw();
     }
     function onClick(e) {
+        if (editMode)
+            return;
         const cell = screenToCell(e);
         if (cell) {
             selectedCell = cell;
@@ -466,6 +516,18 @@ window.ConwaysInterop = (() => {
         ctx.strokeStyle = '#999999';
         ctx.lineWidth = 2 / scale;
         ctx.strokeRect(0, 0, cols * cs, rows * cs);
+        if (editMode && hoveredCell) {
+            ctx.strokeStyle = editMoveMode && editMoveSource ? '#ffaa00' : '#00e5ff';
+            ctx.lineWidth = 2 / scale;
+            ctx.strokeRect(hoveredCell.col * cs, hoveredCell.row * cs, cs - 1, cs - 1);
+        }
+        if (editMode && editMoveMode && editMoveSource) {
+            const lw = Math.max(2, Math.round(3 / scale));
+            const half = lw / 2;
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = lw;
+            ctx.strokeRect(editMoveSource.col * cs + half, editMoveSource.row * cs + half, cs - 1 - lw, cs - 1 - lw);
+        }
         ctx.restore();
     }
     function easeInOut(t) {
@@ -648,6 +710,15 @@ window.ConwaysInterop = (() => {
         cols = c;
         rows = r;
     }
+    function setEditMode(enabled, moveMode) {
+        editMode = enabled;
+        editMoveMode = moveMode;
+        editButtonDown = false;
+        editMoveSource = null;
+        if (!enabled)
+            hoveredCell = null;
+        scheduleRedraw();
+    }
     function saveSettings(json) {
         try {
             localStorage.setItem(SETTINGS_KEY, json);
@@ -677,5 +748,6 @@ window.ConwaysInterop = (() => {
         loadSettings,
         clearSettings,
         toggleFullscreen,
+        setEditMode,
     };
 })();

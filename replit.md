@@ -94,11 +94,25 @@ Or just use the **Start application** workflow in Replit.
 |-------|--------|
 | Space | Play / Pause |
 | R | Restart |
+| E | Toggle Edit Mode (auto-pauses simulation) |
+| Escape | Exit Edit Mode / close modal |
 | Scroll wheel | Zoom in/out |
 | Right-click drag | Pan |
 | Double-click | Reset zoom/pan |
-| Left-click | Select cell |
+| Left-click | Select cell (or paint in Edit Mode) |
 | Hover | Tooltip: type, nation, age, conditions |
+
+## Edit Mode
+
+Press **E** or click **✏ Edit** in the toolbar to enter Edit Mode (simulation auto-pauses).
+
+- **Paint** — click or click-drag to stamp cells. Choose any type from the Edit tab palette.
+- **Erase** — select the Eraser from the palette and paint over cells to remove them.
+- **Nation** — pick a nation (Nationless or Nation 1–N) from the dropdown; only applies to nation-capable types.
+- **Move** — toggle Move Mode, then drag a cell from one tile to another.
+- **Undo / Redo** — full stroke-level undo/redo (unlimited history).
+- **Clear All** — removes every living cell (undoable).
+- Press **Escape** or click **✏ Edit** again to exit Edit Mode.
 
 ## Editing the TypeScript Canvas Layer
 

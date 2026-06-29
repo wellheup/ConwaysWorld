@@ -57,6 +57,12 @@ interface DotNetRef {
     let selectedCell: GridCell | null = null;
     let isAnimating = false;
 
+    // ── Edit mode state ───────────────────────────────────────────────────────
+    let editMode = false;
+    let editMoveMode = false;
+    let editButtonDown = false;
+    let editMoveSource: GridCell | null = null;
+
     let cachedCells: CellData[] = [];
     let cachedNationColors: string[] = [];
     let cachedFamine: FamineData = { active: false, quadrant: 0 };
@@ -263,6 +269,8 @@ interface DotNetRef {
             toggleFullscreen();
         } else if (e.code === 'Escape') {
             dotnetRef.invokeMethodAsync('OnKeyEscape');
+        } else if (e.code === 'KeyE') {
+            dotnetRef.invokeMethodAsync('OnKeyEdit');
         }
     }
 
@@ -298,6 +306,15 @@ interface DotNetRef {
             isPanning = true;
             panStart = { x: e.clientX - tx, y: e.clientY - ty };
             canvas!.style.cursor = 'grabbing';
+        } else if (e.button === 0 && editMode) {
+            editButtonDown = true;
+            const cell = screenToCell(e);
+            if (editMoveMode) {
+                editMoveSource = cell;
+                if (cell) scheduleRedraw();
+            } else if (cell) {
+                if (dotnetRef) dotnetRef.invokeMethodAsync('OnEditPaint', cell.col, cell.row);
+            }
         }
     }
 
@@ -315,9 +332,16 @@ interface DotNetRef {
         if (cell && (hoveredCell === null || cell.col !== hoveredCell.col || cell.row !== hoveredCell.row)) {
             hoveredCell = cell;
             if (dotnetRef) dotnetRef.invokeMethodAsync('OnHover', cell.col, cell.row, mx, my);
+            if (editMode) {
+                scheduleRedraw();
+                if (editButtonDown && !editMoveMode) {
+                    if (dotnetRef) dotnetRef.invokeMethodAsync('OnEditPaint', cell.col, cell.row);
+                }
+            }
         } else if (!cell && hoveredCell !== null) {
             hoveredCell = null;
             if (dotnetRef) dotnetRef.invokeMethodAsync('OnHover', -1, -1, 0, 0);
+            if (editMode) scheduleRedraw();
         }
     }
 
@@ -330,6 +354,29 @@ interface DotNetRef {
         if (e.button === 2) {
             isPanning = false;
             canvas!.style.cursor = 'crosshair';
+        } else if (e.button === 0 && editMode) {
+            editButtonDown = false;
+            if (editMoveMode) {
+                const dropCell = screenToCell(e);
+                if (
+                    editMoveSource &&
+                    dropCell &&
+                    (editMoveSource.col !== dropCell.col || editMoveSource.row !== dropCell.row)
+                ) {
+                    if (dotnetRef)
+                        dotnetRef.invokeMethodAsync(
+                            'OnEditMoveDrop',
+                            editMoveSource.col,
+                            editMoveSource.row,
+                            dropCell.col,
+                            dropCell.row,
+                        );
+                }
+                editMoveSource = null;
+                scheduleRedraw();
+            } else {
+                if (dotnetRef) dotnetRef.invokeMethodAsync('OnEditStrokeEnd');
+            }
         }
     }
 
@@ -340,6 +387,7 @@ interface DotNetRef {
     }
 
     function onClick(e: MouseEvent): void {
+        if (editMode) return;
         const cell = screenToCell(e);
         if (cell) {
             selectedCell = cell;
@@ -524,6 +572,19 @@ interface DotNetRef {
         ctx.strokeStyle = '#999999';
         ctx.lineWidth = 2 / scale;
         ctx.strokeRect(0, 0, cols * cs, rows * cs);
+
+        if (editMode && hoveredCell) {
+            ctx.strokeStyle = editMoveMode && editMoveSource ? '#ffaa00' : '#00e5ff';
+            ctx.lineWidth = 2 / scale;
+            ctx.strokeRect(hoveredCell.col * cs, hoveredCell.row * cs, cs - 1, cs - 1);
+        }
+        if (editMode && editMoveMode && editMoveSource) {
+            const lw = Math.max(2, Math.round(3 / scale));
+            const half = lw / 2;
+            ctx.strokeStyle = '#ffff00';
+            ctx.lineWidth = lw;
+            ctx.strokeRect(editMoveSource.col * cs + half, editMoveSource.row * cs + half, cs - 1 - lw, cs - 1 - lw);
+        }
 
         ctx.restore();
     }
@@ -751,6 +812,15 @@ interface DotNetRef {
         rows = r;
     }
 
+    function setEditMode(enabled: boolean, moveMode: boolean): void {
+        editMode = enabled;
+        editMoveMode = moveMode;
+        editButtonDown = false;
+        editMoveSource = null;
+        if (!enabled) hoveredCell = null;
+        scheduleRedraw();
+    }
+
     function saveSettings(json: string): void {
         try {
             localStorage.setItem(SETTINGS_KEY, json);
@@ -780,5 +850,6 @@ interface DotNetRef {
         loadSettings,
         clearSettings,
         toggleFullscreen,
+        setEditMode,
     };
 })();

@@ -33,6 +33,7 @@
     <button @onclick="() => _showSettings = true">⚙ Settings</button>
     <button @onclick="() => { _showTestCases = true; _selectedTestCase = 0; }">🧪 Test Cases</button>
     <button title="Toggle fullscreen (F)" @onclick="ToggleFullscreen">@(_isFullscreen ? "⊡ Exit Full" : "⛶ Full")</button>
+    <button class="@(_editMode ? "cw-toolbar-edit-active" : "")" title="Toggle edit mode (E)" @onclick="ToggleEditMode">✏ Edit</button>
     <span style="margin-left:auto;color:#666;font-size:11px">
         Gen @_model.Generation &nbsp;|&nbsp;
         Pop @_model.CurrentPopulation &nbsp;|&nbsp;
@@ -79,21 +80,67 @@
     </div>
 
     <div class="cw-sidebar">
+        <div class="cw-sidebar-tabs">
+            <button class="cw-sidebar-tab @(_editSidebarTab == 0 ? "active" : "")" @onclick="() => _editSidebarTab = 0">Cell Types</button>
+            <button class="cw-sidebar-tab @(_editSidebarTab == 1 ? "active" : "")" @onclick="() => _editSidebarTab = 1">Edit</button>
+        </div>
         <div class="cw-content-area">
-            <div class="cw-panel">
-                <h3>Cell Types</h3>
-                <div class="cw-cell-list">
-                    @foreach (var entry in _typeCounts)
-                    {
-                        <div class="cw-cell-row" title="@(CellDescriptions.GetValueOrDefault(entry.Name, ""))">
-                            <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg?v=3" alt="@entry.Name" />
-                            <span>@entry.Name</span>
-                            <span class="cw-cell-count">@entry.Count</span>
-                        </div>
-                    }
+            @if (_editSidebarTab == 0)
+            {
+                <div class="cw-panel">
+                    <h3>Cell Types</h3>
+                    <div class="cw-cell-list">
+                        @foreach (var entry in _typeCounts)
+                        {
+                            <div class="cw-cell-row" title="@(CellDescriptions.GetValueOrDefault(entry.Name, ""))">
+                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg?v=3" alt="@entry.Name" />
+                                <span>@entry.Name</span>
+                                <span class="cw-cell-count">@entry.Count</span>
+                            </div>
+                        }
+                    </div>
                 </div>
-            </div>
-
+            }
+            else
+            {
+                <div class="cw-edit-panel">
+                    <div class="cw-edit-toolbar">
+                        <button class="cw-edit-btn @(_editMoveMode ? "active" : "")" @onclick="ToggleMoveMode">⊕ Move</button>
+                        <button class="cw-edit-btn" @onclick="UndoEdit" disabled="@(_undoStack.Count == 0)">↩ Undo</button>
+                        <button class="cw-edit-btn" @onclick="RedoEdit" disabled="@(_redoStack.Count == 0)">↪ Redo</button>
+                        <button class="cw-edit-btn cw-edit-btn-danger" @onclick="ClearAllEdit">🗑 Clear</button>
+                    </div>
+                    <div class="cw-edit-nation">
+                        <label>Nation</label>
+                        <select value="@_editNation" @onchange="OnEditNationChange">
+                            <option value="-1">Nationless</option>
+                            @for (int ni = 0; ni < _maxNations; ni++)
+                            {
+                                var nIdx = ni;
+                                <option value="@nIdx">Nation @(nIdx + 1)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="cw-edit-palette">
+                        <div class="cw-edit-palette-item @(_editBrushType == -1 ? "selected" : "")"
+                             @onclick="() => SelectBrush(-1)">
+                            <span class="cw-edit-eraser">✕</span>
+                            <span>Eraser</span>
+                        </div>
+                        @for (int ti = 1; ti < TypeNames.Length; ti++)
+                        {
+                            if (TypeNames[ti] == "Zombie") continue;
+                            var tIdx = ti;
+                            var tName = TypeNames[ti];
+                            <div class="cw-edit-palette-item @(_editBrushType == tIdx ? "selected" : "")"
+                                 @onclick="() => SelectBrush(tIdx)">
+                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(tName).jpg?v=3" alt="@tName" />
+                                <span>@tName</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -306,7 +353,8 @@
                         <tbody>
                             <tr><td><kbd>Space</kbd></td><td>Play / Pause</td></tr>
                             <tr><td><kbd>R</kbd></td><td>Restart simulation</td></tr>
-                            <tr><td><kbd>Escape</kbd></td><td>Close open modal</td></tr>
+                            <tr><td><kbd>E</kbd></td><td>Toggle edit mode (auto-pauses)</td></tr>
+                            <tr><td><kbd>Escape</kbd></td><td>Close modal / exit edit mode</td></tr>
                             <tr><td><kbd>F</kbd></td><td>Toggle fullscreen</td></tr>
                             <tr><td><kbd>Scroll wheel</kbd></td><td>Zoom in / out</td></tr>
                             <tr><td><kbd>Right-click drag</kbd></td><td>Pan the grid</td></tr>
@@ -409,6 +457,28 @@
     private int _intervalMs = 1000;
     private bool _animationEnabled = true;
     private bool _canvasReady = false;
+
+    // ── Edit Mode ────────────────────────────────────────────────────────────────
+    private bool _editMode = false;
+    private int _editSidebarTab = 0;
+    private int _editBrushType = 1;  // -1 = eraser; >=1 = CellType int value
+    private int _editNation = -1;    // -1 = Nationless
+    private bool _editMoveMode = false;
+
+    private record EditSnapshot(int Col, int Row, bool OldAlive, CellType OldType, int OldNat, bool NewAlive, CellType NewType, int NewNat);
+    private readonly Dictionary<(int, int), EditSnapshot> _currentStrokeCells = new();
+    private readonly Stack<List<EditSnapshot>> _undoStack = new();
+    private readonly Stack<List<EditSnapshot>> _redoStack = new();
+
+    private static readonly HashSet<CellType> NationCapableTypes = new()
+    {
+        CellType.Basic, CellType.Immortal, CellType.Diseased, CellType.Plague,
+        CellType.Traveler, CellType.Explorer, CellType.Doctor, CellType.Warrior,
+        CellType.Hunter, CellType.Bomber, CellType.Diplomat, CellType.King,
+        CellType.Rebel, CellType.Revolutionary, CellType.Voyager, CellType.Wayfinder,
+        CellType.Spy, CellType.Soldier, CellType.Conquistador, CellType.Savior,
+        CellType.Follower, CellType.Zealot,
+    };
 
     private Dictionary<(int col, int row), (int type, int nat)> _prevCellMap = new();
 
@@ -1245,6 +1315,11 @@
     [JSInvokable]
     public void OnKeyEscape()
     {
+        if (_editMode)
+        {
+            _ = InvokeAsync(ToggleEditMode);
+            return;
+        }
         if (_showSettings) _showSettings = false;
         else if (_showTestCases) _showTestCases = false;
         else if (_showFailurePopup) _showFailurePopup = false;
@@ -1254,6 +1329,179 @@
     private async Task ToggleFullscreen()
     {
         await JS.InvokeVoidAsync("ConwaysInterop.toggleFullscreen");
+    }
+
+    // ── Edit Mode methods ────────────────────────────────────────────────────────
+
+    private async Task ToggleEditMode()
+    {
+        _editMode = !_editMode;
+        if (_editMode)
+        {
+            _running = false;
+            _timer.Stop();
+            _editSidebarTab = 1;
+            _editMoveMode = false;
+            _currentStrokeCells.Clear();
+        }
+        else
+        {
+            _editMoveMode = false;
+            _currentStrokeCells.Clear();
+        }
+        await JS.InvokeVoidAsync("ConwaysInterop.setEditMode", _editMode, false);
+        StateHasChanged();
+    }
+
+    private async Task ToggleMoveMode()
+    {
+        _editMoveMode = !_editMoveMode;
+        await JS.InvokeVoidAsync("ConwaysInterop.setEditMode", _editMode, _editMoveMode);
+        StateHasChanged();
+    }
+
+    private async Task SelectBrush(int brushType)
+    {
+        _editBrushType = brushType;
+        if (_editMoveMode)
+        {
+            _editMoveMode = false;
+            await JS.InvokeVoidAsync("ConwaysInterop.setEditMode", _editMode, false);
+        }
+        StateHasChanged();
+    }
+
+    private void OnEditNationChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var n))
+            _editNation = n;
+    }
+
+    [JSInvokable]
+    public void OnEditPaint(int col, int row)
+    {
+        if (col < 0 || row < 0 || col >= _model.Columns || row >= _model.Rows) return;
+        if (_currentStrokeCells.ContainsKey((col, row))) return;
+
+        var oldCell = _model.CellGrid[col, row];
+        bool oldAlive = oldCell.IsAlive;
+        CellType oldType = oldCell.CellType;
+        int oldNat = oldCell.Nationality;
+
+        bool newAlive;
+        CellType newType;
+        int newNat;
+
+        if (_editBrushType == -1)
+        {
+            _model.RemoveCell(col, row);
+            newAlive = false;
+            newType = CellType.Dead;
+            newNat = -1;
+        }
+        else
+        {
+            var brushType = (CellType)_editBrushType;
+            int nation = NationCapableTypes.Contains(brushType) ? _editNation : -1;
+            _model.PlaceCell(col, row, brushType, nation);
+            newAlive = true;
+            newType = brushType;
+            newNat = nation;
+        }
+
+        _currentStrokeCells[(col, row)] = new EditSnapshot(col, row, oldAlive, oldType, oldNat, newAlive, newType, newNat);
+
+        _ = InvokeAsync(async () =>
+        {
+            await RenderFrame();
+            UpdateTypeCounts();
+            StateHasChanged();
+        });
+    }
+
+    [JSInvokable]
+    public void OnEditStrokeEnd()
+    {
+        if (_currentStrokeCells.Count > 0)
+        {
+            _undoStack.Push(_currentStrokeCells.Values.ToList());
+            _redoStack.Clear();
+            _currentStrokeCells.Clear();
+        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public void OnEditMoveDrop(int fromCol, int fromRow, int toCol, int toRow)
+    {
+        if (fromCol < 0 || fromCol >= _model.Columns || fromRow < 0 || fromRow >= _model.Rows) return;
+        if (toCol   < 0 || toCol   >= _model.Columns || toRow   < 0 || toRow   >= _model.Rows) return;
+        if (fromCol == toCol && fromRow == toRow) return;
+
+        var fromCell = _model.CellGrid[fromCol, fromRow];
+        var toCell   = _model.CellGrid[toCol,   toRow];
+
+        var snapshots = new List<EditSnapshot>
+        {
+            new(fromCol, fromRow, fromCell.IsAlive, fromCell.CellType, fromCell.Nationality, false, CellType.Dead, -1),
+            new(toCol,   toRow,   toCell.IsAlive,   toCell.CellType,   toCell.Nationality,   fromCell.IsAlive, fromCell.CellType, fromCell.Nationality),
+        };
+
+        _model.MoveCell(fromCol, fromRow, toCol, toRow);
+        _undoStack.Push(snapshots);
+        _redoStack.Clear();
+
+        _ = InvokeAsync(async () =>
+        {
+            await RenderFrame();
+            UpdateTypeCounts();
+            StateHasChanged();
+        });
+    }
+
+    [JSInvokable]
+    public async Task OnKeyEdit()
+    {
+        await ToggleEditMode();
+    }
+
+    private async Task UndoEdit()
+    {
+        if (_undoStack.Count == 0) return;
+        var entry = _undoStack.Pop();
+        foreach (var snap in entry)
+            _model.RestoreCell(snap.Col, snap.Row, snap.OldAlive, snap.OldType, snap.OldNat);
+        _redoStack.Push(entry);
+        await RenderFrame();
+        UpdateTypeCounts();
+        StateHasChanged();
+    }
+
+    private async Task RedoEdit()
+    {
+        if (_redoStack.Count == 0) return;
+        var entry = _redoStack.Pop();
+        foreach (var snap in entry)
+            _model.RestoreCell(snap.Col, snap.Row, snap.NewAlive, snap.NewType, snap.NewNat);
+        _undoStack.Push(entry);
+        await RenderFrame();
+        UpdateTypeCounts();
+        StateHasChanged();
+    }
+
+    private async Task ClearAllEdit()
+    {
+        var cleared = _model.ClearAllCells();
+        if (cleared.Count > 0)
+        {
+            var snapshots = cleared.Select(s =>
+                new EditSnapshot(s.Col, s.Row, true, s.Type, s.Nat, false, CellType.Dead, -1)).ToList();
+            _undoStack.Push(snapshots);
+            _redoStack.Clear();
+        }
+        await RenderFrame();
+        UpdateTypeCounts();
+        StateHasChanged();
     }
 
     [JSInvokable]
