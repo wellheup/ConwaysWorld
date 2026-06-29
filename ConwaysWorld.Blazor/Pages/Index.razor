@@ -285,7 +285,10 @@
                         @foreach (var kv in _spawnWeights)
                         {
                             <div class="cw-weight-row" title="@(CellDescriptions.GetValueOrDefault(kv.Key, ""))">
-                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(kv.Key).jpg?v=3" alt="@kv.Key" />
+                                <div class="cw-sprite-wrap">
+                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(kv.Key).jpg?v=3" alt="@kv.Key" />
+                                    <img class="cw-sprite-zoom-popup" src="Assets/Sprites/Cell_@(kv.Key).jpg?v=3" alt="" />
+                                </div>
                                 <span class="cw-weight-name">@kv.Key</span>
                                 <input type="number" min="0" max="100"
                                        value="@kv.Value"
