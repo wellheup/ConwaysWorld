@@ -131,11 +131,22 @@
                         {
                             var tIdx = ti;
                             var tName = TypeNames[ti];
-                            <div class="cw-edit-palette-item @(_editBrushType == tIdx ? "selected" : "")"
-                                 @onclick="() => SelectBrush(tIdx)">
-                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(tName).jpg?v=3" alt="@tName" />
-                                <span>@tName</span>
-                            </div>
+                            if (tName == "Zombie")
+                            {
+                                <div class="cw-edit-palette-item" style="opacity:0.4;cursor:not-allowed"
+                                     title="Zombie cannot be placed directly — it requires a live Necromancer">
+                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(tName).jpg?v=3" alt="@tName" />
+                                    <span>@tName <span style="font-size:9px">⊘</span></span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="cw-edit-palette-item @(_editBrushType == tIdx ? "selected" : "")"
+                                     @onclick="() => SelectBrush(tIdx)">
+                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(tName).jpg?v=3" alt="@tName" />
+                                    <span>@tName</span>
+                                </div>
+                            }
                         }
                     </div>
                 </div>
@@ -467,10 +478,11 @@
 
     private record EditSnapshot(int Col, int Row, bool OldAlive, CellType OldType, int OldNat, bool NewAlive, CellType NewType, int NewNat);
     private readonly Dictionary<(int, int), EditSnapshot> _currentStrokeCells = new();
-    private readonly Stack<List<EditSnapshot>> _undoStack = new();
-    private readonly Stack<List<EditSnapshot>> _redoStack = new();
+    private const int MaxUndoHistory = 200;
+    private readonly LinkedList<List<EditSnapshot>> _undoStack = new();
+    private readonly LinkedList<List<EditSnapshot>> _redoStack = new();
 
-    // Nationless-by-design: Islander, Barbarian, Wayfinder, PlagueRat, Zombie, Necromancer, Bomber, Irradiated.
+    // Matches Model.cs isNationlessType: Islander, Barbarian, Wayfinder, PlagueRat, Zombie, Necromancer, Bomber.
     private static readonly HashSet<CellType> NationCapableTypes = new()
     {
         CellType.Basic, CellType.Immortal, CellType.Diseased, CellType.Plague,
@@ -478,7 +490,7 @@
         CellType.Hunter, CellType.Diplomat, CellType.King,
         CellType.Rebel, CellType.Revolutionary, CellType.Voyager,
         CellType.Spy, CellType.Soldier, CellType.Conquistador, CellType.Savior,
-        CellType.Follower, CellType.Zealot, CellType.Mutant,
+        CellType.Follower, CellType.Zealot, CellType.Mutant, CellType.Irradiated,
     };
 
     private Dictionary<(int col, int row), (int type, int nat)> _prevCellMap = new();
@@ -1452,7 +1464,8 @@
     {
         if (_currentStrokeCells.Count > 0)
         {
-            _undoStack.Push(_currentStrokeCells.Values.ToList());
+            _undoStack.AddLast(_currentStrokeCells.Values.ToList());
+            while (_undoStack.Count > MaxUndoHistory) _undoStack.RemoveFirst();
             _redoStack.Clear();
             _currentStrokeCells.Clear();
         }
@@ -1477,7 +1490,8 @@
         };
 
         _model.MoveCell(fromCol, fromRow, toCol, toRow);
-        _undoStack.Push(snapshots);
+        _undoStack.AddLast(snapshots);
+        while (_undoStack.Count > MaxUndoHistory) _undoStack.RemoveFirst();
         _redoStack.Clear();
 
         _ = InvokeAsync(async () =>
@@ -1497,10 +1511,12 @@
     private async Task UndoEdit()
     {
         if (_undoStack.Count == 0) return;
-        var entry = _undoStack.Pop();
+        var entry = _undoStack.Last!.Value;
+        _undoStack.RemoveLast();
         foreach (var snap in entry)
             _model.RestoreCell(snap.Col, snap.Row, snap.OldAlive, snap.OldType, snap.OldNat);
-        _redoStack.Push(entry);
+        _redoStack.AddLast(entry);
+        while (_redoStack.Count > MaxUndoHistory) _redoStack.RemoveFirst();
         await RenderFrame();
         UpdateTypeCounts();
         StateHasChanged();
@@ -1509,10 +1525,12 @@
     private async Task RedoEdit()
     {
         if (_redoStack.Count == 0) return;
-        var entry = _redoStack.Pop();
+        var entry = _redoStack.Last!.Value;
+        _redoStack.RemoveLast();
         foreach (var snap in entry)
             _model.RestoreCell(snap.Col, snap.Row, snap.NewAlive, snap.NewType, snap.NewNat);
-        _undoStack.Push(entry);
+        _undoStack.AddLast(entry);
+        while (_undoStack.Count > MaxUndoHistory) _undoStack.RemoveFirst();
         await RenderFrame();
         UpdateTypeCounts();
         StateHasChanged();
@@ -1525,7 +1543,8 @@
         {
             var snapshots = cleared.Select(s =>
                 new EditSnapshot(s.Col, s.Row, true, s.Type, s.Nat, false, CellType.Dead, -1)).ToList();
-            _undoStack.Push(snapshots);
+            _undoStack.AddLast(snapshots);
+            while (_undoStack.Count > MaxUndoHistory) _undoStack.RemoveFirst();
             _redoStack.Clear();
         }
         await RenderFrame();
