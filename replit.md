@@ -110,7 +110,7 @@ Press **E** or click **✏ Edit** in the toolbar to enter Edit Mode (simulation 
 - **Erase** — select the Eraser from the palette and paint over cells to remove them.
 - **Nation** — pick a nation (Nationless or Nation 1–N) from the dropdown; only applies to nation-capable types.
 - **Move** — toggle Move Mode, then drag a cell from one tile to another.
-- **Undo / Redo** — full stroke-level undo/redo (unlimited history).
+- **Undo / Redo** — full stroke-level undo/redo (up to 200 history entries).
 - **Clear All** — removes every living cell (undoable).
 - Press **Escape** or click **✏ Edit** again to exit Edit Mode.
 

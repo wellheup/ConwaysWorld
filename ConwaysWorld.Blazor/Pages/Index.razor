@@ -1041,6 +1041,7 @@
 
     private async Task TogglePlay()
     {
+        if (_editMode) return;
         _running = !_running;
         if (_running) _timer.Start(); else _timer.Stop();
         await Task.CompletedTask;
@@ -1048,6 +1049,7 @@
 
     private async Task StepOnce()
     {
+        if (_editMode) return;
         CapturePrevCells();
         _model.Step();
         CollectEvents();
@@ -1290,6 +1292,7 @@
     [JSInvokable]
     public void OnKeyTogglePlay()
     {
+        if (_editMode) return;
         _running = !_running;
         if (_running) _timer.Start(); else _timer.Stop();
         InvokeAsync(StateHasChanged);
