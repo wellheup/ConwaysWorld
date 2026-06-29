@@ -65,124 +65,172 @@ title = "generated_image"
 id = "h86ob3Sd_CZA7CyuWHyT_"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Basic.png"
 type = "image"
-title = "basic cell"
+title = "generated_image"
 
 [[generated]]
 id = "Y-ms4QqF1yj3Cp8a4oMGT"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Immortal.png"
 type = "image"
-title = "immortal cell"
+title = "generated_image"
 
 [[generated]]
 id = "p70BeqGuBV3rh_WHnSNcj"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Diseased.png"
 type = "image"
-title = "diseased cell"
+title = "generated_image"
 
 [[generated]]
 id = "-BhCWTvpeifxIkJue-yZH"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Plague.png"
 type = "image"
-title = "plague cell"
+title = "generated_image"
 
 [[generated]]
 id = "srCGOWSH6LgI9bJ1CuPSC"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Traveler.png"
 type = "image"
-title = "traveler cell"
+title = "generated_image"
 
 [[generated]]
 id = "R6JQmMOXSX-Hw4ux4FTM0"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Explorer.png"
 type = "image"
-title = "explorer cell"
+title = "generated_image"
 
 [[generated]]
 id = "RuPVLogR0uwcMBzyvPiAW"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Doctor.png"
 type = "image"
-title = "doctor cell"
+title = "generated_image"
 
 [[generated]]
 id = "KOU8dEExdTrPidaz5kDJS"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Warrior.png"
 type = "image"
-title = "warrior cell"
+title = "generated_image"
 
 [[generated]]
 id = "3tY272xFFbRQscO3-xIN1"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Hunter.png"
 type = "image"
-title = "hunter cell"
+title = "generated_image"
 
 [[generated]]
 id = "9UdoL1nc7ZlA1SHEODgov"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Bomber.png"
 type = "image"
-title = "bomber cell"
+title = "generated_image"
 
 [[generated]]
 id = "Kk6JNk_EOcrHVHZvTKGmu"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Conquistador.png"
 type = "image"
-title = "conquistador cell"
+title = "generated_image"
 
 [[generated]]
 id = "CFzwv-V7QCzEVJWg7Evmd"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Diplomat.png"
 type = "image"
-title = "diplomat cell"
+title = "generated_image"
 
 [[generated]]
 id = "9rtMP0UcYRkKLjwLudHqx"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_King.png"
 type = "image"
-title = "king cell"
+title = "generated_image"
 
 [[generated]]
 id = "EFlciSnS5Shg4R10DfKZg"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Voyager.png"
 type = "image"
-title = "voyager cell"
+title = "generated_image"
 
 [[generated]]
 id = "0UzJK9uoNJa132UF7Fn83"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Islander.png"
 type = "image"
-title = "islander cell"
+title = "generated_image"
 
 [[generated]]
 id = "mOkO7OBYwm-5sYtqtc6vv"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Savior.png"
 type = "image"
-title = "savior cell"
+title = "generated_image"
 
 [[generated]]
 id = "6JYsYmxZ6qi6FjSkDyDX-"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Irradiated.png"
 type = "image"
-title = "irradiated cell"
+title = "generated_image"
 
 [[generated]]
 id = "CiyDqQrCP4xM1gW2p9IKO"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Zombie.png"
 type = "image"
-title = "zombie cell"
+title = "generated_image"
 
 [[generated]]
 id = "S3Hv0_FoY1E3M4OuenZ-p"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Necromancer.png"
 type = "image"
-title = "necromancer cell"
+title = "generated_image"
 
 [[generated]]
 id = "9ijfHrYqwdEpwh4M-XkYj"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Spy.png"
 type = "image"
-title = "spy cell"
+title = "generated_image"
 
 [[generated]]
 id = "k6QBF6VeBpDs9RS8uBPAl"
 uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_PlagueRat.png"
 type = "image"
-title = "plague rat cell"
+title = "generated_image"
+
+[[generated]]
+id = "cuCJrvMrmIKdgCHsXMN4l"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Rebel.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "2d4A91kZ-9pNnzPgMsKJQ"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Revolutionary.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "O33wq_cU26lmD3d_vI3xM"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Wayfinder.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ve6el1qkkTYSWe5BP2749"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Barbarian.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ThR2Lkh76qxLsAGb59B4u"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Soldier.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "EjDQDBuOeyjNGgABrZuz6"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Follower.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "76EAw9aZRJmF-Vy3dyjLg"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Zealot.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "yO-y76MC3QZ1LEBvlKg26"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/tmp_Mutant.png"
+type = "image"
+title = "generated_image"
