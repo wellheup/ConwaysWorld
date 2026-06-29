@@ -131,22 +131,11 @@
                         {
                             var tIdx = ti;
                             var tName = TypeNames[ti];
-                            if (tName == "Zombie")
-                            {
-                                <div class="cw-edit-palette-item" style="opacity:0.4;cursor:not-allowed"
-                                     title="Zombie cannot be placed directly — it requires a live Necromancer">
-                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(tName).jpg?v=3" alt="@tName" />
-                                    <span>@tName <span style="font-size:9px">⊘</span></span>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="cw-edit-palette-item @(_editBrushType == tIdx ? "selected" : "")"
-                                     @onclick="() => SelectBrush(tIdx)">
-                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(tName).jpg?v=3" alt="@tName" />
-                                    <span>@tName</span>
-                                </div>
-                            }
+                            <div class="cw-edit-palette-item @(_editBrushType == tIdx ? "selected" : "")"
+                                 @onclick="() => SelectBrush(tIdx)">
+                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(tName).jpg?v=3" alt="@tName" />
+                                <span>@tName</span>
+                            </div>
                         }
                     </div>
                 </div>

@@ -17,8 +17,12 @@ namespace ConwaysWorld.Simulation;
 /// </summary>
 public class Cell_Zombie : Cell
 {
-	/// <summary>The Necromancer this zombie belongs to.</summary>
-	public Cell_Necromancer Necromancer { get; }
+	/// <summary>
+	/// The Necromancer this zombie belongs to, or <see langword="null"/> for edit-mode-placed zombies
+	/// that have no owning Necromancer. A null-Necromancer zombie is not registered in any Necromancer's
+	/// Zombies list and therefore persists independently until killed.
+	/// </summary>
+	public Cell_Necromancer? Necromancer { get; }
 
 	/// <summary>
 	/// The cell type this zombie was before it died.
@@ -27,7 +31,7 @@ public class Cell_Zombie : Cell
 	public CellType OriginalType { get; }
 
 	/// <summary>Creates a Zombie at the given position.</summary>
-	public Cell_Zombie(int column, int row, bool isAlive, Cell_Necromancer necromancer, CellType originalType)
+	public Cell_Zombie(int column, int row, bool isAlive, Cell_Necromancer? necromancer, CellType originalType)
 	{
 		Column = column;
 		Row = row;

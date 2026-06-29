@@ -38,8 +38,9 @@ public partial class Model
 			CellType.PlagueRat => new Cell_PlagueRat(col, row, true),
 			CellType.Necromancer => new Cell_Necromancer(col, row, true),
 			CellType.Mutant => new Cell_Mutant(col, row, true),
-			// Zombie requires a live Necromancer reference; standalone placement falls back to Basic.
-			CellType.Zombie => new Cell_Basic(col, row, true),
+			// Edit-mode Zombie: standalone (null Necromancer). It persists independently —
+			// not tracked by any Necromancer and therefore immune to Necromancer-death cascades.
+			CellType.Zombie => new Cell_Zombie(col, row, true, null, CellType.Basic),
 			_ => new Cell_Basic(col, row, true),
 		};
 		if (nationality >= 0)
