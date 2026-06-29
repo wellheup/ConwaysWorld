@@ -82,7 +82,10 @@
     <div class="cw-sidebar">
         <div class="cw-sidebar-tabs">
             <button class="cw-sidebar-tab @(_editSidebarTab == 0 ? "active" : "")" @onclick="() => _editSidebarTab = 0">Cell Types</button>
-            <button class="cw-sidebar-tab @(_editSidebarTab == 1 ? "active" : "")" @onclick="() => _editSidebarTab = 1">Edit</button>
+            @if (_editMode)
+            {
+                <button class="cw-sidebar-tab @(_editSidebarTab == 1 ? "active" : "")" @onclick="() => _editSidebarTab = 1">Edit</button>
+            }
         </div>
         <div class="cw-content-area">
             @if (_editSidebarTab == 0)
@@ -1354,6 +1357,7 @@
         {
             _editMoveMode = false;
             _currentStrokeCells.Clear();
+            _editSidebarTab = 0;
             if (_editWasRunning)
             {
                 _running = true;
@@ -1424,6 +1428,7 @@
 
         _ = InvokeAsync(async () =>
         {
+            CapturePrevCells();
             await RenderFrame();
             UpdateTypeCounts();
             StateHasChanged();
@@ -1445,6 +1450,7 @@
 
         _ = InvokeAsync(async () =>
         {
+            CapturePrevCells();
             await RenderFrame();
             UpdateTypeCounts();
             StateHasChanged();
@@ -1496,6 +1502,7 @@
 
         _ = InvokeAsync(async () =>
         {
+            CapturePrevCells();
             await RenderFrame();
             UpdateTypeCounts();
             StateHasChanged();
@@ -1517,6 +1524,7 @@
             _model.RestoreCell(snap.Col, snap.Row, snap.OldAlive, snap.OldType, snap.OldNat);
         _redoStack.AddLast(entry);
         while (_redoStack.Count > MaxUndoHistory) _redoStack.RemoveFirst();
+        CapturePrevCells();
         await RenderFrame();
         UpdateTypeCounts();
         StateHasChanged();
@@ -1531,6 +1539,7 @@
             _model.RestoreCell(snap.Col, snap.Row, snap.NewAlive, snap.NewType, snap.NewNat);
         _undoStack.AddLast(entry);
         while (_undoStack.Count > MaxUndoHistory) _undoStack.RemoveFirst();
+        CapturePrevCells();
         await RenderFrame();
         UpdateTypeCounts();
         StateHasChanged();
@@ -1547,6 +1556,7 @@
             while (_undoStack.Count > MaxUndoHistory) _undoStack.RemoveFirst();
             _redoStack.Clear();
         }
+        CapturePrevCells();
         await RenderFrame();
         UpdateTypeCounts();
         StateHasChanged();
