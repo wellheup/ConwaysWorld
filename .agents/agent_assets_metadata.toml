@@ -1,0 +1,62 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "hIte3dWRgnVnp5xhY5TTJ"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/Cell_Rebel.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "-LYRL5t_SNVAOIZ2AuHew"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/Cell_Revolutionary.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "TpAMtRtpa1I20dqgIUYu8"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/Cell_Wayfinder.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "WyeQMlBz7TLmkA_TYzJS7"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/Cell_Barbarian.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "2ba9AC-l-ZAYamEP-yhN9"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/Cell_Spy.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "JrPwULw0WQCgs4obM-Yh4"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/Cell_Soldier.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "3Qs5rwk_WAoq9m0PWRgoV"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/Cell_Conquistador.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "QGxVCyWLyPHgAYjAJkgck"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/Cell_Follower.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "VQx3Cd3HqqENVvOgJo_1u"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/Cell_Zealot.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "dRKJrFwx-0bc3SB1tzknb"
+uri = "file://ConwaysWorld.Blazor/wwwroot/Assets/Sprites/Cell_PlagueRat.png"
+type = "image"
+title = "generated_image"

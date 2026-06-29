@@ -57,6 +57,7 @@ window.ConwaysInterop = (() => {
         'PlagueRat',
         'Zombie',
         'Necromancer',
+        'Mutant',
     ];
     const TYPE_COLORS = {
         0: '#111',

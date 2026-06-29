@@ -95,6 +95,7 @@ interface DotNetRef {
         'PlagueRat',
         'Zombie',
         'Necromancer',
+        'Mutant',
     ];
 
     const TYPE_COLORS: Record<number, string> = {
