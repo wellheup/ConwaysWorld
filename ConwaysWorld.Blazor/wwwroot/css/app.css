@@ -545,22 +545,15 @@ kbd {
 
 .cw-sprite-zoom-popup {
     display: none;
-    position: absolute;
-    left: 22px;
-    top: 50%;
-    transform: translateY(-50%);
+    position: fixed;
     width: 200px;
     height: 200px;
     image-rendering: pixelated;
     border: 2px solid #444;
     border-radius: 4px;
     background: #111;
-    z-index: 100;
+    z-index: 10000;
     pointer-events: none;
-}
-
-.cw-sprite-wrap:hover .cw-sprite-zoom-popup {
-    display: block;
 }
 
 .cw-rules-list {

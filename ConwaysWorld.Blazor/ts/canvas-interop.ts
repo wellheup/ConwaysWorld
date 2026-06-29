@@ -159,6 +159,35 @@ interface DotNetRef {
         await loadSprites();
         fitCanvas();
         bindEvents();
+        bindSpriteZoom();
+    }
+
+    function bindSpriteZoom(): void {
+        document.addEventListener('mouseover', (e: MouseEvent) => {
+            const wrap = (e.target as Element).closest?.('.cw-sprite-wrap') as HTMLElement | null;
+            if (!wrap) return;
+            const popup = wrap.querySelector('.cw-sprite-zoom-popup') as HTMLElement | null;
+            if (!popup) return;
+            const rect = wrap.getBoundingClientRect();
+            const popupW = 200;
+            const popupH = 200;
+            const gap = 10;
+            let left = rect.left - popupW - gap;
+            if (left < 4) left = rect.right + gap;
+            let top = rect.top + rect.height / 2 - popupH / 2;
+            top = Math.max(4, Math.min(top, window.innerHeight - popupH - 4));
+            popup.style.left = `${left}px`;
+            popup.style.top = `${top}px`;
+            popup.style.display = 'block';
+        });
+        document.addEventListener('mouseout', (e: MouseEvent) => {
+            const wrap = (e.target as Element).closest?.('.cw-sprite-wrap') as HTMLElement | null;
+            if (!wrap) return;
+            const related = e.relatedTarget as Element | null;
+            if (related && wrap.contains(related)) return;
+            const popup = wrap.querySelector('.cw-sprite-zoom-popup') as HTMLElement | null;
+            if (popup) popup.style.display = 'none';
+        });
     }
 
     function fitCanvas(): void {

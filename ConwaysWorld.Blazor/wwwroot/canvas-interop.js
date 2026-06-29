@@ -116,6 +116,42 @@ window.ConwaysInterop = (() => {
             yield loadSprites();
             fitCanvas();
             bindEvents();
+            bindSpriteZoom();
+        });
+    }
+    function bindSpriteZoom() {
+        document.addEventListener('mouseover', (e) => {
+            var _a, _b;
+            const wrap = (_b = (_a = e.target).closest) === null || _b === void 0 ? void 0 : _b.call(_a, '.cw-sprite-wrap');
+            if (!wrap)
+                return;
+            const popup = wrap.querySelector('.cw-sprite-zoom-popup');
+            if (!popup)
+                return;
+            const rect = wrap.getBoundingClientRect();
+            const popupW = 200;
+            const popupH = 200;
+            const gap = 10;
+            let left = rect.left - popupW - gap;
+            if (left < 4)
+                left = rect.right + gap;
+            let top = rect.top + rect.height / 2 - popupH / 2;
+            top = Math.max(4, Math.min(top, window.innerHeight - popupH - 4));
+            popup.style.left = `${left}px`;
+            popup.style.top = `${top}px`;
+            popup.style.display = 'block';
+        });
+        document.addEventListener('mouseout', (e) => {
+            var _a, _b;
+            const wrap = (_b = (_a = e.target).closest) === null || _b === void 0 ? void 0 : _b.call(_a, '.cw-sprite-wrap');
+            if (!wrap)
+                return;
+            const related = e.relatedTarget;
+            if (related && wrap.contains(related))
+                return;
+            const popup = wrap.querySelector('.cw-sprite-zoom-popup');
+            if (popup)
+                popup.style.display = 'none';
         });
     }
     function fitCanvas() {
