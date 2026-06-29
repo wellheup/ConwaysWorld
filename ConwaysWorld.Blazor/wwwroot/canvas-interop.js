@@ -27,6 +27,7 @@ window.ConwaysInterop = (() => {
     let editButtonDown = false;
     let editEraseButtonDown = false;
     let editMoveSelected = null; // persistent move-mode selection
+    let editMoveWasSelectedBeforeMouseDown = false; // deselect tracking
     let cachedCells = [];
     let cachedNationColors = [];
     let cachedFamine = { active: false, quadrant: 0 };
@@ -286,11 +287,23 @@ window.ConwaysInterop = (() => {
                 canvas.style.cursor = 'grabbing';
             }
         }
-        else if (e.button === 0 && editMode && !editMoveMode) {
-            editButtonDown = true;
-            const cell = screenToCell(e);
-            if (cell && dotnetRef)
-                dotnetRef.invokeMethodAsync('OnEditPaint', cell.col, cell.row);
+        else if (e.button === 0 && editMode) {
+            if (editMoveMode) {
+                const cell = hoveredCell;
+                if (cell) {
+                    editMoveWasSelectedBeforeMouseDown = !!(editMoveSelected &&
+                        editMoveSelected.col === cell.col &&
+                        editMoveSelected.row === cell.row);
+                    editMoveSelected = cell;
+                    scheduleRedraw();
+                }
+            }
+            else {
+                editButtonDown = true;
+                const cell = screenToCell(e);
+                if (cell && dotnetRef)
+                    dotnetRef.invokeMethodAsync('OnEditPaint', cell.col, cell.row);
+            }
         }
     }
     function onMouseMove(e) {
@@ -346,10 +359,25 @@ window.ConwaysInterop = (() => {
                 canvas.style.cursor = 'crosshair';
             }
         }
-        else if (e.button === 0 && editMode && !editMoveMode) {
-            editButtonDown = false;
-            if (dotnetRef)
-                dotnetRef.invokeMethodAsync('OnEditStrokeEnd');
+        else if (e.button === 0 && editMode) {
+            if (editMoveMode) {
+                const dropCell = screenToCell(e);
+                if (editMoveSelected &&
+                    dropCell &&
+                    (editMoveSelected.col !== dropCell.col || editMoveSelected.row !== dropCell.row)) {
+                    // Dragged to a different cell — complete the move.
+                    if (dotnetRef)
+                        dotnetRef.invokeMethodAsync('OnEditMoveDrop', editMoveSelected.col, editMoveSelected.row, dropCell.col, dropCell.row);
+                    editMoveSelected = null;
+                    scheduleRedraw();
+                }
+                // Same cell on mouseup: keep selection (click-to-select; onClick may deselect).
+            }
+            else {
+                editButtonDown = false;
+                if (dotnetRef)
+                    dotnetRef.invokeMethodAsync('OnEditStrokeEnd');
+            }
         }
     }
     function onDblClick() {
@@ -360,25 +388,17 @@ window.ConwaysInterop = (() => {
     function onClick(e) {
         if (editMode && editMoveMode) {
             const cell = screenToCell(e);
-            if (!cell)
-                return;
-            if (!editMoveSelected) {
-                // First click: select this cell.
-                editMoveSelected = cell;
-                if (dotnetRef)
-                    dotnetRef.invokeMethodAsync('OnEditSelectCell', cell.col, cell.row);
-            }
-            else if (editMoveSelected.col === cell.col && editMoveSelected.row === cell.row) {
-                // Click selected cell again: deselect.
+            if (cell &&
+                editMoveSelected &&
+                editMoveSelected.col === cell.col &&
+                editMoveSelected.row === cell.row &&
+                editMoveWasSelectedBeforeMouseDown) {
+                // Second click on the already-selected cell: deselect.
                 editMoveSelected = null;
+                scheduleRedraw();
             }
-            else {
-                // Click a different cell: move from selected to this cell.
-                if (dotnetRef)
-                    dotnetRef.invokeMethodAsync('OnEditMoveDrop', editMoveSelected.col, editMoveSelected.row, cell.col, cell.row);
-                editMoveSelected = null;
-            }
-            scheduleRedraw();
+            // First click: selection already applied in onMouseDown.
+            // Drag to a different cell: already handled in onMouseUp.
             return;
         }
         if (editMode)
