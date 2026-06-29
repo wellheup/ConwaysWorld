@@ -1465,6 +1465,14 @@
     }
 
     [JSInvokable]
+    public void OnEditSelectCell(int col, int row)
+    {
+        // Acknowledgement callback — JS maintains the selection state; this provides a
+        // named interop hook for the select event (used for state transparency and testing).
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
     public void OnEditMoveDrop(int fromCol, int fromRow, int toCol, int toRow)
     {
         if (fromCol < 0 || fromCol >= _model.Columns || fromRow < 0 || fromRow >= _model.Rows) return;
