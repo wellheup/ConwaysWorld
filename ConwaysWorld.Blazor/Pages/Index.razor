@@ -86,7 +86,7 @@
                     @foreach (var entry in _typeCounts)
                     {
                         <div class="cw-cell-row" title="@(CellDescriptions.GetValueOrDefault(entry.Name, ""))">
-                            <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg" alt="@entry.Name" />
+                            <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg?v=2" alt="@entry.Name" />
                             <span>@entry.Name</span>
                             <span class="cw-cell-count">@entry.Count</span>
                         </div>
@@ -285,7 +285,7 @@
                         @foreach (var kv in _spawnWeights)
                         {
                             <div class="cw-weight-row" title="@(CellDescriptions.GetValueOrDefault(kv.Key, ""))">
-                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(kv.Key).jpg" alt="@kv.Key" />
+                                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(kv.Key).jpg?v=2" alt="@kv.Key" />
                                 <span class="cw-weight-name">@kv.Key</span>
                                 <input type="number" min="0" max="100"
                                        value="@kv.Value"
@@ -321,8 +321,8 @@
                         {
                             <div class="cw-rules-entry">
                                 <div class="cw-sprite-wrap">
-                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(name).jpg" alt="@name" />
-                                    <img class="cw-sprite-zoom-popup" src="Assets/Sprites/Cell_@(name).jpg" alt="" />
+                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(name).jpg?v=2" alt="@name" />
+                                    <img class="cw-sprite-zoom-popup" src="Assets/Sprites/Cell_@(name).jpg?v=2" alt="" />
                                 </div>
                                 <div class="cw-rules-text">
                                     <span class="cw-rules-name">@name</span>

@@ -101,7 +101,7 @@ window.ConwaysInterop = (() => {
                 resolve();
             };
             img.onerror = () => resolve();
-            img.src = `${base}Assets/Sprites/Cell_${name}.jpg`;
+            img.src = `${base}Assets/Sprites/Cell_${name}.jpg?v=2`;
         }));
         return Promise.all(promises);
     }
