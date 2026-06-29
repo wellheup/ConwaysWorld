@@ -371,7 +371,7 @@ interface DotNetRef {
     ): void {
         if (!ctx) return;
         const w = cs - 1;
-        const nationColor = nat >= 0 && nat < nationColors.length ? nationColors[nat] : '#222';
+        const nationColor = nat >= 0 && nat < nationColors.length && nationColors[nat] ? nationColors[nat] : '#222';
 
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
@@ -415,7 +415,7 @@ interface DotNetRef {
         const offset = (fullW - w) / 2;
         const px = col * cs + offset;
         const py = row * cs + offset;
-        const nationColor = nat >= 0 && nat < nationColors.length ? nationColors[nat] : '#222';
+        const nationColor = nat >= 0 && nat < nationColors.length && nationColors[nat] ? nationColors[nat] : '#222';
         ctx.fillStyle = nationColor;
         ctx.fillRect(px, py, w, w);
         if (w * scale > 20) {
