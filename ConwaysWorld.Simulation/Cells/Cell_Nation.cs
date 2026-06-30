@@ -56,33 +56,42 @@ public class Cell_Nation
 	public int PreCensusCount = 0;
 
 	/// <summary>
+	/// Number of consecutive steps this nation has had at least one citizen but no King.
+	/// Incremented each step after Census when <see cref="King"/> is null and
+	/// <see cref="CitizensList"/> is non-empty; reset to 0 when a King is crowned.
+	/// Used to give newly-formed nations (e.g. Revolutionary-founded) a grace window
+	/// to recruit cells and reach the crowning threshold before being dissolved.
+	/// </summary>
+	public int StepsKingless = 0;
+
+	/// <summary>
 	/// The 20 fixed hex colour strings assigned to nations by index.
 	/// Nation 0 uses index 0, nation 1 uses index 1, etc.
 	/// The count here determines the maximum number of concurrent nations.
 	/// </summary>
 	public static readonly List<string> NationColors = new()
-																{
-																																																"#bc00ff",
-																																																"#471415",
-																																																"#a3181c",
-																																																"#00f542",
-																																																"#617f1c",
-																																																"#f50005",
-																																																"#473d14",
-																																																"#17a33d",
-																																																"#a38517",
-																																																"#299bae",
-																																																"#00dbff",
-																																																"#f5bf00",
-																																																"#232b75",
-																																																"#ff7000",
-																																																"#0019f5",
-																																																"#adff00",
-																																																"#7f4719",
-																																																"#671f80",
-																																																"#1c2bb8",
-																																																"#1c4724",
-																};
+																																{
+																																																																																																"#bc00ff",
+																																																																																																"#471415",
+																																																																																																"#a3181c",
+																																																																																																"#00f542",
+																																																																																																"#617f1c",
+																																																																																																"#f50005",
+																																																																																																"#473d14",
+																																																																																																"#17a33d",
+																																																																																																"#a38517",
+																																																																																																"#299bae",
+																																																																																																"#00dbff",
+																																																																																																"#f5bf00",
+																																																																																																"#232b75",
+																																																																																																"#ff7000",
+																																																																																																"#0019f5",
+																																																																																																"#adff00",
+																																																																																																"#7f4719",
+																																																																																																"#671f80",
+																																																																																																"#1c2bb8",
+																																																																																																"#1c4724",
+																																};
 
 	/// <summary>Creates a new nation with the given index.</summary>
 	public Cell_Nation(int nationNum)
@@ -154,18 +163,18 @@ public class Cell_Nation
 		{
 			elect = CitizensList[SimRandom.Range(0, CitizensList.Count)];
 			if (elect != King &&
-											!DiplomatsList.Contains(elect) &&
-											elect.CellType != CellType.Warrior &&
-											elect.CellType != CellType.Rebel &&
-											elect.CellType != CellType.Revolutionary)
+																			!DiplomatsList.Contains(elect) &&
+																			elect.CellType != CellType.Warrior &&
+																			elect.CellType != CellType.Rebel &&
+																			elect.CellType != CellType.Revolutionary)
 				break;
 			elect = null;
 		}
 
 		if (elect != null && elect != King && elect.IsAlive && !DiplomatsList.Contains(elect) &&
-										elect.CellType != CellType.Warrior &&
-										elect.CellType != CellType.Rebel &&
-										elect.CellType != CellType.Revolutionary)
+																		elect.CellType != CellType.Warrior &&
+																		elect.CellType != CellType.Rebel &&
+																		elect.CellType != CellType.Revolutionary)
 		{
 			var diplomat = Cell.ReplaceCell(elect, CellType.Diplomat, true);
 			cellGrid[diplomat.Column, diplomat.Row] = diplomat;
@@ -203,13 +212,13 @@ public class Cell_Nation
 		if (AgedOutKingColumn >= 0)
 		{
 			var nearby = CitizensList
-											.Where(c => c.IsAlive &&
-																																			c.CellType != CellType.King &&
-																																			c.CellType != CellType.Revolutionary &&
-																																			c.CellType != CellType.Diplomat &&
-																																			Math.Abs(c.Column - AgedOutKingColumn) <= 5 &&
-																																			Math.Abs(c.Row - AgedOutKingRow) <= 5)
-											.ToList();
+																			.Where(c => c.IsAlive &&
+																																																																			c.CellType != CellType.King &&
+																																																																			c.CellType != CellType.Revolutionary &&
+																																																																			c.CellType != CellType.Diplomat &&
+																																																																			Math.Abs(c.Column - AgedOutKingColumn) <= 5 &&
+																																																																			Math.Abs(c.Row - AgedOutKingRow) <= 5)
+																			.ToList();
 
 			if (nearby.Count > 0)
 				newKing = nearby[SimRandom.Range(0, nearby.Count)];
