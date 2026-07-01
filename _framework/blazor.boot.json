@@ -1,10 +1,10 @@
 {
   "mainAssemblyName": "ConwaysWorld.Blazor",
   "resources": {
-    "hash": "sha256-+0mgPsMik+YhWBHVanU21soMIVdZQ2WVU/oQvEOPhFw=",
+    "hash": "sha256-NVoKb2QNaw9zzAucOE+XcUsl3vdd4/H1lKKPb6FoOt0=",
     "fingerprinting": {
-      "ConwaysWorld.Blazor.byaxbp3fvj.wasm": "ConwaysWorld.Blazor.wasm",
-      "ConwaysWorld.Simulation.c8j5gx70h3.wasm": "ConwaysWorld.Simulation.wasm",
+      "ConwaysWorld.Blazor.xcmdps61bd.wasm": "ConwaysWorld.Blazor.wasm",
+      "ConwaysWorld.Simulation.x6fs8s7iam.wasm": "ConwaysWorld.Simulation.wasm",
       "Microsoft.AspNetCore.Components.6bdejmoz91.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Web.y5ooht93vh.wasm": "Microsoft.AspNetCore.Components.Web.wasm",
       "Microsoft.AspNetCore.Components.WebAssembly.98vncgzdgn.wasm": "Microsoft.AspNetCore.Components.WebAssembly.wasm",
@@ -65,8 +65,8 @@
       "System.Runtime.InteropServices.JavaScript.entgmum76f.wasm": "sha256-5td/D8gkcqzhLVOVsdICiOyH+80aQIKu4qilrRzdPiI="
     },
     "assembly": {
-      "ConwaysWorld.Blazor.byaxbp3fvj.wasm": "sha256-TWsmSUaikS/zN7b6NtQMTh8Tr6/LqZyeaZbYjWWdOP4=",
-      "ConwaysWorld.Simulation.c8j5gx70h3.wasm": "sha256-nJSz+SskavVBXHHVF48+hYLAzMdmvUQzrrgfr4Xcg2k=",
+      "ConwaysWorld.Blazor.xcmdps61bd.wasm": "sha256-cftbIVq7D9ACKfCbDKWHmRV3NTqbXt/RxZR+Q1y41T8=",
+      "ConwaysWorld.Simulation.x6fs8s7iam.wasm": "sha256-F9xIu0UbJcTowek+9x3PGEKo1+ij339cJ+YoWFOno4Y=",
       "Microsoft.AspNetCore.Components.6bdejmoz91.wasm": "sha256-HnrLyza0skq1py6bVFyOOqoYzwJjTKLSB6vCoEobYy4=",
       "Microsoft.AspNetCore.Components.Web.y5ooht93vh.wasm": "sha256-ViXPeHOnjopUlnWfm+ZB48amRrfoV44fjGxp4TFzdd0=",
       "Microsoft.AspNetCore.Components.WebAssembly.98vncgzdgn.wasm": "sha256-J8a8IZwbbuiq2/9Qye64VMOFYKMCLUAqU4YdgUp5ZWM=",
