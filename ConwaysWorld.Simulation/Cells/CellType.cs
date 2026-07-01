@@ -127,10 +127,17 @@ public enum CellType
 /*TODO:
 - maybe cells should be more likely to survive death for every neighbor of the same nation?
 - Add to Conway's world an event that uses a "find the largest island" algorithm
-- make a fullscreen option for the sim
 - I need better error logging for when the simulation fails
 - it looks like the simulation does not wrap around the edges of the grid when spawning initial population clusters
 - I ended up with 360 wayfinders in a population of 14000 all clusterd in a grid without spaces, which is way too many. I need a way for wayfinders to die when they are too close to neighbors
+-I notice that there is no entry in the spawn weights to represent the number of empty cells which will be on the grid at simulation start, but I would like there to be. The value should not be editable, but present for better understanding of the scenario being designed.
+-I'd like to add a setting called "reactive doctors" which, when toggled on, will cause the spawn weight for doctor cells to increase by 1 for every 30 diseased cells present on the grid.
+-Make the rules descriptions for each cell more thorough including how long they live, how their crowding factors lead to death or breeding. Normalize the numbers in rules descriptions as well as hover descriptions so that they use integers not strings for numbers.
+-organize the cell lists in the rules, settings, and cell types to be alphabetical.
+-adjust so that diplomats only spawn in nations with 25 cells or more in population
+-for cell hover text descriptions, make the descriptions multi-line and no wider than the current width of the Cell types panel.
+-add a setting for the grid to adjust based on the dimensions of the window it is in. If this setting is set to true, which it should be by default, then set the either the start columns value or the start rows value to -1, depending on which is smaller in the window dimensions, height or width. Then, wi base the dimensions of the grid off of the remaining row or column value and fill the rest of the grid to fit the space available.
+-ask clarifying questions as needed
 - add to the plan that we need to change the wayfinder cell so that instead of checking for empty spots at intervals, just check for one at spawn, then travel towards it, but when reaching within a 5-tile chebyshev neighbourhood of that destination, check if that destination still has no population in the 5-tile radius. If there are cells there, then set a new destionation, otherwise proceed with the arrival behavior when reaching the destination
 -	 teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
 		- god? (effects every living cell on the board in some way)

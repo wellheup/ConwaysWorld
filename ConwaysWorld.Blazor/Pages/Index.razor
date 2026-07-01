@@ -344,6 +344,11 @@
                                        @onchange="@(e => OnWeightChange(kv.Key, e))" />
                             </div>
                         }
+                        <div class="cw-weight-row cw-weight-row-empty" title="Cells that start empty (not populated). Calculated as grid size minus initial population — not a spawn weight.">
+                            <div class="cw-weight-empty-swatch"></div>
+                            <span class="cw-weight-name">Empty</span>
+                            <span class="cw-weight-readonly">@(_startCols * _startRows - _popCount)</span>
+                        </div>
                     </div>
                 }
                 else if (_settingsTab == 2)
