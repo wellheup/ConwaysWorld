@@ -81,7 +81,7 @@
     </div>
 
     <button class="cw-sidebar-edge-tab @(_sidebarVisible ? "sidebar-open" : "sidebar-closed")" @onclick="() => _sidebarVisible = !_sidebarVisible">@(_sidebarVisible ? "▶" : "◀")</button>
-    <div class="cw-sidebar @(!_sidebarVisible ? "cw-collapsed" : "")">
+    <div class="cw-sidebar @(!_sidebarVisible ? "cw-collapsed" : "")" style="top:@(_toolbarVisible ? "40px" : "0px")">
         <div class="cw-sidebar-tabs">
             <button class="cw-sidebar-tab @(_editSidebarTab == 0 ? "active" : "")" @onclick="() => _editSidebarTab = 0">Cell Types</button>
             @if (_editMode)

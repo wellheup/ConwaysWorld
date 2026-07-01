@@ -219,7 +219,7 @@ canvas#sim-canvas {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transition: width 0.25s ease;
+    transition: width 0.25s ease, top 0.25s ease;
 }
 .cw-sidebar.cw-collapsed {
     width: 0;
