@@ -42,17 +42,8 @@ jobs:
           WWWROOT=$(find publish -maxdepth 4 -name "index.html" -printf "%h\n" | head -1)
           echo "Detected wwwroot: $WWWROOT"
           REPO="${{ github.event.repository.name }}"
-          # Fix base href so all assets load from the correct subdirectory
           sed -i "s|<base href=\"/\" />|<base href=\"/${REPO}/\" />|g" "$WWWROOT/index.html"
-          # Remove dev-only _build.txt polling (causes 404 spam on GitHub Pages)
-          python3 -c "
-import re, sys
-f = '$WWWROOT/index.html'
-c = open(f).read()
-c = re.sub(r'\s*<script>[^<]*_build\.txt.*?</script>', '', c, flags=re.DOTALL)
-open(f, 'w').write(c)
-"
-          # Copy patched index.html as 404.html for SPA routing
+          perl -0777 -i -pe 's|<script>\s*//\s*Auto-reload.*?</script>||sg' "$WWWROOT/index.html"
           cp "$WWWROOT/index.html" "$WWWROOT/404.html"
           echo "WWWROOT=$WWWROOT" >> $GITHUB_ENV
 
