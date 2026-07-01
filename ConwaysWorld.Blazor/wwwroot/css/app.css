@@ -1,3 +1,4 @@
+:root { --toolbar-h: 0px; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
@@ -209,7 +210,7 @@ canvas#sim-canvas {
 
 .cw-sidebar {
     position: fixed;
-    top: 0;
+    top: var(--toolbar-h, 0px);
     right: 0;
     bottom: 0;
     z-index: 500;

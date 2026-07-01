@@ -896,6 +896,16 @@ interface DotNetRef {
         } catch (_e) {}
     }
 
+    function watchToolbarHeight(): void {
+        const toolbar = document.querySelector('.cw-toolbar') as HTMLElement | null;
+        if (!toolbar) return;
+        const update = () => {
+            document.documentElement.style.setProperty('--toolbar-h', toolbar.offsetHeight + 'px');
+        };
+        update();
+        new ResizeObserver(update).observe(toolbar);
+    }
+
     return {
         init,
         renderFrame,
@@ -906,5 +916,6 @@ interface DotNetRef {
         clearSettings,
         toggleFullscreen,
         setEditMode,
+        watchToolbarHeight,
     };
 })();

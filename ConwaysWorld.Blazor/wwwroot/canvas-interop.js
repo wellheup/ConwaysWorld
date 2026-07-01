@@ -789,6 +789,16 @@ window.ConwaysInterop = (() => {
         }
         catch (_e) { }
     }
+    function watchToolbarHeight() {
+        const toolbar = document.querySelector('.cw-toolbar');
+        if (!toolbar)
+            return;
+        const update = () => {
+            document.documentElement.style.setProperty('--toolbar-h', toolbar.offsetHeight + 'px');
+        };
+        update();
+        new ResizeObserver(update).observe(toolbar);
+    }
     return {
         init,
         renderFrame,
@@ -799,5 +809,6 @@ window.ConwaysInterop = (() => {
         clearSettings,
         toggleFullscreen,
         setEditMode,
+        watchToolbarHeight,
     };
 })();
