@@ -789,6 +789,12 @@ window.ConwaysInterop = (() => {
         }
         catch (_e) { }
     }
+    function getCanvasWrapSize() {
+        const el = document.getElementById('canvas-wrap');
+        if (!el)
+            return { width: 800, height: 600 };
+        return { width: el.clientWidth, height: el.clientHeight };
+    }
     return {
         init,
         renderFrame,
@@ -799,5 +805,6 @@ window.ConwaysInterop = (() => {
         clearSettings,
         toggleFullscreen,
         setEditMode,
+        getCanvasWrapSize,
     };
 })();

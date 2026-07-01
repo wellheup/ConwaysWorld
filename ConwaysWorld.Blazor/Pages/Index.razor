@@ -201,14 +201,23 @@
                 @if (_settingsTab == 0)
                 {
                     <div class="cw-settings-grid">
-                        <div class="cw-field" title="Width of the starting grid in cells (5–300). Larger grids use more CPU.">
-                            <label>Start columns</label>
-                            <input type="number" min="5" max="300" @bind="_startCols" />
+                        <div class="cw-field cw-field-full" title="Automatically size the grid to fill the window at startup. Cell size stays fixed (18 px); the number of columns and rows adjusts to fit.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" @bind="_autoFitGrid" />
+                                Auto-fit grid to window
+                            </label>
                         </div>
-                        <div class="cw-field" title="Height of the starting grid in cells (5–300).">
-                            <label>Start rows</label>
-                            <input type="number" min="5" max="300" @bind="_startRows" />
-                        </div>
+                        @if (!_autoFitGrid)
+                        {
+                            <div class="cw-field" title="Width of the starting grid in cells (5–300). Larger grids use more CPU.">
+                                <label>Start columns</label>
+                                <input type="number" min="5" max="300" @bind="_startCols" />
+                            </div>
+                            <div class="cw-field" title="Height of the starting grid in cells (5–300).">
+                                <label>Start rows</label>
+                                <input type="number" min="5" max="300" @bind="_startRows" />
+                            </div>
+                        }
                         <div class="cw-field" title="Maximum grid dimension after expansion. Set to 0 for no limit. The grid grows when Explorer cells reach an edge.">
                             <label>Max grid size (0 = unlimited)</label>
                             <input type="number" min="0" max="500" @bind="_maxGrid" />
@@ -577,6 +586,7 @@
     private int _randomLifeThresholdCount = 10;
     private bool _autoContinue = false;
     private bool _allowGridExpansion = true;
+    private bool _autoFitGrid = false;
     private int _failurePopThreshold = 0;
     private int _failurePopAfterGrowthThreshold = 0;
     private int _stagnationSteps = 10;
@@ -632,6 +642,7 @@
         [JsonPropertyName("autoContinue")]                     public bool AutoContinue { get; set; } = false;
         [JsonPropertyName("allowGridExpansion")]               public bool AllowGridExpansion { get; set; } = true;
         [JsonPropertyName("nationsEnabled")]                   public bool NationsEnabled { get; set; } = true;
+        [JsonPropertyName("autoFitGrid")]                      public bool AutoFitGrid { get; set; } = false;
         [JsonPropertyName("failurePopThreshold")]              public int FailurePopThreshold { get; set; } = 0;
         [JsonPropertyName("failurePopAfterGrowthThreshold")]   public int FailurePopAfterGrowthThreshold { get; set; } = 0;
         [JsonPropertyName("stagnationSteps")]                  public int StagnationSteps { get; set; } = 10;
@@ -682,6 +693,18 @@
                 _settings.SpawnWeights[ct] = kv.Value;
     }
 
+    private async Task<(int cols, int rows)> GetAutoFitDims()
+    {
+        try
+        {
+            var size = await JS.InvokeAsync<System.Text.Json.JsonElement>("ConwaysInterop.getCanvasWrapSize");
+            int w = size.GetProperty("width").GetInt32();
+            int h = size.GetProperty("height").GetInt32();
+            return (Math.Max(5, w / 18), Math.Max(5, h / 18));
+        }
+        catch { return (_startCols, _startRows); }
+    }
+
     private void ApplySettingsJson(string json)
     {
         try
@@ -722,6 +745,7 @@
             _autoContinue                    = s.AutoContinue;
             _allowGridExpansion              = s.AllowGridExpansion;
             _nationsEnabled                  = s.NationsEnabled;
+            _autoFitGrid                     = s.AutoFitGrid;
             _failurePopThreshold             = s.FailurePopThreshold;
             _failurePopAfterGrowthThreshold  = s.FailurePopAfterGrowthThreshold;
             _stagnationSteps                 = s.StagnationSteps;
@@ -760,6 +784,7 @@
             AutoContinue              = _autoContinue,
             AllowGridExpansion                  = _allowGridExpansion,
             NationsEnabled                      = _nationsEnabled,
+            AutoFitGrid                         = _autoFitGrid,
             FailurePopThreshold                 = _failurePopThreshold,
             FailurePopAfterGrowthThreshold      = _failurePopAfterGrowthThreshold,
             StagnationSteps                     = _stagnationSteps,
@@ -821,11 +846,17 @@
                 {
                     ApplySettingsJson(json);
                     _timer.Interval = _intervalMs;
-                    InitSettings();
-                    _model = new Model(_settings);
                 }
             }
             catch { }
+
+            if (_autoFitGrid)
+            {
+                (_startCols, _startRows) = await GetAutoFitDims();
+                _popCount = (int)Math.Round(_popPercent / 100.0 * _startCols * _startRows);
+            }
+            InitSettings();
+            _model = new Model(_settings);
 
             _dotNetRef = DotNetObjectReference.Create(this);
             await JS.InvokeVoidAsync("ConwaysInterop.init",
@@ -1143,6 +1174,11 @@
         _failureMessage    = "";
         _failureStats      = "";
 
+        if (_autoFitGrid)
+        {
+            (_startCols, _startRows) = await GetAutoFitDims();
+            _popCount = (int)Math.Round(_popPercent / 100.0 * _startCols * _startRows);
+        }
         InitSettings();
         _eventLog.Clear();
         _model = new Model(_settings);

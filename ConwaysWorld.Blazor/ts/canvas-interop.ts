@@ -896,6 +896,12 @@ interface DotNetRef {
         } catch (_e) {}
     }
 
+    function getCanvasWrapSize(): { width: number; height: number } {
+        const el = document.getElementById('canvas-wrap');
+        if (!el) return { width: 800, height: 600 };
+        return { width: el.clientWidth, height: el.clientHeight };
+    }
+
     return {
         init,
         renderFrame,
@@ -906,5 +912,6 @@ interface DotNetRef {
         clearSettings,
         toggleFullscreen,
         setEditMode,
+        getCanvasWrapSize,
     };
 })();
