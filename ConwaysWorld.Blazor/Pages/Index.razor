@@ -13,7 +13,8 @@
     .cw-settings-section{grid-column:1/-1}
 </style>
 
-<div class="cw-toolbar">
+<button class="cw-toolbar-toggle" @onclick="() => _toolbarVisible = !_toolbarVisible">@(_toolbarVisible ? "▲" : "▼")</button>
+<div class="cw-toolbar @(!_toolbarVisible ? "cw-collapsed" : "")">
     <button class="@(_running ? "active" : "")" @onclick="TogglePlay">
         @(_running ? "⏸ Pause" : "▶ Play")
     </button>
@@ -79,7 +80,8 @@
         }
     </div>
 
-    <div class="cw-sidebar">
+    <button class="cw-sidebar-edge-tab" @onclick="() => _sidebarVisible = !_sidebarVisible">@(_sidebarVisible ? "▶" : "◀")</button>
+    <div class="cw-sidebar @(!_sidebarVisible ? "cw-collapsed" : "")">
         <div class="cw-sidebar-tabs">
             <button class="cw-sidebar-tab @(_editSidebarTab == 0 ? "active" : "")" @onclick="() => _editSidebarTab = 0">Cell Types</button>
             @if (_editMode)
@@ -468,6 +470,8 @@
     private System.Timers.Timer _timer = null!;
     private DotNetObjectReference<Index>? _dotNetRef;
     private bool _running = false;
+    private bool _toolbarVisible = true;
+    private bool _sidebarVisible = true;
     private bool _showSettings = false;
     private bool _showTestCases = false;
     private bool _isFullscreen = false;
@@ -910,6 +914,12 @@
             await RenderFrame();
             CapturePrevCells();
             UpdateTypeCounts();
+            try
+            {
+                var vpWidth = await JS.InvokeAsync<double>("eval", "window.innerWidth");
+                if (vpWidth <= 700) { _toolbarVisible = false; _sidebarVisible = false; }
+            }
+            catch { }
             StateHasChanged();
         }
     }
