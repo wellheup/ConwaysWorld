@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Conway's World</title>
-    <base href="/" />
+    <base href="/ConwaysWorld/" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -24,30 +24,7 @@
         <a class="dismiss">✕</a>
     </div>
     <script src="canvas-interop.js?v=7"></script>
-    <script>
-        // Auto-reload when a new build is deployed: run.sh writes a fresh
-        // timestamp to _build.txt on every restart; we poll it and reload once
-        // we see the timestamp change. A 10s guard prevents reload storms.
-        (function () {
-            var lastStamp = null;
-            var reloadedAt = 0;
-            function checkBuild() {
-                fetch('_build.txt?_=' + Date.now(), { cache: 'no-store' })
-                    .then(function (r) { return r.text(); })
-                    .then(function (text) {
-                        var stamp = text.trim();
-                        if (lastStamp !== null && stamp !== lastStamp && Date.now() - reloadedAt > 10000) {
-                            reloadedAt = Date.now();
-                            location.reload();
-                        }
-                        lastStamp = stamp;
-                    })
-                    .catch(function () { });
-            }
-            checkBuild();
-            setInterval(checkBuild, 3000);
-        })();
-    </script>
+    
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
     <script>
         Blazor.start({
