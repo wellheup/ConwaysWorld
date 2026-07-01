@@ -49,6 +49,10 @@
             {
                 <div class="cw-tooltip" style="left:@(_tooltipX)px;top:@(_tooltipY)px">
                     <div class="tt-type">@_tooltip.TypeName</div>
+                    @if (!string.IsNullOrEmpty(_tooltip.Desc))
+                    {
+                        <div class="tt-desc">@_tooltip.Desc</div>
+                    }
                     <div class="tt-row">Nation @(_tooltip.Nation >= 0 ? _tooltip.Nation.ToString() : "—")</div>
                     <div class="tt-row">Age @_tooltip.Age</div>
                     @if (_tooltip.Conditions.Length > 0)
@@ -331,7 +335,7 @@
                 else if (_settingsTab == 1)
                 {
                     <div class="cw-weights-grid">
-                        @foreach (var kv in _spawnWeights)
+                        @foreach (var kv in _spawnWeights.OrderBy(kv => kv.Key))
                         {
                             <div class="cw-weight-row" title="@(CellDescriptions.GetValueOrDefault(kv.Key, ""))">
                                 <div class="cw-sprite-wrap">
@@ -489,7 +493,7 @@
 
     private List<(string Name, string Color, int Count)> _typeCounts = new();
 
-    private record TooltipData(string TypeName, int Nation, int Age, string Conditions);
+    private record TooltipData(string TypeName, string Desc, int Nation, int Age, string Conditions);
     private TooltipData? _tooltip;
     private double _tooltipX = 0, _tooltipY = 0;
 
@@ -501,35 +505,35 @@
     // ── In-app documentation ────────────────────────────────────────────────────
     private static readonly (string Name, string Desc)[] CellRules =
     {
-        ("Basic",          "Standard Conway cells. 25% immune chance; 1% born immaculate (cannot be infected)."),
-        ("Immortal",       "Lives forever unless isolated for more than 8 consecutive steps. Immune to all disease strains."),
-        ("Diseased",       "Spreads the d_ infection strain to neighbours each step; dies after a 3-step countdown."),
-        ("Plague",         "Like Diseased but 40% higher transmission rate; spreads the p_ strain."),
-        ("Traveler",       "Moves one cell per step; dies if isolated more than 3 steps or fully surrounded for more than 3 steps."),
-        ("Explorer",       "Like Traveler; triggers grid expansion when it reaches an edge."),
-        ("Doctor",         "Cures disease in adjacent cells; stamps vax_ immunity markers to prevent re-infection; survives while actively vaccinating."),
-        ("Warrior",        "Fights foreign Diseased/Plague within range 2; hunts Saviors, Followers, and Rebels of any nation; demotes to Basic after 3 idle steps."),
-        ("Hunter",         "Hunts Immortals and Kings within range 5; also hunts Saviors, Followers, and Rebels of any nation; demotes to Basic after 3 idle steps."),
-        ("Bomber",         "Always nationless. Detonates at age 2, destroying all cells within a 2-cell radius."),
-        ("Diplomat",       "Elected from large nations; travels to the nearest foreign nation and converts adjacent cells to its own nationality."),
-        ("King",           "Crowned when a nation reaches ≥5 citizens. Marks neighbouring Basic cells with toWar, promoting them to Warriors. Death triggers a neutralisation cooldown for distant cells."),
-        ("Rebel",          "Short-lived Diplomat variant with 3× conversion rate; hunted by Warriors and Hunters of all nations."),
-        ("Revolutionary",  "Defects from the dominant nation, founds a rival nation, and recruits Warriors and Rebels from the old homeland."),
-        ("Voyager",        "Travels to a disconnected foreign nation. On arrival: 50% spawns Diplomats and Warriors, 50% seeds 4 Plague cells."),
-        ("Wayfinder",      "Finds the emptiest grid region and travels there. On arrival spawns 5 Islanders. Dies if ≥20 cells crowd within 5 tiles."),
-        ("Islander",       "Nationless; lives by Conway rules; dies from overcrowding (≥20 within 5 tiles); converts to Barbarian when touched by a nation cell."),
-        ("Barbarian",      "Nationless aggressor. Converts adjacent Islanders and kills nearby nation cells; reverts to Islander when no targets remain."),
-        ("Spy",            "Infiltrates enemy territory from a minority nation; swaps through living cells, converting each displaced cell into a Soldier."),
-        ("Soldier",        "Combat cell created by Spies and Conquistadors. Kills adjacent enemies; advances on distant ones; triggers a nation-merge check when its wave is wiped out."),
-        ("Conquistador",   "Like Voyager but on arrival teleports the 10 nearest home-nation cells to the landing zone and converts them all (plus itself) into Soldiers."),
-        ("Savior",         "At most one per grid. Flees toward a foreign nation, converting adjacent Basic cells into Followers. On reaching the target King: 50% assimilates (Immortal), 50% dies (→ Zealots). Hunted by all Warriors/Hunters."),
-        ("Follower",       "Created by a Savior. Waits 3 steps then follows the Savior's last broadcast direction. Reverts to Basic after 4 consecutive blocked steps. Hunted by all Warriors/Hunters."),
-        ("Zealot",         "Created when a Savior dies. Attacks any adjacent living cell regardless of nation; advances toward the nearest living cell when idle."),
-        ("Irradiated",     "Permanent hazard tile. Kills any cell that swaps onto it. Not counted as living; never dies."),
-        ("PlagueRat",      "Nationless roamer. Spreads the r_ plague strain. Hunted by Warriors and Hunters."),
-        ("Zombie",         "Resurrected from dead cells by a Necromancer; retains original type's appearance. Immune to Conway rules, disease, and old age; invisible to other cells' Conway neighbour counts. Permanently destroyed when killed by a Doctor, Warrior, or Hunter."),
-        ("Necromancer",    "Spawns randomly. On spawn resurrects the 3 nearest dead cells as Zombies; resurrects 1 more per step. Survives only while ≥2 Zombies are alive; death kills all its Zombies."),
-        ("Mutant",         "Randomly transforms into a different cell type each step. Highly unpredictable."),
+        ("Barbarian",      "Nationless aggressor. Spawned when a nation cell touches an Islander. Follows Conway rules (survives with 2–3 neighbours; born with exactly 3). Converts adjacent Islanders into Barbarians and attacks adjacent nation cells. Reverts to Islander when no Islanders or nation cells are within range."),
+        ("Basic",          "Standard Conway cell. Survives with 2 or 3 living neighbours; born into empty cells with exactly 3 neighbours. 25% chance of disease immunity at spawn; 1% chance of being immaculate (permanently immune). Joins the nearest nation within proximity range."),
+        ("Bomber",         "Always nationless. Follows Conway rules for 1 step, then detonates at age 2, instantly killing every cell within a 2-cell (Chebyshev) radius. Cannot be recruited into any nation."),
+        ("Conquistador",   "Nation traveler. Moves toward the nearest disconnected foreign nation cluster. On arrival: teleports the 10 nearest home-nation cells to the landing zone and converts all of them, plus itself, into Soldiers. Brings fewer if the home nation has under 10 cells."),
+        ("Diplomat",       "Elected when a nation reaches 25 citizens (at most 1 Diplomat per 25 citizens). Moves toward the nearest foreign nation and converts adjacent cells to its own nationality. Requires the home nation to have a living King before election."),
+        ("Diseased",       "Infected cell. Spreads the d_ strain to each neighbour (except Doctors and Immortals) every step. Dies after a 3-step countdown. Cells with disease immunity (25% of Basic; vax_d_ marker) resist infection."),
+        ("Doctor",         "Cures adjacent Diseased and Plague cells every step. Stamps a vax_[strain] immunity marker on each cured cell to prevent re-infection. Survives while it vaccinates at least 1 new cell per step; follows Conway survival rules otherwise."),
+        ("Explorer",       "Moves 1 cell per step (like Traveler). Dies if isolated for more than 3 consecutive steps or if fully surrounded for more than 3 consecutive steps. Triggers grid expansion when it reaches a grid edge (up to Max Grid Size)."),
+        ("Follower",       "Created by a Savior. Waits 3 steps, then follows the Savior's last broadcast direction at 1 cell per step. Blocked by Kings, Revolutionaries, and other Followers; reverts to Basic after 4 consecutive blocked steps. Immune to Conway rules. Hunted by Warriors and Hunters of any nation."),
+        ("Hunter",         "Hunts Immortals and Kings within a range of 5 cells. Also hunts Saviors, Followers, and Rebels of any nation. Demotes to Basic after 3 idle steps with no valid target in range. Follows Conway survival rules."),
+        ("Immortal",       "Lives forever regardless of neighbour count. Immune to all disease strains (d_, p_, r_). Dies only when isolated (0 living neighbours) for more than 8 consecutive steps. Hunted by Hunter cells."),
+        ("Irradiated",     "Permanent hazard tile. Not counted as living; never dies, never reproduces, never gets infected. Kills any cell that swaps or moves onto it."),
+        ("Islander",       "Nationless. Lives by standard Conway rules (survives with 2–3 neighbours; born with exactly 3). Dies from overcrowding if 20 or more living cells exist within a 5-tile Chebyshev radius. Converts to Barbarian when an adjacent nation cell touches it."),
+        ("King",           "Crowned when a nation reaches 5 or more citizens and has no current King. Marks every adjacent living Basic cell with toWar each step, converting them to Warriors. Hunted by Hunter cells. When a King dies, distant home-nation Basic cells lose their nationality and enter a 3-step neutral cooldown."),
+        ("Mutant",         "Randomly transforms into a different cell type each step, immediately adopting that type's rules and appearance. Highly unpredictable; does not maintain any persistent identity or nation."),
+        ("Necromancer",    "Spawns randomly on the grid. On spawn: immediately resurrects the 3 nearest recently-dead cells as Zombies (preserving their original type appearance). Resurrects 1 additional dead cell per step thereafter. Survives only while at least 2 of its Zombies are alive; death kills all remaining Zombies instantly."),
+        ("Plague",         "Like Diseased but with 40% higher transmission rate. Spreads the p_ strain to neighbours each step; dies after a 3-step countdown. Cells infected by Plague become Plague cells (not Diseased)."),
+        ("PlagueRat",      "Nationless roamer. Moves 1 cell per step. Spreads the r_ plague strain, identical in effect to the p_ strain (infected cells become Plague). Hunted by Warriors and Hunters of any nation."),
+        ("Rebel",          "Short-lived Diplomat variant. Created by Revolutionary cells; has 3× the conversion rate of a regular Diplomat. Hunted by Warriors and Hunters of any nation. Follows Conway survival rules."),
+        ("Revolutionary",  "Defects from the dominant nation when that nation holds far more citizens than any rival. Founds a new nation (if a slot is available) and on its first step recruits 3 nearby old-nation cells (1 Warrior + 2 Rebels). Recruits 1 Warrior + 1 Rebel per step after. Marks adjacent same-nation Basic cells with toWar each step."),
+        ("Savior",         "At most 1 per grid; only spawns when 2 or more nations exist. Immune to Conway rules. Flees its birth nation toward a random foreign nation, converting adjacent Basic cells into Followers (50% chance per step). On reaching the target King: 50% chance assimilates (Savior becomes Immortal; Followers become Basic in the target nation); 50% chance dies (Followers become Zealots). Hunted by Warriors and Hunters of any nation."),
+        ("Soldier",        "Combat cell created by Spies and Conquistadors. Kills adjacent enemy cells each step; advances toward the nearest enemy when none are adjacent. When the last Soldier in a wave dies, a nation-merge check triggers between the 2 nations involved."),
+        ("Spy",            "Infiltrates enemy territory from a minority nation. Seeks the enemy King by swapping through living cells, converting each displaced cell into a Soldier. Continues advancing until it reaches the King or has no valid path forward."),
+        ("Traveler",       "Moves 1 cell per step in a semi-random direction. Dies if isolated (0 living neighbours) for more than 3 consecutive steps, or if fully surrounded (all 8 neighbours occupied) for more than 3 consecutive steps."),
+        ("Voyager",        "Nation traveler. Moves toward the nearest disconnected foreign nation cluster. On arrival: 50% chance spawns 2 Diplomats and 1 Warrior at the landing zone; 50% chance seeds 4 Plague cells there instead."),
+        ("Wayfinder",      "Finds the emptiest grid region (fewest living cells in a quadrant) and travels there. On arrival spawns 5 Islander cells. Dies from overcrowding if 20 or more living cells are within a 5-tile radius."),
+        ("Warrior",        "Fights foreign Diseased and Plague cells within a range of 2. Also hunts Saviors, Followers, and Rebels of any nation. Demotes to Basic after 3 idle steps with no valid target in range. Follows Conway survival rules."),
+        ("Zealot",         "Created when a Savior dies. Attacks any adjacent living cell regardless of nation or type. Advances toward the nearest living cell when no adjacent target exists. Follows Conway survival rules."),
+        ("Zombie",         "Resurrected by a Necromancer from a recently-dead cell. Retains the original type's visual appearance. Immune to Conway rules, disease, and old age. Invisible to other cells' neighbour counts (not counted as a living neighbour). Permanently destroyed (not re-resurrectible) when killed by a Doctor, Warrior, or Hunter."),
     };
 
     private static readonly Dictionary<string, string> CellDescriptions =
@@ -541,7 +545,7 @@
         ("Census",                      "Every step all living cells are counted per nation. Kings and Diplomats are elected or crowned when nations reach population thresholds."),
         ("King Crowning",               "A nation with ≥5 citizens can crown a Basic cell as King. The King marks nearby Basic cells with 'toWar', promoting them to Warriors."),
         ("King-Distance Neutralisation","Basic cells further than (columns+rows)/3 from their King lose nationality and gain a 3-step neutral cooldown before they can rejoin any nation."),
-        ("Diplomat Election",           "Large nations elect a Diplomat that travels to the nearest foreign nation and converts adjacent cells to its own nationality."),
+        ("Diplomat Election",           "A nation with ≥25 citizens and a living King elects 1 Diplomat per 25 citizens. Each Diplomat travels to the nearest foreign nation and converts adjacent cells to its own nationality."),
         ("Revolutionary Defection",     "When one nation becomes too dominant, a member may defect and become a Revolutionary, founding a rival nation and recruiting Rebels and Warriors."),
         ("Famine",                      "Periodically kills cells in a random grid quadrant, simulating resource scarcity. Controlled by the Famine Cooldown and Famine Duration settings."),
         ("Flood",                       "Periodically wipes the outer border ring of the grid, separating nation clusters and resetting expansion pressure."),
@@ -1039,6 +1043,7 @@
         _typeCounts = Enumerable.Range(1, TypeNames.Length - 1)
             .Where(i => counts[i] > 0 || !_spawnWeights.TryGetValue(TypeNames[i], out var w) || w > 0)
             .Select(i => (TypeNames[i], TypeColors[i], counts[i]))
+            .OrderBy(t => t.Item1)
             .ToList();
     }
 
@@ -1276,6 +1281,7 @@
             .Take(3));
         _tooltip = new TooltipData(
             cell.CellType.ToString(),
+            CellDescriptions.GetValueOrDefault(cell.CellType.ToString(), ""),
             cell.Nationality,
             cell.Age,
             conds);
