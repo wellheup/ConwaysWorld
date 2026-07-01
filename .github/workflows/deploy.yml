@@ -31,8 +31,7 @@ jobs:
           dotnet publish ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj \
             -c Release \
             -o publish \
-            --nologo \
-            -p:StaticWebAssetBasePath="${{ github.event.repository.name }}"
+            --nologo
 
       - name: Show publish output structure
         run: find publish -maxdepth 4 | sort
