@@ -344,8 +344,23 @@
                 else if (_settingsTab == 1)
                 {
                     <div class="cw-weights-grid">
+                        @{
+                            int _emptyCount = Math.Max(0, _startCols * _startRows - _popCount);
+                            bool _emptyInserted = false;
+                        }
                         @foreach (var kv in _spawnWeights.OrderBy(kv => kv.Key))
                         {
+                            @if (!_emptyInserted && string.Compare(kv.Key, "Empty", StringComparison.OrdinalIgnoreCase) > 0)
+                            {
+                                _emptyInserted = true;
+                                <div class="cw-weight-row cw-weight-row-readonly" title="Grid cells that start unoccupied. Value = (Start columns × Start rows) − initial population count.">
+                                    <div class="cw-sprite-wrap">
+                                        <img class="cw-cell-sprite" src="Assets/Sprites/Cell_Dead.jpg?v=3" alt="Empty" />
+                                    </div>
+                                    <span class="cw-weight-name" style="color:#888">Empty</span>
+                                    <span class="cw-weight-readonly-val">@_emptyCount</span>
+                                </div>
+                            }
                             <div class="cw-weight-row" title="@(CellDescriptions.GetValueOrDefault(kv.Key, ""))">
                                 <div class="cw-sprite-wrap">
                                     <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(kv.Key).jpg?v=3" alt="@kv.Key" />
@@ -355,6 +370,16 @@
                                 <input type="number" min="0" max="100"
                                        value="@kv.Value"
                                        @onchange="@(e => OnWeightChange(kv.Key, e))" />
+                            </div>
+                        }
+                        @if (!_emptyInserted)
+                        {
+                            <div class="cw-weight-row cw-weight-row-readonly" title="Grid cells that start unoccupied. Value = (Start columns × Start rows) − initial population count.">
+                                <div class="cw-sprite-wrap">
+                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_Dead.jpg?v=3" alt="Empty" />
+                                </div>
+                                <span class="cw-weight-name" style="color:#888">Empty</span>
+                                <span class="cw-weight-readonly-val">@_emptyCount</span>
                             </div>
                         }
                     </div>
