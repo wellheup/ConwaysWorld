@@ -51,9 +51,9 @@
                     <div class="tt-type">@_tooltip.TypeName</div>
                     <div class="tt-row">Nation @(_tooltip.Nation >= 0 ? _tooltip.Nation.ToString() : "—")</div>
                     <div class="tt-row">Age @_tooltip.Age</div>
-                    @if (_tooltip.Conditions.Length > 0)
+                    @foreach (var cond in _tooltip.Conditions)
                     {
-                        <div class="tt-row" style="font-size:10px;color:#777">@_tooltip.Conditions</div>
+                        <div class="tt-row" style="font-size:10px;color:#777">@cond</div>
                     }
                 </div>
             }
@@ -500,7 +500,7 @@
 
     private List<(string Name, string Color, int Count)> _typeCounts = new();
 
-    private record TooltipData(string TypeName, int Nation, int Age, string Conditions);
+    private record TooltipData(string TypeName, int Nation, int Age, string[] Conditions);
     private TooltipData? _tooltip;
     private double _tooltipX = 0, _tooltipY = 0;
 
@@ -1288,9 +1288,10 @@
             InvokeAsync(StateHasChanged);
             return;
         }
-        var conds = string.Join(", ", cell.Conditions
+        var conds = cell.Conditions
             .Where(c => !c.StartsWith("vax_") && c != "mature" && c != "immaculate")
-            .Take(3));
+            .Take(6)
+            .ToArray();
         _tooltip = new TooltipData(
             cell.CellType.ToString(),
             cell.Nationality,
