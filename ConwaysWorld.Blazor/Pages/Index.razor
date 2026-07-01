@@ -279,6 +279,12 @@
                                 Random Life Injection
                             </label>
                         </div>
+                        <div class="cw-field" title="When Random Life Injection is on, the Doctor spawn weight increases by 1 for every 30 Diseased or Plague cells alive — the simulation spawns more Doctors automatically when disease is rampant.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" @bind="_reactiveDoctor" />
+                                Reactive Doctors
+                            </label>
+                        </div>
                         <div class="cw-field cw-field-full" title="Population level (as % of grid or absolute count) below which new random cells are injected.">
                             <label>Inject when pop falls below</label>
                             <div class="cw-pop-fields">
@@ -573,6 +579,7 @@
     private int _famineDuration = 10;
     private bool _floodEnabled = true;
     private bool _randomLifeEnabled = false;
+    private bool _reactiveDoctor = false;
     private double _randomLifeThresholdPct = 5.0;
     private string _randomLifeThresholdPctStr = "5.0";
     private int _randomLifeThresholdCount = 10;
@@ -629,6 +636,7 @@
         [JsonPropertyName("famineDuration")]   public int FamineDuration { get; set; } = 10;
         [JsonPropertyName("floodEnabled")]                     public bool FloodEnabled { get; set; } = true;
         [JsonPropertyName("randomLifeEnabled")]                public bool RandomLifeEnabled { get; set; } = false;
+        [JsonPropertyName("reactiveDoctor")]                   public bool ReactiveDoctor { get; set; } = false;
         [JsonPropertyName("randomLifeThresholdPct")]           public double RandomLifeThresholdPct { get; set; } = 5.0;
         [JsonPropertyName("autoContinue")]                     public bool AutoContinue { get; set; } = false;
         [JsonPropertyName("allowGridExpansion")]               public bool AllowGridExpansion { get; set; } = true;
@@ -671,6 +679,7 @@
             FamineDuration    = Math.Max(1, _famineDuration),
             FloodEnabled        = _floodEnabled,
             RandomLifeEnabled   = _randomLifeEnabled,
+            ReactiveDoctor      = _reactiveDoctor,
             MinLifePercent      = (float)(_randomLifeThresholdPct / 100.0),
             AllowGridExpansion           = _allowGridExpansion,
             NationsEnabled               = _nationsEnabled,
@@ -717,6 +726,7 @@
             _famineDuration   = Math.Max(1, s.FamineDuration);
             _floodEnabled                    = s.FloodEnabled;
             _randomLifeEnabled               = s.RandomLifeEnabled;
+            _reactiveDoctor                  = s.ReactiveDoctor;
             _randomLifeThresholdPct          = s.RandomLifeThresholdPct;
             _randomLifeThresholdPctStr       = _randomLifeThresholdPct.ToString("F1");
             _randomLifeThresholdCount        = (int)Math.Round(_randomLifeThresholdPct / 100.0 * _startCols * _startRows);
@@ -757,6 +767,7 @@
             FamineDuration   = _famineDuration,
             FloodEnabled         = _floodEnabled,
             RandomLifeEnabled         = _randomLifeEnabled,
+            ReactiveDoctor            = _reactiveDoctor,
             RandomLifeThresholdPct    = _randomLifeThresholdPct,
             AutoContinue              = _autoContinue,
             AllowGridExpansion                  = _allowGridExpansion,

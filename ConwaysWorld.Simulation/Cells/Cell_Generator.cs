@@ -34,12 +34,30 @@ public class Cell_Generator
 	/// </summary>
 	private readonly List<SpawnFrequency> _livingFrequencies = new();
 
+	private readonly SimulationSettings _settings;
+
 	/// <summary>
 	/// Constructs a generator and builds the frequency table from <paramref name="settings"/>.
 	/// </summary>
 	public Cell_Generator(SimulationSettings settings)
 	{
-		BuildFrequencies(settings);
+		_settings = settings;
+		BuildFrequencies(settings.SpawnWeights);
+	}
+
+	/// <summary>
+	/// Rebuilds the frequency tables with an additional Doctor spawn weight bonus.
+	/// Called before random-life injection when <see cref="SimulationSettings.ReactiveDoctor"/> is enabled.
+	/// </summary>
+	/// <param name="doctorBonus">Extra weight added on top of the base Doctor weight.</param>
+	public void RebuildWithDoctorBonus(int doctorBonus)
+	{
+		var effectiveWeights = new Dictionary<CellType, int>(_settings.SpawnWeights);
+		if (effectiveWeights.TryGetValue(CellType.Doctor, out int baseW))
+			effectiveWeights[CellType.Doctor] = baseW + doctorBonus;
+		else if (doctorBonus > 0)
+			effectiveWeights[CellType.Doctor] = doctorBonus;
+		BuildFrequencies(effectiveWeights);
 	}
 
 	/// <summary>
@@ -48,21 +66,21 @@ public class Cell_Generator
 	/// Also builds a living-only table (normalised to 1.0) used by
 	/// <see cref="InitializeLivingCell"/> so spawn weights are honoured at any population density.
 	/// </summary>
-	private void BuildFrequencies(SimulationSettings settings)
+	private void BuildFrequencies(Dictionary<CellType, int> weights)
 	{
 		_frequencies.Clear();
 		_livingFrequencies.Clear();
 
-		float basePct = settings.BasePercentLiving;
+		float basePct = _settings.BasePercentLiving;
 		int totalWeight = 0;
-		foreach (var kv in settings.SpawnWeights)
-			if (settings.SpawnEnabled.Contains(kv.Key))
+		foreach (var kv in weights)
+			if (_settings.SpawnEnabled.Contains(kv.Key))
 				totalWeight += kv.Value;
 
 		float livingBudget = basePct;
-		foreach (var kv in settings.SpawnWeights)
+		foreach (var kv in weights)
 		{
-			if (!settings.SpawnEnabled.Contains(kv.Key))
+			if (!_settings.SpawnEnabled.Contains(kv.Key))
 				continue;
 			float share = totalWeight > 0 ? (float)kv.Value / totalWeight : 0f;
 			_frequencies.Add(new SpawnFrequency { Type = kv.Key, Freq = livingBudget * share });
@@ -125,12 +143,12 @@ public class Cell_Generator
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-																																																																			? new Cell_Diseased(column, row, true)
-																																																																			: (Cell)new Cell_Plague(column, row, true),
+																																																																																																																																			? new Cell_Diseased(column, row, true)
+																																																																																																																																			: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-																																																																			? new Cell_Traveler(column, row, true)
-																																																																			: (Cell)new Cell_Explorer(column, row, true),
+																																																																																																																																			? new Cell_Traveler(column, row, true)
+																																																																																																																																			: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),
@@ -159,12 +177,12 @@ public class Cell_Generator
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-																																																																			? new Cell_Diseased(column, row, true)
-																																																																			: (Cell)new Cell_Plague(column, row, true),
+																																																																																																																																			? new Cell_Diseased(column, row, true)
+																																																																																																																																			: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-																																																																			? new Cell_Traveler(column, row, true)
-																																																																			: (Cell)new Cell_Explorer(column, row, true),
+																																																																																																																																			? new Cell_Traveler(column, row, true)
+																																																																																																																																			: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),

@@ -153,7 +153,7 @@ canvas#sim-canvas {
 }
 
 .cw-sidebar {
-    width: 250px;
+    width: 300px;
     flex-shrink: 0;
     background: #111;
     border-left: 1px solid #2a2a2a;
