@@ -1,0 +1,19 @@
+Run dotnet publish ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj \
+  dotnet publish ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj \
+    -c Release \
+    -o publish \
+    --nologo \
+    -p:StaticWebAssetBasePath="ConwaysWorld"
+  shell: /usr/bin/bash -e {0}
+  env:
+    DOTNET_ROOT: /usr/share/dotnet
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+Error: /home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/Model.cs(1,14): error CS1002: ; expected [/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj]
+Error: /home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/Model.cs(1,14): error CS1022: Type or namespace definition, or end-of-file expected [/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj]
+Error: /home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/Model.cs(2,11): error CS1002: ; expected [/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj]
+Error: /home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/Model.cs(2,11): error CS1022: Type or namespace definition, or end-of-file expected [/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj]
+Error: /home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/Model.cs(2,19): error CS1002: ; expected [/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj]
+Error: /home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/Model.cs(3,6): error CS1003: Syntax error, '=' expected [/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj]
+Error: /home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/Model.cs(3,14): error CS1002: ; expected [/home/runner/work/ConwaysWorld/ConwaysWorld/ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj]
+Error: Process completed with exit code 1.
