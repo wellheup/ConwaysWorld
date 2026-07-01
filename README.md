@@ -1,6 +1,8 @@
 # Conway's World
 
-A browser-based simulation built on Conway's Game of Life, extended with 13 specialised cell types, a Nations system, diplomacy, combat, and animated rendering. The simulation logic is written in pure C# so it can be dropped directly into a Unity project.
+A browser-based simulation built on Conway's Game of Life, extended with **28 specialised cell types**, a full Nations system, diplomacy, combat, disease, and animated rendering. The simulation logic is written in pure C# (Blazor WebAssembly) and is directly portable to Unity.
+
+🌐 **[Play it on GitHub Pages](https://wellheup.github.io/ConwaysWorld/)**
 
 ---
 
@@ -8,34 +10,20 @@ A browser-based simulation built on Conway's Game of Life, extended with 13 spec
 
 | Tool | Version | Purpose |
 |------|---------|---------|
-| [.NET SDK](https://dotnet.microsoft.com/download) | 7.0 | Builds and runs the Blazor WebAssembly app |
-| [Node.js](https://nodejs.org/) | 18 or later | Compiles TypeScript and formats source files |
-
-No other global tools are required — `tsc` and `prettier` are installed locally via npm as part of the build.
+| [.NET SDK](https://dotnet.microsoft.com/download) | 9.0 | Builds and runs the Blazor WebAssembly app |
+| [Node.js](https://nodejs.org/) | 18 or later | Compiles TypeScript |
 
 ---
 
-## Fresh Install & Running Locally
+## Running Locally
 
 ```bash
-# 1. Clone the repo
-git clone <repo-url>
+git clone https://github.com/wellheup/ConwaysWorld.git
 cd ConwaysWorld
-
-# 2. Start the application
 bash run.sh
 ```
 
-`run.sh` does three things in order:
-
-1. Runs `dotnet format` on both C# projects to normalise code style.
-2. Runs `dotnet run` on the Blazor project, which triggers an MSBuild target (`CompileTypeScript`) that:
-   - Runs `npm install` to pull in TypeScript and Prettier.
-   - Runs `prettier --write` to format all `.ts` source files.
-   - Runs `tsc` to compile TypeScript → JavaScript.
-3. Starts the Blazor dev server on **http://0.0.0.0:5000**.
-
-Open your browser to `http://localhost:5000` to use the application.
+`run.sh` formats the C# source, compiles TypeScript, and starts the Blazor dev server on **http://localhost:5000**.
 
 ---
 
@@ -44,138 +32,126 @@ Open your browser to `http://localhost:5000` to use the application.
 | Input | Action |
 |-------|--------|
 | **Space** | Play / Pause |
-| **R** | Restart with the same settings |
-| **Scroll wheel** | Zoom in / out (scrolling fully out resets to centred view) |
-| **Right-click drag** | Pan the camera |
-| **Double-click** | Reset zoom and pan to default |
-| **Left-click** | Select a cell (highlights it) |
-| **Hover** | Tooltip showing type, nation, age, and conditions |
+| **R** | Restart |
+| **E** | Toggle Edit Mode (auto-pauses simulation) |
+| **Escape** | Exit Edit Mode / close modal |
+| **Scroll wheel** | Zoom in / out |
+| **Right-click drag** | Pan |
+| **Double-click** | Reset zoom and pan |
+| **Left-click** | Select cell (or paint in Edit Mode) |
+| **Hover** | Tooltip: type, nation, age, conditions |
 
-The **Settings** panel on the right lets you adjust grid size, step speed, spawn weights, and animation toggle before clicking **Apply & Restart**.
+The toolbar and sidebar are collapsible overlays — on mobile both auto-collapse to give the grid the full screen.
+
+---
+
+## Edit Mode
+
+Press **E** or click **✏ Edit** in the toolbar to enter Edit Mode (simulation auto-pauses).
+
+- **Paint** — click or drag to stamp any cell type from the palette
+- **Erase** — select the Eraser and paint to remove cells
+- **Nation** — choose a nation from the dropdown (Nationless or Nation 1–N)
+- **Move** — toggle Move Mode and drag cells between tiles
+- **Undo / Redo** — stroke-level history (up to 200 entries)
+- **Clear All** — removes every living cell (undoable)
 
 ---
 
 ## Cell Types
 
-| Type | Colour | Behaviour |
-|------|--------|-----------|
-| **Basic** | Light grey | Standard Conway rules. 25 % immune chance; 1 % chance of spawning immaculate (immune to all disease). |
-| **Immortal** | Gold | Lives forever unless isolated for more than 8 consecutive steps. Immune to disease. |
-| **Diseased** | Dark red | Spreads a unique `d_` strain to neighbours; dies after a 3-step countdown. |
-| **Plague** | Bright red | Like Diseased but with 40 % higher transmission rate and a `p_` strain. |
-| **Traveler** | Blue | Swaps with a random neighbour each step. Dies if alone or fully surrounded for more than 3 steps. |
-| **Explorer** | Cyan | Like Traveler, but triggers a grid expansion (+1 cell on each side) when it reaches an edge. |
-| **Doctor** | Pink | Cures adjacent Diseased/Plague cells and stamps `vax_<strain>` immunity markers on recovered cells. |
-| **Warrior** | Orange | Attacks foreign Diseased/Plague cells within range 2. Demotes to Basic after 3 idle steps. |
-| **Hunter** | Red-grey | Hunts Immortals and Kings within range 5. Demotes to Basic after 8 idle steps. |
-| **Bomber** | Amber | Detonates at age 2, destroying all living cells within a 2-cell radius, then dies. |
-| **Diplomat** | Purple | Elected from large nations; travels toward foreign nations and converts adjacent cells to its own nation. |
-| **King** | Yellow | Crowned from a nation with ≥ 5 citizens. Turns neighbouring Basic cells into Warriors each step. |
+| # | Type | Colour | Behaviour |
+|---|------|--------|-----------|
+| 1 | Basic | purple | Standard Conway rules; 25% immune chance; 1% immaculate at spawn |
+| 2 | Immortal | yellow | Lives forever unless isolated >8 steps; immune to disease |
+| 3 | Diseased | green | Spreads `d_` strain to neighbours; dies after 3-step countdown |
+| 4 | Plague | dark green | Like Diseased but 40% higher transmission rate (`p_` strain) |
+| 5 | Traveler | cyan | Moves each step; dies if isolated >3 steps or surrounded >3 steps |
+| 6 | Explorer | light cyan | Like Traveler; triggers grid expansion at edges |
+| 7 | Doctor | pink | Cures nearby disease; stamps `vax_` immunity markers; survives while active |
+| 8 | Warrior | red | Fights foreign Diseased/Plague within range 2; hunts Saviors/Followers of any nation; demotes to Basic after 3 idle steps |
+| 9 | Hunter | orange | Hunts Immortals and Kings within range 5; hunts Saviors/Followers of any nation; demotes to Basic after 3 idle steps |
+| 10 | Bomber | dark red | Detonates at age 2, killing all cells within a 2-cell radius |
+| 11 | Diplomat | blue | Elected from large nations; travels to foreign nations and converts adjacent cells |
+| 12 | King | gold | Crowned from nations with ≥5 citizens; marks nearby Basic cells with `toWar`; death triggers neutralisation cooldown for distant cells |
+| 13 | Rebel | light red | Short-lived diplomat variant with 3× conversion rate; created by Revolutionaries; hunted by Warriors and Hunters |
+| 14 | Revolutionary | dark purple | Defects from a dominant nation, founds a rival nation, recruits Warriors and Rebels from the old homeland |
+| 15 | Voyager | teal | Travels to a disconnected foreign nation; on arrival spawns Diplomats and Warriors, or seeds 4 Plague cells |
+| 16 | Wayfinder | light green | Finds the emptiest grid region and travels there; on arrival spawns 5 Islander cells |
+| 17 | Islander | sand | Nationless; lives by Conway rules but dies from overcrowding (20+ cells within 5 tiles); converts to Barbarian when touched by a nation cell |
+| 18 | Barbarian | brown | Nationless aggressor; converts adjacent Islanders and kills nearby nation cells; reverts to Islander when no targets remain |
+| 19 | Spy | grey-blue | Infiltrates enemy territory; seeks the enemy King by swapping through living cells, converting each displaced cell into a Soldier |
+| 20 | Soldier | steel blue | Combat cell created by Spies and Conquistadors; kills adjacent enemies; triggers a nation-merge check when the last of its wave dies |
+| 21 | Conquistador | dark orange | Like Voyager but teleports the nearest 10 home-nation cells to the landing zone and converts them into Soldiers |
+| 22 | Savior | white | At most one per grid (requires ≥2 nations). Flees toward a random foreign nation, converting Basic cells into Followers. On reaching the target King: 50% assimilates or 50% dies (spawning Zealots). Immune to Conway rules; hunted by all nations |
+| 23 | Follower | light blue | Created by a Savior; follows the Savior's direction after a 3-step delay; immune to Conway rules; hunted by all nations |
+| 24 | Zealot | red-orange | Created when a Savior dies; attacks any adjacent living cell regardless of nation |
+| 25 | Irradiated | bright green | Permanent hazard tile; kills any cell that moves onto it; not counted as living |
+| 26 | PlagueRat | dark red | Nationless roamer; spreads `r_` plague strain; hunted by Warriors and Hunters |
+| 27 | Zombie | near-black | Resurrected by a Necromancer; retains original appearance; immune to Conway rules, disease, and old age; invisible to other cells' Conway counts; dies when its Necromancer dies; permanently destroyed when killed by a Doctor/Warrior/Hunter |
+| 28 | Necromancer | near-black | Spawns randomly; resurrects the nearest 3 dead cells as zombies on spawn, then 1 more each step; survives while ≥2 zombies are alive |
 
-### Nations
+---
 
-Cells belong to numbered nations (distinguished by background colour). A nation large enough will:
-- **Elect a Diplomat** to expand its influence into neighbouring nations.
-- **Crown a King** to defend its territory by raising Warriors.
+## Nation System
 
-Kings and Immortals have special death animations (grow + spin). Newly crowned Kings play a bounce animation.
+- **Census** — every step, cells are counted per nationality; Kings and Diplomats are elected from nations above population thresholds
+- **King crowning** — a nation with ≥5 citizens may crown a King, which marks nearby Basic cells with `toWar` to promote them to Warriors
+- **King-distance neutralisation** — Basic cells further than `(columns + rows) / 3` from their King lose their nationality and gain a 3-step cooldown
+- **Diplomat election** — large nations elect a Diplomat that travels to the nearest foreign nation and converts adjacent cells
+- **Revolutionary defection** — when a nation becomes too dominant, a member may defect, splitting off a rival nation
 
 ---
 
 ## Project Structure
 
 ```
-ConwaysWorld/
-├── ConwaysWorld.Simulation/        Pure C# class library — no framework dependencies
-│   ├── Cells/
-│   │   ├── Cell.cs                 Base class with shared state (type, nation, age, conditions)
-│   │   ├── CellType.cs             Enum of all 13 cell types
-│   │   ├── Cell_Basic.cs           Standard Conway cell
-│   │   ├── Cell_Immortal.cs        Persistent cell, isolated-death rule
-│   │   ├── Cell_Diseased.cs        Infection + countdown death; base for Plague
-│   │   ├── Cell_Plague.cs          High-transmission variant of Diseased
-│   │   ├── Cell_Traveler.cs        Moving cell with isolation/crush death
-│   │   ├── Cell_Explorer.cs        Traveler variant that expands the grid
-│   │   ├── Cell_Doctor.cs          Healer with vaccination markers
-│   │   ├── Cell_Warrior.cs         Melee fighter, idle demotion
-│   │   ├── Cell_Hunter.cs          Long-range predator of Immortals/Kings
-│   │   ├── Cell_Bomber.cs          Suicide detonator
-│   │   ├── Cell_Diplomat.cs        Nation spreader
-│   │   ├── Cell_King.cs            Nation leader, Warrior recruiter
-│   │   ├── Cell_Nation.cs          Census, Diplomat election, King crowning
-│   │   ├── Cell_Neighborhood.cs    Pre-computed neighbour references per cell
-│   │   └── Cell_Generator.cs       Weighted random cell spawner
-│   ├── Model.cs                    Main simulation loop (Step, Restart, grid resize)
-│   └── SimulationSettings.cs       All tunable parameters (grid size, speeds, weights)
-│
-├── ConwaysWorld.Blazor/            Blazor WebAssembly frontend
-│   ├── ts/
-│   │   └── canvas-interop.ts       TypeScript source — canvas rendering, zoom/pan,
-│   │                               all animations (moves, births, deaths, coronations)
-│   ├── wwwroot/
-│   │   ├── canvas-interop.js       Generated by tsc — do not edit directly
-│   │   ├── css/app.css             Application styles
-│   │   ├── Assets/Sprites/         Cell sprite images (Cell_Basic.jpg, etc.)
-│   │   └── index.html              Blazor WASM host page
-│   ├── Pages/Index.razor           Main page: simulation loop, settings panel,
-│   │                               event log, JS interop calls
-│   ├── Shared/                     Shared Blazor layout components
-│   ├── tsconfig.json               TypeScript compiler config (strict, ES6, ts/ → wwwroot/)
-│   ├── .prettierrc                 Prettier config (4-space indent, single quotes)
-│   ├── package.json                Node devDependencies: typescript, prettier
-│   └── ConwaysWorld.Blazor.csproj  Includes MSBuild target to format + compile TS on build
-│
-├── Assets/Scripts/                 Original Unity C# source (reference only, not compiled)
-├── index.html                      Original plain-JS implementation (preserved as reference)
-├── server.js                       Original Node.js server (preserved as reference)
-├── run.sh                          Startup script: format C# → dotnet run
-└── README.md                       This file
+ConwaysWorld.Simulation/        Pure C# library — no framework dependencies
+  Cells/                        All 28 cell type implementations
+  Model.cs                      Simulation step orchestration
+  Cell_Nation.cs                Nations: census, diplomat election, king crowning
+  SimulationSettings.cs         All configurable parameters
+
+ConwaysWorld.Blazor/            Blazor WebAssembly frontend
+  Pages/Index.razor             Main page: canvas, sidebar, toolbar, settings
+  ts/canvas-interop.ts          TypeScript: canvas rendering, zoom/pan, keyboard shortcuts
+  wwwroot/canvas-interop.js     Compiled JS (always edit the .ts, then run npx tsc)
+  wwwroot/css/app.css           All styles
+
+Assets/Scripts/                 Original Unity C# source (reference only, not compiled)
+index.html                      Original plain-JS implementation (reference)
+server.js                       Original Node.js server (reference)
+run.sh                          Startup script: format → compile TS → dotnet run
 ```
 
 ---
 
-## TypeScript Workflow
+## TypeScript
 
-The JavaScript served to the browser is compiled from TypeScript automatically — you never need to run `tsc` manually.
+The canvas renderer is TypeScript — always edit the `.ts` source and recompile:
 
-```
-Edit:    ConwaysWorld.Blazor/ts/canvas-interop.ts
-Format:  npx prettier --write "./ts/**/*.ts"   (runs automatically on build)
-Compile: npx tsc --project tsconfig.json       (runs automatically on build)
-Output:  ConwaysWorld.Blazor/wwwroot/canvas-interop.js  (gitignored)
-```
-
-To format manually without rebuilding:
 ```bash
-cd ConwaysWorld.Blazor
-npm run format
+cd ConwaysWorld.Blazor && npx tsc
 ```
 
-To check formatting without modifying files:
-```bash
-cd ConwaysWorld.Blazor
-npm run check
-```
+The compiled `wwwroot/canvas-interop.js` is what the browser loads. Never edit the `.js` directly.
 
 ---
 
 ## Unity Portability
 
-`ConwaysWorld.Simulation` uses only `System.*` namespaces — no Unity, Blazor, or ASP.NET dependencies. To use it in a Unity project:
+`ConwaysWorld.Simulation` uses only `System.*` — no Unity, Blazor, or ASP.NET dependencies.
 
-1. Copy `ConwaysWorld.Simulation/` into your Unity project's `Assets/Scripts/`.
-2. Replace `SimRandom.*` calls with `UnityEngine.Random.*` equivalents.
-3. Wire `Model.Step()` into `MonoBehaviour.Update()` or a coroutine/`InvokeRepeating`.
-4. Read `Model.PendingMoves` each frame to drive GameObject animations.
+1. Copy `ConwaysWorld.Simulation/` into your Unity project's `Assets/Scripts/`
+2. Replace `SimRandom.*` calls with `UnityEngine.Random.*` equivalents
+3. Wire `Model.Step()` into `MonoBehaviour.Update()` or `InvokeRepeating`
 
 ---
 
 ## Deployment
 
-The app is configured for **autoscale** deployment. To publish:
+### GitHub Pages
+The repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that automatically publishes to GitHub Pages on every push to `main`.
 
-```bash
-dotnet publish ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj -c Release
-```
-
-Or use the Replit **Publish** button — the app will be served from a `.replit.app` domain with HTTPS handled automatically.
+### Replit
+The app runs on Replit via the **Start application** workflow (`bash run.sh`) and can be published via the Replit **Deploy** button.
