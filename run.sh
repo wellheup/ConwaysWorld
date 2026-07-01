@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-# Prevent git-lfs from smudging (and zeroing) files whose LFS objects are not
-# available from the remote. Model.cs is stored in LFS but served locally from
-# the workspace; without this flag dotnet-format's internal git calls zero it.
-export GIT_LFS_SKIP_SMUDGE=1
-
 echo "==> Formatting ConwaysWorld.Simulation..."
 dotnet format "ConwaysWorld.Simulation/ConwaysWorld.Simulation.csproj" --no-restore
 

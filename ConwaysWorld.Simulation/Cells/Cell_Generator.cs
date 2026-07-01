@@ -18,9 +18,6 @@ namespace ConwaysWorld.Simulation;
 /// </summary>
 public class Cell_Generator
 {
-	/// <summary>Stores the settings used to build frequency tables, needed for reactive-doctor rebuilds.</summary>
-	private SimulationSettings _storedSettings;
-
 	/// <summary>Maps a cell type to its probability share of the living-cell budget.</summary>
 	private readonly struct SpawnFrequency
 	{
@@ -42,7 +39,6 @@ public class Cell_Generator
 	/// </summary>
 	public Cell_Generator(SimulationSettings settings)
 	{
-		_storedSettings = settings;
 		BuildFrequencies(settings);
 	}
 
@@ -52,7 +48,7 @@ public class Cell_Generator
 	/// Also builds a living-only table (normalised to 1.0) used by
 	/// <see cref="InitializeLivingCell"/> so spawn weights are honoured at any population density.
 	/// </summary>
-	private void BuildFrequencies(SimulationSettings settings, int doctorBonus = 0)
+	private void BuildFrequencies(SimulationSettings settings)
 	{
 		_frequencies.Clear();
 		_livingFrequencies.Clear();
@@ -61,15 +57,14 @@ public class Cell_Generator
 		int totalWeight = 0;
 		foreach (var kv in settings.SpawnWeights)
 			if (settings.SpawnEnabled.Contains(kv.Key))
-				totalWeight += kv.Value + (kv.Key == CellType.Doctor ? doctorBonus : 0);
+				totalWeight += kv.Value;
 
 		float livingBudget = basePct;
 		foreach (var kv in settings.SpawnWeights)
 		{
 			if (!settings.SpawnEnabled.Contains(kv.Key))
 				continue;
-			int effectiveWeight = kv.Value + (kv.Key == CellType.Doctor ? doctorBonus : 0);
-			float share = totalWeight > 0 ? (float)effectiveWeight / totalWeight : 0f;
+			float share = totalWeight > 0 ? (float)kv.Value / totalWeight : 0f;
 			_frequencies.Add(new SpawnFrequency { Type = kv.Key, Freq = livingBudget * share });
 			// Living table: normalised directly by weight share (sums to 1.0).
 			_livingFrequencies.Add(new SpawnFrequency { Type = kv.Key, Freq = share });
@@ -77,15 +72,6 @@ public class Cell_Generator
 
 		float deadPct = 1f - basePct;
 		_frequencies.Add(new SpawnFrequency { Type = CellType.Dead, Freq = deadPct });
-	}
-
-	/// <summary>
-	/// Rebuilds frequency tables with a temporary Doctor weight bonus applied.
-	/// Call with <paramref name="bonus"/> = 0 to restore the original weights.
-	/// </summary>
-	public void RebuildWithDoctorBonus(int bonus)
-	{
-		BuildFrequencies(_storedSettings, bonus);
 	}
 
 	/// <summary>

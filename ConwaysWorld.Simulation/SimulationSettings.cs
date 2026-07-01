@@ -104,12 +104,6 @@ public class SimulationSettings
 	public bool RandomLifeEnabled { get; set; } = false;
 
 	/// <summary>
-	/// When <c>true</c>, the Doctor spawn weight is boosted by 1 for every 30 Diseased or
-	/// Plague cells currently alive on the grid during random-life injection.
-	/// </summary>
-	public bool ReactiveDoctors { get; set; } = false;
-
-	/// <summary>
 	/// Minimum number of steps that must pass after a famine ends before a new one can start.
 	/// Default is 15.
 	/// </summary>
@@ -154,51 +148,51 @@ public class SimulationSettings
 	/// Warriors, Diplomats, and Kings are intentionally absent — they are only promoted from existing cells.
 	/// </summary>
 	public Dictionary<CellType, int> SpawnWeights { get; set; } = new()
-		{
-				{ CellType.Basic,        50 },
-				{ CellType.Immortal,      2 },
-				{ CellType.Diseased,     15 },
-				{ CellType.Plague,        3 },
-				{ CellType.Traveler,      6 },
-				{ CellType.Explorer,      3 },
-				{ CellType.Doctor,        5 },
-				{ CellType.Hunter,        5 },
-				{ CellType.Bomber,        8 },
-				{ CellType.Voyager,       3 },
-				{ CellType.Wayfinder,     2 },
-				{ CellType.Spy,           3 },
-				{ CellType.Conquistador,  2 },
-				{ CellType.Savior,        1 },
-				{ CellType.Irradiated,    3 },
-				{ CellType.PlagueRat,     2 },
-				{ CellType.Necromancer,   2 },
-				{ CellType.Mutant,        2 },
-		};
+	{
+		{ CellType.Basic,        50 },
+		{ CellType.Immortal,      2 },
+		{ CellType.Diseased,     15 },
+		{ CellType.Plague,        3 },
+		{ CellType.Traveler,      6 },
+		{ CellType.Explorer,      3 },
+		{ CellType.Doctor,        5 },
+		{ CellType.Hunter,        5 },
+		{ CellType.Bomber,        8 },
+		{ CellType.Voyager,       3 },
+		{ CellType.Wayfinder,     2 },
+		{ CellType.Spy,           3 },
+		{ CellType.Conquistador,  2 },
+		{ CellType.Savior,        1 },
+		{ CellType.Irradiated,    3 },
+		{ CellType.PlagueRat,     2 },
+		{ CellType.Necromancer,   2 },
+		{ CellType.Mutant,        2 },
+	};
 
 	/// <summary>
 	/// The set of types that are eligible for spawning.
 	/// Only types present in both this set and <see cref="SpawnWeights"/> are considered.
 	/// </summary>
 	public HashSet<CellType> SpawnEnabled { get; set; } = new()
-		{
-				CellType.Basic,
-				CellType.Immortal,
-				CellType.Diseased,
-				CellType.Plague,
-				CellType.Traveler,
-				CellType.Explorer,
-				CellType.Doctor,
-				CellType.Hunter,
-				CellType.Bomber,
-				CellType.Voyager,
-				CellType.Wayfinder,
-				CellType.Spy,
-				CellType.Conquistador,
-				CellType.Savior,
-				CellType.Irradiated,
-				CellType.PlagueRat,
-				CellType.Mutant,
-		};
+	{
+		CellType.Basic,
+		CellType.Immortal,
+		CellType.Diseased,
+		CellType.Plague,
+		CellType.Traveler,
+		CellType.Explorer,
+		CellType.Doctor,
+		CellType.Hunter,
+		CellType.Bomber,
+		CellType.Voyager,
+		CellType.Wayfinder,
+		CellType.Spy,
+		CellType.Conquistador,
+		CellType.Savior,
+		CellType.Irradiated,
+		CellType.PlagueRat,
+		CellType.Mutant,
+	};
 
 	// ── Derived ──────────────────────────────────────────────────────────────────
 
