@@ -197,13 +197,19 @@
                 @if (_settingsTab == 0)
                 {
                     <div class="cw-settings-grid">
+                        <div class="cw-field cw-field-full" title="When enabled, editing columns recalculates rows to match the window's aspect ratio, and vice versa. Both remain editable.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" checked="@_autoFitGrid" @onchange="OnAutoFitChanged" />
+                                Auto-fit grid to window shape
+                            </label>
+                        </div>
                         <div class="cw-field" title="Width of the starting grid in cells (5–300). Larger grids use more CPU.">
                             <label>Start columns</label>
-                            <input type="number" min="5" max="300" @bind="_startCols" />
+                            <input type="number" min="5" max="300" value="@_startCols" @onchange="OnStartColsChange" />
                         </div>
                         <div class="cw-field" title="Height of the starting grid in cells (5–300).">
-                            <label>Start rows</label>
-                            <input type="number" min="5" max="300" @bind="_startRows" />
+                            <label>Start rows @(_autoFitGrid ? "(auto)" : "")</label>
+                            <input type="number" min="5" max="300" value="@_startRows" @onchange="OnStartRowsChange" />
                         </div>
                         <div class="cw-field" title="Maximum grid dimension after expansion. Set to 0 for no limit. The grid grows when Explorer cells reach an edge.">
                             <label>Max grid size (0 = unlimited)</label>
@@ -565,6 +571,7 @@
 
     private int _startCols = 50;
     private int _startRows = 50;
+    private bool _autoFitGrid = false;
     private int _maxGrid = 120;
     private int _maxNations = 4;
     private int _startClusters = 2;
@@ -644,6 +651,7 @@
         [JsonPropertyName("failurePopThreshold")]              public int FailurePopThreshold { get; set; } = 0;
         [JsonPropertyName("failurePopAfterGrowthThreshold")]   public int FailurePopAfterGrowthThreshold { get; set; } = 0;
         [JsonPropertyName("stagnationSteps")]                  public int StagnationSteps { get; set; } = 10;
+        [JsonPropertyName("autoFitGrid")]                       public bool AutoFitGrid { get; set; } = false;
         [JsonPropertyName("spawnWeights")]                     public Dictionary<string, int>? SpawnWeights { get; set; }
     }
 
@@ -736,6 +744,7 @@
             _failurePopThreshold             = s.FailurePopThreshold;
             _failurePopAfterGrowthThreshold  = s.FailurePopAfterGrowthThreshold;
             _stagnationSteps                 = s.StagnationSteps;
+            _autoFitGrid                     = s.AutoFitGrid;
             // Only restore saved spawn weights when the version matches;
             // a mismatch means defaults may have changed and stale weights should be dropped.
             if (s.SpawnWeights != null && s.Version >= SettingsVersion)
@@ -775,9 +784,60 @@
             FailurePopThreshold                 = _failurePopThreshold,
             FailurePopAfterGrowthThreshold      = _failurePopAfterGrowthThreshold,
             StagnationSteps                     = _stagnationSteps,
+            AutoFitGrid                         = _autoFitGrid,
             SpawnWeights                        = new Dictionary<string, int>(_spawnWeights),
         };
         return JsonSerializer.Serialize(s);
+    }
+
+    private async Task RecalcRowsFromCols()
+    {
+        try
+        {
+            var size = await JS.InvokeAsync<JsonElement>("ConwaysInterop.getCanvasSize");
+            int w = size.GetProperty("width").GetInt32();
+            int h = size.GetProperty("height").GetInt32();
+            if (w > 0 && h > 0)
+                _startRows = Math.Clamp((int)Math.Round(_startCols * (double)h / w), 5, 300);
+        }
+        catch { }
+    }
+
+    private async Task RecalcColsFromRows()
+    {
+        try
+        {
+            var size = await JS.InvokeAsync<JsonElement>("ConwaysInterop.getCanvasSize");
+            int w = size.GetProperty("width").GetInt32();
+            int h = size.GetProperty("height").GetInt32();
+            if (w > 0 && h > 0)
+                _startCols = Math.Clamp((int)Math.Round(_startRows * (double)w / h), 5, 300);
+        }
+        catch { }
+    }
+
+    private async Task OnStartColsChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            _startCols = Math.Clamp(v, 5, 300);
+            if (_autoFitGrid) await RecalcRowsFromCols();
+        }
+    }
+
+    private async Task OnStartRowsChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            _startRows = Math.Clamp(v, 5, 300);
+            if (_autoFitGrid) await RecalcColsFromRows();
+        }
+    }
+
+    private async Task OnAutoFitChanged(ChangeEventArgs e)
+    {
+        _autoFitGrid = e.Value is true;
+        if (_autoFitGrid) await RecalcRowsFromCols();
     }
 
     private void OnPopPercentChange(ChangeEventArgs e)
@@ -1085,7 +1145,8 @@
         _failureMessage = "";
         _failureStats = "";
         _eventLog.Clear();
-        _model.Restart();
+        if (_autoFitGrid) { await RecalcRowsFromCols(); InitSettings(); _model = new Model(_settings); }
+        else _model.Restart();
         _prevCellMap.Clear();
         await RenderFrame();
         CapturePrevCells();
@@ -1155,6 +1216,7 @@
         _failureMessage    = "";
         _failureStats      = "";
 
+        if (_autoFitGrid) await RecalcRowsFromCols();
         InitSettings();
         _eventLog.Clear();
         _model = new Model(_settings);
