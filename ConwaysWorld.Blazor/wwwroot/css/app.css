@@ -528,14 +528,11 @@ kbd {
     font-size: 12px;
     pointer-events: none;
     z-index: 100;
-    max-width: 230px;
+    max-width: 180px;
     line-height: 1.5;
-    white-space: normal;
-    word-wrap: break-word;
 }
 
 .cw-tooltip .tt-type { font-weight: bold; color: #eee; }
-.cw-tooltip .tt-desc { color: #bbb; font-size: 11px; margin: 2px 0 4px; line-height: 1.4; }
 .cw-tooltip .tt-row { color: #aaa; }
 
 /* ── Rules tab ─────────────────────────────────────────────── */
