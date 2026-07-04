@@ -31,7 +31,7 @@
            style="width:64px;background:#1a1a1a;border:1px solid #333;color:#aaa;font-size:11px;padding:1px 4px;border-radius:3px;text-align:right" />
     <span style="color:#888;font-size:11px">ms</span>
 
-    <button @onclick="@(() => _showSettings = true)">⚙ Settings</button>
+    <button @onclick="@(() => OpenSettings())">⚙ Settings</button>
     <button @onclick="() => { _showTestCases = true; _selectedTestCase = 0; }">🧪 Test Cases</button>
     <button title="Toggle fullscreen (F)" @onclick="ToggleFullscreen">@(_isFullscreen ? "⊡ Exit Full" : "⛶ Full")</button>
     <button class="@(_editMode ? "cw-toolbar-edit-active" : "")" title="Toggle edit mode (E)" @onclick="ToggleEditMode">✏ Edit</button>
@@ -860,12 +860,13 @@
         _settingsData.SpawnWeights                    = new Dictionary<string, int>(_spawnWeights);
     }
 
-    /// <summary>Snapshots _* fields into _settingsData, forces a specific tab, and opens the modal.
-    /// Use when _* fields have been externally changed (e.g. ApplyTestCase) and the modal must show them fresh.</summary>
-    private void OpenSettings(int tab = 0)
+    /// <summary>Snapshots live _* fields into _settingsData and opens the modal.
+    /// Pass forceTab to override the active tab (e.g. Test Cases forces General tab);
+    /// omit to preserve the currently selected tab.</summary>
+    private void OpenSettings(int? forceTab = null)
     {
         SnapshotSettingsData();
-        _settingsTab  = tab;
+        if (forceTab.HasValue) _settingsTab = forceTab.Value;
         _showSettings = true;
     }
 
@@ -927,7 +928,7 @@
         }
         // Close test-cases modal and open settings so the user can inspect / tweak before running.
         _showTestCases = false;
-        OpenSettings(tab: 0);
+        OpenSettings(forceTab: 0);
     }
 
     private async Task ApplyAndRestart()
