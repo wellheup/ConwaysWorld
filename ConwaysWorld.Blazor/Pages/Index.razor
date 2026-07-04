@@ -292,8 +292,9 @@
     private double _popPercent = 0.4;
     private int _popCount = 10;
     private string _popPercentStr = "0.4";
-    private int _minNeighbors = 2;
-    private int _maxNeighbors = 3;
+    private int _minNeighbors   = 2;
+    private int _maxNeighbors   = 3;
+    private int _birthNeighbors = 3;
     private bool _nationsEnabled = true;
     private bool _famineEnabled = true;
     private int _famineCooldown = 15;
@@ -350,8 +351,9 @@
         [JsonPropertyName("popCount")]         public int PopCount { get; set; } = -1;
         [JsonPropertyName("intervalMs")]       public int IntervalMs { get; set; } = 1000;
         [JsonPropertyName("animationEnabled")] public bool AnimationEnabled { get; set; } = true;
-        [JsonPropertyName("minNeighbors")]     public int MinNeighbors { get; set; } = 2;
-        [JsonPropertyName("maxNeighbors")]     public int MaxNeighbors { get; set; } = 3;
+        [JsonPropertyName("minNeighbors")]     public int MinNeighbors   { get; set; } = 2;
+        [JsonPropertyName("maxNeighbors")]     public int MaxNeighbors   { get; set; } = 3;
+        [JsonPropertyName("birthNeighbors")]   public int BirthNeighbors { get; set; } = 3;
         [JsonPropertyName("famineEnabled")]    public bool FamineEnabled { get; set; } = true;
         [JsonPropertyName("famineCooldown")]   public int FamineCooldown { get; set; } = 15;
         [JsonPropertyName("famineDuration")]   public int FamineDuration { get; set; } = 10;
@@ -396,6 +398,7 @@
             PopValue          = _popCount,
             MinLivingNeighbors = Math.Clamp(_minNeighbors, 0, 7),
             MaxLivingNeighbors = Math.Clamp(_maxNeighbors, 0, 8),
+            BirthNeighbors     = Math.Clamp(_birthNeighbors, 0, 8),
             FamineEnabled     = _famineEnabled,
             FamineCooldown    = Math.Max(1, _famineCooldown),
             FamineDuration    = Math.Max(1, _famineDuration),
@@ -443,6 +446,7 @@
             _animationEnabled = s.AnimationEnabled;
             _minNeighbors     = Math.Clamp(s.MinNeighbors, 0, 7);
             _maxNeighbors     = Math.Clamp(s.MaxNeighbors, 0, 8);
+            _birthNeighbors   = Math.Clamp(s.BirthNeighbors, 0, 8);
             _famineEnabled    = s.FamineEnabled;
             _famineCooldown   = Math.Max(1, s.FamineCooldown);
             _famineDuration   = Math.Max(1, s.FamineDuration);
@@ -485,6 +489,7 @@
             AnimationEnabled = _animationEnabled,
             MinNeighbors     = _minNeighbors,
             MaxNeighbors     = _maxNeighbors,
+            BirthNeighbors   = _birthNeighbors,
             FamineEnabled    = _famineEnabled,
             FamineCooldown   = _famineCooldown,
             FamineDuration   = _famineDuration,
@@ -842,6 +847,7 @@
         _settingsData.AnimationEnabled                = _animationEnabled;
         _settingsData.MinNeighbors                    = _minNeighbors;
         _settingsData.MaxNeighbors                    = _maxNeighbors;
+        _settingsData.BirthNeighbors                  = _birthNeighbors;
         _settingsData.FamineEnabled                   = _famineEnabled;
         _settingsData.FamineCooldown                  = _famineCooldown;
         _settingsData.FamineDuration                  = _famineDuration;
@@ -884,6 +890,7 @@
         _animationEnabled                = _settingsData.AnimationEnabled;
         _minNeighbors                    = _settingsData.MinNeighbors;
         _maxNeighbors                    = _settingsData.MaxNeighbors;
+        _birthNeighbors                  = _settingsData.BirthNeighbors;
         _famineEnabled                   = _settingsData.FamineEnabled;
         _famineCooldown                  = _settingsData.FamineCooldown;
         _famineDuration                  = _settingsData.FamineDuration;
@@ -1023,6 +1030,7 @@
         _animationEnabled = true;
         _minNeighbors     = 2;
         _maxNeighbors     = 3;
+        _birthNeighbors   = 3;
         _famineEnabled    = true;
         _famineCooldown   = 15;
         _famineDuration   = 10;

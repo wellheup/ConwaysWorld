@@ -20,6 +20,7 @@ public class SettingsData
 	public int PopCount { get; set; } = 10;
 	public int MinNeighbors { get; set; } = 2;
 	public int MaxNeighbors { get; set; } = 3;
+	public int BirthNeighbors { get; set; } = 3;
 	public bool FamineEnabled { get; set; } = true;
 	public int FamineCooldown { get; set; } = 15;
 	public int FamineDuration { get; set; } = 10;

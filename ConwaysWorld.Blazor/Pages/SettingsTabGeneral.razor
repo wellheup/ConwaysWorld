@@ -58,14 +58,19 @@
 
     <h3 class="cw-settings-section">Conway Rules</h3>
     <div class="cw-field"
-         title="Minimum live neighbours a cell needs to survive, and minimum neighbours an empty cell needs to be born. Standard Conway value is 2.">
-        <label>Min neighbors (survive &amp; birth)</label>
+         title="Minimum live neighbours a cell needs to survive. Cells with fewer neighbours die of isolation. Standard Conway value is 2.">
+        <label>Min neighbors (survive)</label>
         <input type="number" min="0" max="7" @bind="Data.MinNeighbors" />
     </div>
     <div class="cw-field"
          title="Maximum live neighbours a cell can have and still survive. Cells with more neighbours die of overcrowding. Standard Conway value is 3.">
         <label>Max neighbors (survive)</label>
         <input type="number" min="0" max="8" @bind="Data.MaxNeighbors" />
+    </div>
+    <div class="cw-field"
+         title="Exact number of live neighbours an empty cell must have to be born. Standard Conway value is 3.">
+        <label>Birth neighbors</label>
+        <input type="number" min="0" max="8" @bind="Data.BirthNeighbors" />
     </div>
 
     <h3 class="cw-settings-section">World Events</h3>
