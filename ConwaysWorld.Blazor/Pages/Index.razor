@@ -248,13 +248,17 @@
                         </div>
 
                         <h3 class="cw-settings-section">Conway Rules</h3>
-                        <div class="cw-field" title="Minimum live neighbours a cell needs to survive, and minimum neighbours an empty cell needs to be born. Standard Conway value is 2.">
-                            <label>Min neighbors (survive &amp; birth)</label>
+                        <div class="cw-field" title="Minimum live neighbours a cell needs to survive. Cells with fewer neighbours die of solitude. Standard Conway value is 2.">
+                            <label>Min neighbors (survive)</label>
                             <input type="number" min="0" max="7" @bind="_minNeighbors" />
                         </div>
                         <div class="cw-field" title="Maximum live neighbours a cell can have and still survive. Cells with more neighbours die of overcrowding. Standard Conway value is 3.">
                             <label>Max neighbors (survive)</label>
                             <input type="number" min="0" max="8" @bind="_maxNeighbors" />
+                        </div>
+                        <div class="cw-field" title="Exact number of live neighbours an empty cell needs to be born. Standard Conway value is 3.">
+                            <label>Birth neighbors</label>
+                            <input type="number" min="0" max="8" @bind="_birthNeighbors" />
                         </div>
 
                         <h3 class="cw-settings-section">World Events</h3>
@@ -584,6 +588,7 @@
     private string _popPercentStr = "0.4";
     private int _minNeighbors = 2;
     private int _maxNeighbors = 3;
+    private int _birthNeighbors = 3;
     private bool _nationsEnabled = true;
     private bool _famineEnabled = true;
     private int _famineCooldown = 15;
@@ -642,6 +647,7 @@
         [JsonPropertyName("animationEnabled")] public bool AnimationEnabled { get; set; } = true;
         [JsonPropertyName("minNeighbors")]     public int MinNeighbors { get; set; } = 2;
         [JsonPropertyName("maxNeighbors")]     public int MaxNeighbors { get; set; } = 3;
+        [JsonPropertyName("birthNeighbors")]   public int BirthNeighbors { get; set; } = 3;
         [JsonPropertyName("famineEnabled")]    public bool FamineEnabled { get; set; } = true;
         [JsonPropertyName("famineCooldown")]   public int FamineCooldown { get; set; } = 15;
         [JsonPropertyName("famineDuration")]   public int FamineDuration { get; set; } = 10;
@@ -686,6 +692,7 @@
             PopValue          = _popCount,
             MinLivingNeighbors = Math.Clamp(_minNeighbors, 0, 7),
             MaxLivingNeighbors = Math.Clamp(_maxNeighbors, 0, 8),
+            BirthNeighborCount = Math.Clamp(_birthNeighbors, 0, 8),
             FamineEnabled     = _famineEnabled,
             FamineCooldown    = Math.Max(1, _famineCooldown),
             FamineDuration    = Math.Max(1, _famineDuration),
@@ -733,6 +740,7 @@
             _animationEnabled = s.AnimationEnabled;
             _minNeighbors     = Math.Clamp(s.MinNeighbors, 0, 7);
             _maxNeighbors     = Math.Clamp(s.MaxNeighbors, 0, 8);
+            _birthNeighbors   = Math.Clamp(s.BirthNeighbors, 0, 8);
             _famineEnabled    = s.FamineEnabled;
             _famineCooldown   = Math.Max(1, s.FamineCooldown);
             _famineDuration   = Math.Max(1, s.FamineDuration);
@@ -775,6 +783,7 @@
             AnimationEnabled = _animationEnabled,
             MinNeighbors     = _minNeighbors,
             MaxNeighbors     = _maxNeighbors,
+            BirthNeighbors   = _birthNeighbors,
             FamineEnabled    = _famineEnabled,
             FamineCooldown   = _famineCooldown,
             FamineDuration   = _famineDuration,
@@ -1263,6 +1272,7 @@
         _animationEnabled  = _uiRandom.Next(2) == 0;
         _minNeighbors  = _uiRandom.Next(1, 4);
         _maxNeighbors  = _uiRandom.Next(_minNeighbors, 9);
+        _birthNeighbors = _uiRandom.Next(1, 5);
         _famineEnabled = _uiRandom.Next(2) == 0;
         _famineCooldown  = _uiRandom.Next(5, 51);
         _famineDuration  = _uiRandom.Next(5, 31);
@@ -1309,6 +1319,7 @@
         _animationEnabled = true;
         _minNeighbors     = 2;
         _maxNeighbors     = 3;
+        _birthNeighbors   = 3;
         _famineEnabled    = true;
         _famineCooldown   = 15;
         _famineDuration   = 10;

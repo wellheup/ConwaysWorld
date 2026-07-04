@@ -74,6 +74,9 @@ public abstract class Cell
 	/// <summary>Maximum living neighbours before death by overcrowding (default 3, standard Conway rule).</summary>
 	public int MaxLivingNeighbors = 3;
 
+	/// <summary>Exact number of living neighbours required for an empty cell to be born (default 3, standard Conway rule).</summary>
+	public int BirthNeighborCount = 3;
+
 	/// <summary>Consecutive steps without any living neighbours; used by Traveler/Explorer death logic.</summary>
 	public int IdleTurns = 0;
 
@@ -133,9 +136,9 @@ public abstract class Cell
 	/// Standard Conway survival rules:
 	/// <list type="bullet">
 	///   <item>Alive with &lt; <see cref="MinLivingNeighbors"/> neighbours → dies (under-population).</item>
-	///   <item>Alive with 2–3 neighbours → survives.</item>
+	///   <item>Alive with <see cref="MinLivingNeighbors"/>–<see cref="MaxLivingNeighbors"/> neighbours → survives.</item>
 	///   <item>Alive with &gt; <see cref="MaxLivingNeighbors"/> neighbours → dies (over-population).</item>
-	///   <item>Dead with exactly <see cref="MinLivingNeighbors"/> neighbours → born.</item>
+	///   <item>Dead with exactly <see cref="BirthNeighborCount"/> neighbours → born.</item>
 	/// </list>
 	/// </summary>
 	protected virtual bool LiveBasic()
@@ -143,8 +146,8 @@ public abstract class Cell
 		// Non-zombie cells use NumNonZombieNeighbors so zombies are invisible to their
 		// Conway survival/birth checks. Zombie cells use NumNeighbors (they see each other).
 		int n = CellType == CellType.Zombie
-										? CellNeighborhood.NumNeighbors
-										: CellNeighborhood.NumNonZombieNeighbors;
+																		? CellNeighborhood.NumNeighbors
+																		: CellNeighborhood.NumNonZombieNeighbors;
 
 		if (IsAlive && n < MinLivingNeighbors)
 			return false;
@@ -152,7 +155,7 @@ public abstract class Cell
 			return true;
 		if (IsAlive)
 			return false;
-		if (!IsAlive && n == MinLivingNeighbors)
+		if (!IsAlive && n == BirthNeighborCount)
 			return true;
 		return IsAlive;
 	}
