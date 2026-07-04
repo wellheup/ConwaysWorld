@@ -31,7 +31,7 @@
            style="width:64px;background:#1a1a1a;border:1px solid #333;color:#aaa;font-size:11px;padding:1px 4px;border-radius:3px;text-align:right" />
     <span style="color:#888;font-size:11px">ms</span>
 
-    <button @onclick="@(() => OpenSettings())">⚙ Settings</button>
+    <button @onclick="@(() => _showSettings = true)">⚙ Settings</button>
     <button @onclick="() => { _showTestCases = true; _selectedTestCase = 0; }">🧪 Test Cases</button>
     <button title="Toggle fullscreen (F)" @onclick="ToggleFullscreen">@(_isFullscreen ? "⊡ Exit Full" : "⛶ Full")</button>
     <button class="@(_editMode ? "cw-toolbar-edit-active" : "")" title="Toggle edit mode (E)" @onclick="ToggleEditMode">✏ Edit</button>
@@ -543,6 +543,7 @@
                     _timer.Interval = _intervalMs;
                     InitSettings();
                     _model = new Model(_settings);
+                    SnapshotSettingsData(); // prime modal with loaded values before first open
                 }
             }
             catch { }
@@ -826,7 +827,8 @@
         }
     }
 
-    private void OpenSettings(int tab = 0)
+    /// <summary>Copies current applied _* fields into _settingsData so the modal shows live state.</summary>
+    private void SnapshotSettingsData()
     {
         _settingsData.StartCols                       = _startCols;
         _settingsData.StartRows                       = _startRows;
@@ -856,6 +858,13 @@
         _settingsData.StagnationSteps                 = _stagnationSteps;
         _settingsData.AutoContinue                    = _autoContinue;
         _settingsData.SpawnWeights                    = new Dictionary<string, int>(_spawnWeights);
+    }
+
+    /// <summary>Snapshots _* fields into _settingsData, forces a specific tab, and opens the modal.
+    /// Use when _* fields have been externally changed (e.g. ApplyTestCase) and the modal must show them fresh.</summary>
+    private void OpenSettings(int tab = 0)
+    {
+        SnapshotSettingsData();
         _settingsTab  = tab;
         _showSettings = true;
     }
@@ -1032,8 +1041,8 @@
         _spawnWeights = defaultSettings.SpawnWeights
             .ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
 
-        // Sync defaults back into the modal data-object so the open modal refreshes.
-        OpenSettings(tab: _settingsTab);
+        // Sync defaults back into _settingsData so the open modal refreshes without changing tab.
+        SnapshotSettingsData();
 
         _timer.Interval = _intervalMs;
         InitSettings();
