@@ -17,3 +17,15 @@ cp .git/lfs/objects/<aa>/<bb>/<full-sha256> ConwaysWorld.Simulation/Model.cs
 The object lives at `.git/lfs/objects/<first2>/<next2>/<full-sha256>`. The local cache always has it because previous sessions fetched it.
 
 After restoring, re-apply any in-flight edits (the restored file is the checkpoint state, not the latest working copy).
+
+## Additional hazard: Python read-modify-write
+If Model.cs is temporarily swapped to an LFS pointer and a Python `open(..., 'r').read()` runs on it, Python returns an empty string (the raw pointer bytes confuse UTF-8 decode). A subsequent `open(..., 'w').write(content)` then writes 0 bytes. Use the `edit` tool for targeted changes to Model.cs — never a Python read-modify-write script.
+
+## Finding the right LFS version
+If the HEAD pointer SHA is the pre-change version, check all local LFS objects by size to find the one with your changes already applied:
+
+```bash
+find .git/lfs/objects -type f | xargs -I{} sh -c 'echo "$(wc -c < {}) {}"' | sort -rn | head -10
+```
+
+Inspect candidates with Python: `text.find('BirthNeighborCount')` (or whatever was recently added). Copy the right one.

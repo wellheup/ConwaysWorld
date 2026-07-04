@@ -69,7 +69,10 @@ public abstract class Cell
 	public int Nationality = -1;
 
 	/// <summary>Minimum living neighbours required to survive, and exact count needed to be born (default 3, standard Conway rule).</summary>
-	public int MinLivingNeighbors = 3;
+	public int MinLivingNeighbors = 2;
+
+	/// <summary>Exact live-neighbour count needed for an empty cell to be born. Default = MinLivingNeighbors+1 (standard Conway: 3).</summary>
+	public int BirthNeighborCount = 3;
 
 	/// <summary>Maximum living neighbours before death by overcrowding (default 3, standard Conway rule).</summary>
 	public int MaxLivingNeighbors = 3;
@@ -135,7 +138,7 @@ public abstract class Cell
 	///   <item>Alive with &lt; <see cref="MinLivingNeighbors"/> neighbours → dies (under-population).</item>
 	///   <item>Alive with <see cref="MinLivingNeighbors"/>–<see cref="MaxLivingNeighbors"/> neighbours → survives.</item>
 	///   <item>Alive with &gt; <see cref="MaxLivingNeighbors"/> neighbours → dies (over-population).</item>
-	///   <item>Dead with exactly <see cref="MinLivingNeighbors"/> neighbours → born.</item>
+	///   <item>Dead with exactly <see cref="BirthNeighborCount"/> neighbours → born.</item>
 	/// </list>
 	/// </summary>
 	protected virtual bool LiveBasic()
@@ -152,7 +155,7 @@ public abstract class Cell
 			return true;
 		if (IsAlive)
 			return false;
-		if (!IsAlive && n == MinLivingNeighbors)
+		if (!IsAlive && n == BirthNeighborCount)
 			return true;
 		return IsAlive;
 	}

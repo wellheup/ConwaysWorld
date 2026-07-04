@@ -65,7 +65,10 @@ public class SimulationSettings
 	/// Minimum living neighbours required for a living cell to survive, and the exact
 	/// count required for an empty cell to be born.  Standard Conway value is 3.
 	/// </summary>
-	public int MinLivingNeighbors { get; set; } = 3;
+	public int MinLivingNeighbors { get; set; } = 2;
+
+	/// <summary>Exact number of live neighbours an empty cell needs to be born. Default is MinLivingNeighbors+1 (standard Conway: 3).</summary>
+	public int BirthNeighborCount { get; set; } = 3;
 
 	/// <summary>
 	/// Maximum living neighbours before a cell dies of overcrowding.
