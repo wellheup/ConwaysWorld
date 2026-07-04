@@ -1,0 +1,262 @@
+@inject IJSRuntime JS
+@using System.Text.Json
+
+<div class="cw-settings-grid">
+
+    <div class="cw-field cw-field-full"
+         title="When enabled, editing columns recalculates rows to match the window's aspect ratio, and vice versa. Both remain editable.">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" checked="@Data.AutoFitGrid" @onchange="OnAutoFitChanged" />
+            Auto-fit grid to window shape
+        </label>
+    </div>
+
+    <div class="cw-field" title="Width of the starting grid in cells (5–300). Larger grids use more CPU.">
+        <label>Start columns</label>
+        <input type="number" min="5" max="300" value="@Data.StartCols" @onchange="OnStartColsChange" />
+    </div>
+    <div class="cw-field" title="Height of the starting grid in cells (5–300).">
+        <label>Start rows @(Data.AutoFitGrid ? "(auto)" : "")</label>
+        <input type="number" min="5" max="300" value="@Data.StartRows" @onchange="OnStartRowsChange" />
+    </div>
+
+    <div class="cw-field" title="Maximum grid dimension after expansion. Set to 0 for no limit. The grid grows when Explorer cells reach an edge.">
+        <label>Max grid size (0 = unlimited)</label>
+        <input type="number" min="0" max="500" @bind="Data.MaxGrid" />
+    </div>
+    <div class="cw-field" title="Maximum number of distinct nations that can coexist (1–20). Kings and Diplomats appear only when multiple nations are active.">
+        <label>Max nations (1–20)</label>
+        <input type="number" min="1" max="20" @bind="Data.MaxNations" />
+    </div>
+    <div class="cw-field" title="Number of initial cell clusters placed at startup. Set to 0 to use MaxNations ÷ 4 automatically.">
+        <label>Start clusters (0 = MaxNations ÷ 4)</label>
+        <input type="number" min="0" max="20" @bind="Data.StartClusters" />
+    </div>
+    <div class="cw-field" title="Toggle smooth movement animations for Traveler, Explorer, Spy, and other moving cell types.">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" @bind="Data.AnimationEnabled" />
+            Movement animation
+        </label>
+    </div>
+
+    <div class="cw-field cw-field-full"
+         title="How many cells are placed at the start of each run, expressed as a percentage of the grid or a fixed cell count.">
+        <label>Initial population</label>
+        <div class="cw-pop-fields">
+            <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
+                   value="@Data.PopPercent.ToString("F1")"
+                   @onchange="OnPopPercentChange"
+                   @onkeydown="@(e => { if (e.Key == "Enter") OnPopPercentChange(new ChangeEventArgs { Value = Data.PopPercentStr }); })" />
+            <span class="cw-pop-sep">%</span>
+            <input type="number" class="cw-pop-input" min="0" max="@(Data.StartCols * Data.StartRows)"
+                   value="@Data.PopCount"
+                   @onchange="OnPopCountChange"
+                   @onkeydown="@(e => { if (e.Key == "Enter") OnPopCountChange(new ChangeEventArgs { Value = Data.PopCount.ToString() }); })" />
+            <span class="cw-pop-sep">/ @(Data.StartCols * Data.StartRows)</span>
+        </div>
+    </div>
+
+    <h3 class="cw-settings-section">Conway Rules</h3>
+    <div class="cw-field"
+         title="Minimum live neighbours a cell needs to survive, and minimum neighbours an empty cell needs to be born. Standard Conway value is 2.">
+        <label>Min neighbors (survive &amp; birth)</label>
+        <input type="number" min="0" max="7" @bind="Data.MinNeighbors" />
+    </div>
+    <div class="cw-field"
+         title="Maximum live neighbours a cell can have and still survive. Cells with more neighbours die of overcrowding. Standard Conway value is 3.">
+        <label>Max neighbors (survive)</label>
+        <input type="number" min="0" max="8" @bind="Data.MaxNeighbors" />
+    </div>
+
+    <h3 class="cw-settings-section">World Events</h3>
+    <div class="cw-field"
+         title="Periodically kills cells in a random grid quadrant, simulating a food shortage. Controlled by Cooldown and Duration settings below.">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" @bind="Data.FamineEnabled" />
+            Enable Famine
+        </label>
+    </div>
+    <div class="cw-field"
+         title="Periodically wipes the outer border ring of the grid, separating nation clusters and resetting expansion pressure.">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" @bind="Data.FloodEnabled" />
+            Enable Flood
+        </label>
+    </div>
+    @if (Data.FamineEnabled)
+    {
+        <div class="cw-field"
+             title="Minimum number of simulation steps that must pass before the next famine event can occur.">
+            <label>Min steps between famines</label>
+            <input type="number" min="1" max="500" @bind="Data.FamineCooldown" />
+        </div>
+        <div class="cw-field" title="How many simulation steps a single famine event lasts.">
+            <label>Famine duration (steps)</label>
+            <input type="number" min="1" max="100" @bind="Data.FamineDuration" />
+        </div>
+    }
+    <div class="cw-field"
+         title="When population falls below the injection threshold, random cells are spawned to prevent total extinction.">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" @bind="Data.RandomLifeEnabled" />
+            Random Life Injection
+        </label>
+    </div>
+    <div class="cw-field"
+         title="When Random Life Injection is on, the Doctor spawn weight increases by 1 for every 30 Diseased or Plague cells alive — the simulation spawns more Doctors automatically when disease is rampant.">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" @bind="Data.ReactiveDoctor" />
+            Reactive Doctors
+        </label>
+    </div>
+    <div class="cw-field cw-field-full"
+         title="Population level (as % of grid or absolute count) below which new random cells are injected.">
+        <label>Inject when pop falls below</label>
+        <div class="cw-pop-fields">
+            <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
+                   value="@Data.RandomLifeThresholdPct.ToString("F1")"
+                   @onchange="OnRandomLifeThresholdPctChange"
+                   @onkeydown="@(e => { if (e.Key == "Enter") OnRandomLifeThresholdPctChange(new ChangeEventArgs { Value = Data.RandomLifeThresholdPctStr }); })" />
+            <span class="cw-pop-sep">%</span>
+            <input type="number" class="cw-pop-input" min="0" max="@(Data.StartCols * Data.StartRows)"
+                   value="@Data.RandomLifeThresholdCount"
+                   @onchange="OnRandomLifeThresholdCountChange"
+                   @onkeydown="@(e => { if (e.Key == "Enter") OnRandomLifeThresholdCountChange(new ChangeEventArgs { Value = Data.RandomLifeThresholdCount.ToString() }); })" />
+            <span class="cw-pop-sep">/ @(Data.StartCols * Data.StartRows)</span>
+        </div>
+    </div>
+    <div class="cw-field"
+         title="Allow Explorer cells to expand the grid beyond its starting size, up to the Max Grid Size limit.">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" @bind="Data.AllowGridExpansion" />
+            Allow grid expansion
+        </label>
+    </div>
+    <div class="cw-field"
+         title="Enable the full nation system: proximity-based nationality, King crowning, Diplomat election, and Revolutionary defection.">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" @bind="Data.NationsEnabled" />
+            Enable nations &amp; kings
+        </label>
+    </div>
+
+    <h3 class="cw-settings-section cw-field-full">Failure Conditions</h3>
+    <div class="cw-field" title="Simulation ends if population drops to or below this count. Set to 0 to disable.">
+        <label>Min pop threshold (0 = off)</label>
+        <input type="number" min="0" max="10000" @bind="Data.FailurePopThreshold" />
+    </div>
+    <div class="cw-field"
+         title="Simulation ends if population collapses back below this count after previously growing above it. Set to 0 to disable.">
+        <label>Min pop after growth (0 = off)</label>
+        <input type="number" min="0" max="10000" @bind="Data.FailurePopAfterGrowthThreshold" />
+    </div>
+    <div class="cw-field"
+         title="Simulation ends if population stays at exactly the same count for this many consecutive steps. Set to 0 to disable.">
+        <label>Stagnation steps (0 = off)</label>
+        <input type="number" min="0" max="500" @bind="Data.StagnationSteps" />
+    </div>
+    <div class="cw-field cw-field-full"
+         title="Automatically restart the simulation when a failure condition triggers, instead of showing the failure popup.">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" @bind="Data.AutoContinue" />
+            Auto-restart on failure
+        </label>
+    </div>
+
+</div>
+
+@code {
+    [CascadingParameter] public SettingsData Data { get; set; } = null!;
+
+    private async Task OnAutoFitChanged(ChangeEventArgs e)
+    {
+        Data.AutoFitGrid = e.Value is true;
+        if (Data.AutoFitGrid) await RecalcRowsFromCols();
+    }
+
+    private async Task OnStartColsChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            Data.StartCols = Math.Clamp(v, 5, 300);
+            if (Data.AutoFitGrid) await RecalcRowsFromCols();
+        }
+    }
+
+    private async Task OnStartRowsChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            Data.StartRows = Math.Clamp(v, 5, 300);
+            if (Data.AutoFitGrid) await RecalcColsFromRows();
+        }
+    }
+
+    private void OnPopPercentChange(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var pct))
+        {
+            Data.PopPercent = Math.Clamp(pct, 0, 100);
+            Data.PopPercentStr = Data.PopPercent.ToString("F1");
+            Data.PopCount = (int)Math.Round(Data.PopPercent / 100.0 * Data.StartCols * Data.StartRows);
+        }
+    }
+
+    private void OnPopCountChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var cnt))
+        {
+            int total = Data.StartCols * Data.StartRows;
+            Data.PopCount = Math.Clamp(cnt, 0, total);
+            Data.PopPercent = total > 0 ? Math.Round(Data.PopCount * 100.0 / total, 1) : 0;
+            Data.PopPercentStr = Data.PopPercent.ToString("F1");
+        }
+    }
+
+    private void OnRandomLifeThresholdPctChange(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var pct))
+        {
+            Data.RandomLifeThresholdPct = Math.Clamp(pct, 0, 100);
+            Data.RandomLifeThresholdPctStr = Data.RandomLifeThresholdPct.ToString("F1");
+            Data.RandomLifeThresholdCount = (int)Math.Round(Data.RandomLifeThresholdPct / 100.0 * Data.StartCols * Data.StartRows);
+        }
+    }
+
+    private void OnRandomLifeThresholdCountChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var cnt))
+        {
+            int total = Data.StartCols * Data.StartRows;
+            Data.RandomLifeThresholdCount = Math.Clamp(cnt, 0, total);
+            Data.RandomLifeThresholdPct = total > 0 ? Math.Round(Data.RandomLifeThresholdCount * 100.0 / total, 1) : 0;
+            Data.RandomLifeThresholdPctStr = Data.RandomLifeThresholdPct.ToString("F1");
+        }
+    }
+
+    private async Task RecalcRowsFromCols()
+    {
+        try
+        {
+            var size = await JS.InvokeAsync<JsonElement>("ConwaysInterop.getCanvasSize");
+            int w = size.GetProperty("width").GetInt32();
+            int h = size.GetProperty("height").GetInt32();
+            if (w > 0 && h > 0)
+                Data.StartRows = Math.Clamp((int)Math.Round(Data.StartCols * (double)h / w), 5, 300);
+        }
+        catch { }
+    }
+
+    private async Task RecalcColsFromRows()
+    {
+        try
+        {
+            var size = await JS.InvokeAsync<JsonElement>("ConwaysInterop.getCanvasSize");
+            int w = size.GetProperty("width").GetInt32();
+            int h = size.GetProperty("height").GetInt32();
+            if (w > 0 && h > 0)
+                Data.StartCols = Math.Clamp((int)Math.Round(Data.StartRows * (double)w / h), 5, 300);
+        }
+        catch { }
+    }
+}

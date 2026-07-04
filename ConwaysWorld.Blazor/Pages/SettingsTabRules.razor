@@ -1,0 +1,38 @@
+<div class="cw-rules-list">
+    <p class="cw-rules-intro">
+        The Game of Life is not your typical computer game. It is a cellular automaton,
+        and was invented by Cambridge mathematician John Conway.
+    </p>
+    <p class="cw-rules-intro">
+        This game became widely known when it was mentioned in an article published by
+        Scientific American in 1970. It consists of a grid of cells which, based on a few
+        mathematical rules, can live, die or multiply. Depending on the initial conditions,
+        the cells form various patterns throughout the course of the game.
+    </p>
+
+    <h3 class="cw-rules-section-head" style="margin-top:14px">Simulation Mechanics</h3>
+    @foreach (var (label, desc) in SettingsRulesData.SimulationEvents)
+    {
+        <div class="cw-rules-entry cw-rules-event">
+            <div class="cw-rules-text">
+                <span class="cw-rules-name">@label</span>
+                <span class="cw-rules-desc">@desc</span>
+            </div>
+        </div>
+    }
+
+    <h3 class="cw-rules-section-head" style="margin-top:14px">Cell Types</h3>
+    @foreach (var (name, desc) in SettingsRulesData.CellRules)
+    {
+        <div class="cw-rules-entry">
+            <div class="cw-sprite-wrap">
+                <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(name).jpg?v=3" alt="@name" />
+                <img class="cw-sprite-zoom-popup" src="Assets/Sprites/Cell_@(name).jpg?v=3" alt="" />
+            </div>
+            <div class="cw-rules-text">
+                <span class="cw-rules-name">@name</span>
+                <span class="cw-rules-desc">@desc</span>
+            </div>
+        </div>
+    }
+</div>
