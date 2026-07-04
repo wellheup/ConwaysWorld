@@ -2,7 +2,7 @@ namespace ConwaysWorld.Simulation;
 
 /// <summary>
 /// The standard Conway's Game of Life cell. Follows the classic survival rules:
-/// survives with 2–3 living neighbours, is born into empty cells with exactly 3 neighbours,
+/// survives with 2–3 living neighbours, is born into empty cells with exactly 2 neighbours,
 /// and dies from under- or over-population otherwise.
 /// <para>
 /// Spawn-time variants (applied by <see cref="Cell_Generator.CreateBasic"/>):

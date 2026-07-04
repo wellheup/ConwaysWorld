@@ -31,7 +31,7 @@
            style="width:64px;background:#1a1a1a;border:1px solid #333;color:#aaa;font-size:11px;padding:1px 4px;border-radius:3px;text-align:right" />
     <span style="color:#888;font-size:11px">ms</span>
 
-    <button @onclick="@(() => OpenSettings())">⚙ Settings</button>
+    <button @onclick="() => _showSettings = true">⚙ Settings</button>
     <button @onclick="() => { _showTestCases = true; _selectedTestCase = 0; }">🧪 Test Cases</button>
     <button title="Toggle fullscreen (F)" @onclick="ToggleFullscreen">@(_isFullscreen ? "⊡ Exit Full" : "⛶ Full")</button>
     <button class="@(_editMode ? "cw-toolbar-edit-active" : "")" title="Toggle edit mode (E)" @onclick="ToggleEditMode">✏ Edit</button>
@@ -97,7 +97,7 @@
                     <div class="cw-cell-list">
                         @foreach (var entry in _typeCounts)
                         {
-                            <div class="cw-cell-row" title="@(SettingsRulesData.CellDescriptions.GetValueOrDefault(entry.Name, ""))">
+                            <div class="cw-cell-row" title="@(CellDescriptions.GetValueOrDefault(entry.Name, ""))">
                                 <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(entry.Name).jpg?v=3" alt="@entry.Name" />
                                 <span>@entry.Name</span>
                                 <span class="cw-cell-count">@entry.Count</span>
@@ -179,12 +179,251 @@
 
 @if (_showSettings)
 {
-    <SettingsModal Data="_settingsData"
-                   ActiveTab="_settingsTab"
-                   ActiveTabChanged="@(v => _settingsTab = v)"
-                   OnClose="@(() => _showSettings = false)"
-                   OnApplyAndRestart="ApplyAndRestart"
-                   OnResetToDefaults="ResetToDefaults" />
+    <div class="cw-modal-overlay" @onclick="() => _showSettings = false">
+        <div class="cw-modal" @onclick:stopPropagation>
+            <div class="cw-modal-header">
+                <span>Settings</span>
+                <button class="cw-modal-close" @onclick="() => _showSettings = false">✕</button>
+            </div>
+            <div class="cw-modal-tabs">
+                <button class="cw-modal-tab @(_settingsTab == 0 ? "cw-modal-tab-active" : "")"
+                        @onclick="() => _settingsTab = 0">General</button>
+                <button class="cw-modal-tab @(_settingsTab == 1 ? "cw-modal-tab-active" : "")"
+                        @onclick="() => _settingsTab = 1">Spawn Weights</button>
+                <button class="cw-modal-tab @(_settingsTab == 2 ? "cw-modal-tab-active" : "")"
+                        @onclick="() => _settingsTab = 2">Hotkeys</button>
+                <button class="cw-modal-tab @(_settingsTab == 3 ? "cw-modal-tab-active" : "")"
+                        @onclick="() => _settingsTab = 3">Rules</button>
+            </div>
+            <div class="cw-settings-scroll">
+                @if (_settingsTab == 0)
+                {
+                    <div class="cw-settings-grid">
+                        <div class="cw-field cw-field-full" title="When enabled, editing columns recalculates rows to match the window's aspect ratio, and vice versa. Both remain editable.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" checked="@_autoFitGrid" @onchange="OnAutoFitChanged" />
+                                Auto-fit grid to window shape
+                            </label>
+                        </div>
+                        <div class="cw-field" title="Width of the starting grid in cells (5–300). Larger grids use more CPU.">
+                            <label>Start columns</label>
+                            <input type="number" min="5" max="300" value="@_startCols" @onchange="OnStartColsChange" />
+                        </div>
+                        <div class="cw-field" title="Height of the starting grid in cells (5–300).">
+                            <label>Start rows @(_autoFitGrid ? "(auto)" : "")</label>
+                            <input type="number" min="5" max="300" value="@_startRows" @onchange="OnStartRowsChange" />
+                        </div>
+                        <div class="cw-field" title="Maximum grid dimension after expansion. Set to 0 for no limit. The grid grows when Explorer cells reach an edge.">
+                            <label>Max grid size (0 = unlimited)</label>
+                            <input type="number" min="0" max="500" @bind="_maxGrid" />
+                        </div>
+                        <div class="cw-field" title="Maximum number of distinct nations that can coexist (1–20). Kings and Diplomats appear only when multiple nations are active.">
+                            <label>Max nations (1–20)</label>
+                            <input type="number" min="1" max="20" @bind="_maxNations" />
+                        </div>
+                        <div class="cw-field" title="Number of initial cell clusters placed at startup. Set to 0 to use MaxNations ÷ 4 automatically.">
+                            <label>Start clusters (0 = MaxNations ÷ 4)</label>
+                            <input type="number" min="0" max="20" @bind="_startClusters" />
+                        </div>
+                        <div class="cw-field" title="Toggle smooth movement animations for Traveler, Explorer, Spy, and other moving cell types.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" @bind="_animationEnabled" />
+                                Movement animation
+                            </label>
+                        </div>
+                        <div class="cw-field cw-field-full" title="How many cells are placed at the start of each run, expressed as a percentage of the grid or a fixed cell count.">
+                            <label>Initial population</label>
+                            <div class="cw-pop-fields">
+                                <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
+                                       value="@_popPercent.ToString("F1")"
+                                       @onchange="OnPopPercentChange"
+                                       @onkeydown="@(e => { if (e.Key == "Enter") OnPopPercentChange(new ChangeEventArgs { Value = _popPercentStr }); })" />
+                                <span class="cw-pop-sep">%</span>
+                                <input type="number" class="cw-pop-input" min="0" max="@(_startCols * _startRows)"
+                                       value="@_popCount"
+                                       @onchange="OnPopCountChange"
+                                       @onkeydown="@(e => { if (e.Key == "Enter") OnPopCountChange(new ChangeEventArgs { Value = _popCount.ToString() }); })" />
+                                <span class="cw-pop-sep">/ @(_startCols * _startRows)</span>
+                            </div>
+                        </div>
+
+                        <h3 class="cw-settings-section">Conway Rules</h3>
+                        <div class="cw-field" title="Minimum live neighbours a cell needs to survive, and minimum neighbours an empty cell needs to be born. Standard Conway value is 2.">
+                            <label>Min neighbors (survive &amp; birth)</label>
+                            <input type="number" min="0" max="7" @bind="_minNeighbors" />
+                        </div>
+                        <div class="cw-field" title="Maximum live neighbours a cell can have and still survive. Cells with more neighbours die of overcrowding. Standard Conway value is 3.">
+                            <label>Max neighbors (survive)</label>
+                            <input type="number" min="0" max="8" @bind="_maxNeighbors" />
+                        </div>
+
+                        <h3 class="cw-settings-section">World Events</h3>
+                        <div class="cw-field" title="Periodically kills cells in a random grid quadrant, simulating a food shortage. Controlled by Cooldown and Duration settings below.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" @bind="_famineEnabled" />
+                                Enable Famine
+                            </label>
+                        </div>
+                        <div class="cw-field" title="Periodically wipes the outer border ring of the grid, separating nation clusters and resetting expansion pressure.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" @bind="_floodEnabled" />
+                                Enable Flood
+                            </label>
+                        </div>
+                        @if (_famineEnabled)
+                        {
+                            <div class="cw-field" title="Minimum number of simulation steps that must pass before the next famine event can occur.">
+                                <label>Min steps between famines</label>
+                                <input type="number" min="1" max="500" @bind="_famineCooldown" />
+                            </div>
+                            <div class="cw-field" title="How many simulation steps a single famine event lasts.">
+                                <label>Famine duration (steps)</label>
+                                <input type="number" min="1" max="100" @bind="_famineDuration" />
+                            </div>
+                        }
+                        <div class="cw-field" title="When population falls below the injection threshold, random cells are spawned to prevent total extinction.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" @bind="_randomLifeEnabled" />
+                                Random Life Injection
+                            </label>
+                        </div>
+                        <div class="cw-field" title="When Random Life Injection is on, the Doctor spawn weight increases by 1 for every 30 Diseased or Plague cells alive — the simulation spawns more Doctors automatically when disease is rampant.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" @bind="_reactiveDoctor" />
+                                Reactive Doctors
+                            </label>
+                        </div>
+                        <div class="cw-field cw-field-full" title="Population level (as % of grid or absolute count) below which new random cells are injected.">
+                            <label>Inject when pop falls below</label>
+                            <div class="cw-pop-fields">
+                                <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
+                                       value="@_randomLifeThresholdPct.ToString("F1")"
+                                       @onchange="OnRandomLifeThresholdPctChange"
+                                       @onkeydown="@(e => { if (e.Key == "Enter") OnRandomLifeThresholdPctChange(new ChangeEventArgs { Value = _randomLifeThresholdPctStr }); })" />
+                                <span class="cw-pop-sep">%</span>
+                                <input type="number" class="cw-pop-input" min="0" max="@(_startCols * _startRows)"
+                                       value="@_randomLifeThresholdCount"
+                                       @onchange="OnRandomLifeThresholdCountChange"
+                                       @onkeydown="@(e => { if (e.Key == "Enter") OnRandomLifeThresholdCountChange(new ChangeEventArgs { Value = _randomLifeThresholdCount.ToString() }); })" />
+                                <span class="cw-pop-sep">/ @(_startCols * _startRows)</span>
+                            </div>
+                        </div>
+                        <div class="cw-field" title="Allow Explorer cells to expand the grid beyond its starting size, up to the Max Grid Size limit.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" @bind="_allowGridExpansion" />
+                                Allow grid expansion
+                            </label>
+                        </div>
+                        <div class="cw-field" title="Enable the full nation system: proximity-based nationality, King crowning, Diplomat election, and Revolutionary defection.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" @bind="_nationsEnabled" />
+                                Enable nations &amp; kings
+                            </label>
+                        </div>
+
+                        <h3 class="cw-settings-section cw-field-full">Failure Conditions</h3>
+                        <div class="cw-field" title="Simulation ends if population drops to or below this count. Set to 0 to disable.">
+                            <label>Min pop threshold (0 = off)</label>
+                            <input type="number" min="0" max="10000" @bind="_failurePopThreshold" />
+                        </div>
+                        <div class="cw-field" title="Simulation ends if population collapses back below this count after previously growing above it. Set to 0 to disable.">
+                            <label>Min pop after growth (0 = off)</label>
+                            <input type="number" min="0" max="10000" @bind="_failurePopAfterGrowthThreshold" />
+                        </div>
+                        <div class="cw-field" title="Simulation ends if population stays at exactly the same count for this many consecutive steps. Set to 0 to disable.">
+                            <label>Stagnation steps (0 = off)</label>
+                            <input type="number" min="0" max="500" @bind="_stagnationSteps" />
+                        </div>
+                        <div class="cw-field cw-field-full" title="Automatically restart the simulation when a failure condition triggers, instead of showing the failure popup.">
+                            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                                <input type="checkbox" @bind="_autoContinue" />
+                                Auto-restart on failure
+                            </label>
+                        </div>
+                    </div>
+                }
+                else if (_settingsTab == 1)
+                {
+                    <div class="cw-weights-grid">
+                        @foreach (var kv in _spawnWeights.OrderBy(kv => kv.Key))
+                        {
+                            <div class="cw-weight-row" title="@(CellDescriptions.GetValueOrDefault(kv.Key, ""))">
+                                <div class="cw-sprite-wrap">
+                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(kv.Key).jpg?v=3" alt="@kv.Key" />
+                                    <img class="cw-sprite-zoom-popup" src="Assets/Sprites/Cell_@(kv.Key).jpg?v=3" alt="" />
+                                </div>
+                                <span class="cw-weight-name">@kv.Key</span>
+                                <input type="number" min="0" max="100"
+                                       value="@kv.Value"
+                                       @onchange="@(e => OnWeightChange(kv.Key, e))" />
+                            </div>
+                        }
+                        <div class="cw-weight-row cw-weight-row-empty" title="Cells that start empty (not populated). Calculated as grid size minus initial population — not a spawn weight.">
+                            <div class="cw-weight-empty-swatch"></div>
+                            <span class="cw-weight-name">Empty</span>
+                            <span class="cw-weight-readonly">@(_startCols * _startRows - _popCount)</span>
+                        </div>
+                    </div>
+                }
+                else if (_settingsTab == 2)
+                {
+                    <table class="cw-hotkeys-table">
+                        <thead>
+                            <tr><th>Key / Input</th><th>Action</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><kbd>Space</kbd></td><td>Play / Pause</td></tr>
+                            <tr><td><kbd>R</kbd></td><td>Restart simulation</td></tr>
+                            <tr><td><kbd>E</kbd></td><td>Toggle edit mode (auto-pauses)</td></tr>
+                            <tr><td><kbd>Escape</kbd></td><td>Close modal / exit edit mode</td></tr>
+                            <tr><td><kbd>F</kbd></td><td>Toggle fullscreen</td></tr>
+                            <tr><td><kbd>Scroll wheel</kbd></td><td>Zoom in / out</td></tr>
+                            <tr><td><kbd>Right-click drag</kbd></td><td>Pan the grid</td></tr>
+                            <tr><td><kbd>Double-click</kbd></td><td>Reset zoom &amp; pan</td></tr>
+                            <tr><td><kbd>Left-click</kbd></td><td>Select a cell (shows events)</td></tr>
+                            <tr><td><kbd>Hover</kbd></td><td>Tooltip: type, nation, age, conditions</td></tr>
+                        </tbody>
+                    </table>
+                }
+                else if (_settingsTab == 3)
+                {
+                    <div class="cw-rules-list">
+                        <h3 class="cw-rules-section-head">Cell Types</h3>
+                        @foreach (var (name, desc) in CellRules)
+                        {
+                            <div class="cw-rules-entry">
+                                <div class="cw-sprite-wrap">
+                                    <img class="cw-cell-sprite" src="Assets/Sprites/Cell_@(name).jpg?v=3" alt="@name" />
+                                    <img class="cw-sprite-zoom-popup" src="Assets/Sprites/Cell_@(name).jpg?v=3" alt="" />
+                                </div>
+                                <div class="cw-rules-text">
+                                    <span class="cw-rules-name">@name</span>
+                                    <span class="cw-rules-desc">@desc</span>
+                                </div>
+                            </div>
+                        }
+                        <h3 class="cw-rules-section-head" style="margin-top:14px">Simulation Mechanics</h3>
+                        @foreach (var (label, desc) in SimulationEvents)
+                        {
+                            <div class="cw-rules-entry cw-rules-event">
+                                <div class="cw-rules-text">
+                                    <span class="cw-rules-name">@label</span>
+                                    <span class="cw-rules-desc">@desc</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            @if (_settingsTab != 3)
+            {
+                <div class="cw-modal-footer">
+                    <button class="cw-apply-btn" style="flex:1" @onclick="ApplyAndRestart">Apply & Restart</button>
+                    <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="ResetToDefaults">Reset Defaults</button>
+                </div>
+            }
+        </div>
+    </div>
 }
 
 @if (_showTestCases)
@@ -238,7 +477,6 @@
     private bool _isFullscreen = false;
     private int _selectedTestCase = 0;
     private int _settingsTab = 0;
-    private readonly SettingsData _settingsData = new();
     private int _intervalMs = 1000;
     private bool _animationEnabled = true;
     private bool _canvasReady = false;
@@ -281,6 +519,58 @@
     private const int MaxEventLog = 60;
     private bool _showEventLog = false;
 
+    // ── In-app documentation ────────────────────────────────────────────────────
+    private static readonly (string Name, string Desc)[] CellRules =
+    {
+        ("Barbarian",      "Nationless aggressor spawned from Islanders. Converts adjacent Islanders into more Barbarians and destroys nearby nation cells. Reverts to Islander when no valid targets remain in range."),
+        ("Basic",          "Standard Conway cells. Born with a 25% chance of innate immunity. 1% chance of being born immaculate — permanently unable to be infected. Eligible to be promoted to Warrior by a King."),
+        ("Bomber",         "Always nationless. Reaches maturity at age 2 and immediately detonates, destroying every cell within a 2-cell radius. Cannot be defused."),
+        ("Conquistador",   "Like a Voyager but on arrival teleports the 10 nearest home-nation cells to the landing zone and immediately converts all of them — plus itself — into Soldiers for a concentrated assault."),
+        ("Diplomat",       "Elected from nations above the Diplomat population threshold. Travels toward the nearest foreign nation and converts adjacent cells to its own nationality 1 at a time."),
+        ("Diseased",       "Attempts to spread the d_ infection strain to every adjacent living cell each step. Dies after a 3-step internal countdown. Infected neighbours that aren't immune convert to Diseased on the next step."),
+        ("Doctor",         "Each step cures all adjacent diseased cells and stamps a vax_ immunity marker for each strain cured, preventing re-infection with that specific strain. Survives Conway death as long as it successfully vaccinates at least 1 new cell per step."),
+        ("Explorer",       "Behaves like a Traveler but triggers grid expansion when it reaches an edge. Drives the world to grow up to the Max Grid Size limit set in Settings."),
+        ("Follower",       "Created by a Savior. Waits 3 steps, then moves 1 cell per step in the Savior's last broadcast direction. Blocked by Kings, Revolutionaries, and other Followers; reverts to Basic after 4 consecutive blocked steps. Immune to Conway rules. Hunted by all Warriors and Hunters."),
+        ("Hunter",         "Hunts Immortals and Kings within range 5, advancing toward and attacking them. Also targets Saviors, Followers, and Rebels of any nation. Demotes to Basic after 3 consecutive idle steps with no eligible targets."),
+        ("Immortal",       "Lives indefinitely regardless of neighbour count. Dies only if isolated (0 live neighbours) for more than 8 consecutive steps. Immune to all disease and plague strains; cannot be infected or converted."),
+        ("Irradiated",     "Permanent hazard tile. Any cell that moves or is displaced onto an Irradiated tile is immediately destroyed. Not counted as living; immune to Conway rules; cannot be removed."),
+        ("Islander",       "Nationless cell that follows standard Conway survival rules. Dies from overcrowding if ≥20 live cells exist within a 5-tile radius. Converts to a Barbarian when any nation cell moves into an adjacent tile."),
+        ("King",           "Crowned from a nation with ≥5 citizens. Marks neighbouring Basic cells with a toWar tag, promoting them to Warriors. On death, Basic cells more than (columns+rows)/3 tiles away lose nationality and enter a 3-step neutral cooldown before they can rejoin any nation."),
+        ("Mutant",         "Nationless wildcard. Each step there is a chance it randomly mutates into a different cell type, fully adopting that type's behaviour and appearance. Long-term behaviour is entirely unpredictable."),
+        ("Necromancer",    "Spawns randomly into the grid. On spawn, immediately resurrects the 3 nearest recently-dead cells as Zombies; resurrects 1 additional Zombie each step thereafter. Survives only while ≥2 of its Zombies remain alive. Its death instantly destroys all of its Zombies."),
+        ("Plague",         "Identical to Diseased but with a 40% higher transmission rate and spreads the p_ strain. More likely to overwhelm immune defences in dense populations."),
+        ("PlagueRat",      "Nationless roamer. Spreads the r_ plague strain to neighbouring cells each step, converting them toward the Plague type. Hunted by Warriors and Hunters of all nations."),
+        ("Rebel",          "Short-lived Diplomat variant created by Revolutionaries. Converts at 3× the normal Diplomat rate. Hunted by Warriors and Hunters of every nation, not just foreign ones."),
+        ("Revolutionary",  "Defects from the dominant nation when it grows too large, founds a rival nation, then returns to the original homeland to recruit Rebels and Warriors from among its former allies."),
+        ("Savior",         "At most 1 alive at a time; only spawns when ≥2 nations exist. Flees its birth nation toward a random foreign nation, converting adjacent Basic cells into Followers with a 50% chance each step. On reaching the target King: 50% assimilates (Savior → Immortal, Followers → Basic in target nation) or 50% dies (Followers → Zealots). Immune to Conway rules. Hunted by all Warriors and Hunters."),
+        ("Soldier",        "Combat cell created by Spies and Conquistadors. Kills adjacent enemy cells outright; advances toward the nearest distant enemy otherwise. When the last Soldier in a wave dies, a nation-merge check fires to see if the attacker absorbs the defender."),
+        ("Spy",            "Dispatched from a minority nation into enemy territory. Seeks the enemy King by swapping into adjacent living cells one step at a time, converting each displaced cell into a Soldier. Appears invisible to most cell behaviours."),
+        ("Traveler",       "Moves 1 cell per step toward open space. Dies if isolated (0 live neighbours) for more than 3 consecutive steps, or if fully surrounded with no room to move for more than 3 consecutive steps."),
+        ("Voyager",        "Travels toward a disconnected foreign nation cluster. On arrival: 50% chance to spawn Diplomats and Warriors; 50% chance to seed 4 Plague cells in the target territory."),
+        ("Wayfinder",      "Scans the grid for the emptiest region and travels there. On arrival, spawns 5 Islander cells to populate the empty space. Dies if ≥20 cells crowd within 5 tiles at any point during travel."),
+        ("Warrior",        "Attacks foreign Diseased and Plague cells within range 2, converting or destroying them. Hunts Saviors, Followers, and Rebels regardless of nation. Demotes to Basic after 3 consecutive idle steps with no eligible targets."),
+        ("Zealot",         "Born when a Savior dies. Attacks any adjacent living cell each step regardless of nation. Advances 1 cell toward the nearest living cell when no adjacent target exists."),
+        ("Zombie",         "Resurrected from a recently dead cell by a Necromancer. Visually retains the appearance of its original type. Immune to Conway rules, disease, and old age. Invisible to other cells' neighbour counts. Permanently destroyed (cannot be revived again) if killed by a Doctor, Warrior, or Hunter. Dies automatically when its Necromancer dies."),
+    };
+
+    private static readonly Dictionary<string, string> CellDescriptions =
+        CellRules.ToDictionary(r => r.Name, r => r.Desc);
+
+    private static readonly (string Label, string Desc)[] SimulationEvents =
+    {
+        ("Nations",                     "Cells in the same spawn cluster share a nationality. New cells join the nearest nation of the same colour within proximity range."),
+        ("Census",                      "Every step all living cells are counted per nation. Kings and Diplomats are elected or crowned when nations reach population thresholds."),
+        ("King Crowning",               "A nation with ≥5 citizens can crown a Basic cell as King. The King marks nearby Basic cells with 'toWar', promoting them to Warriors."),
+        ("King-Distance Neutralisation","Basic cells further than (columns+rows)/3 from their King lose nationality and gain a 3-step neutral cooldown before they can rejoin any nation."),
+        ("Diplomat Election",           "Large nations elect a Diplomat that travels to the nearest foreign nation and converts adjacent cells to its own nationality."),
+        ("Revolutionary Defection",     "When one nation becomes too dominant, a member may defect and become a Revolutionary, founding a rival nation and recruiting Rebels and Warriors."),
+        ("Famine",                      "Periodically kills cells in a random grid quadrant, simulating resource scarcity. Controlled by the Famine Cooldown and Famine Duration settings."),
+        ("Flood",                       "Periodically wipes the outer border ring of the grid, separating nation clusters and resetting expansion pressure."),
+        ("Random Life Injection",       "When population falls below the injection threshold, random cells are spawned to prevent total extinction. Threshold is set by % or absolute count."),
+        ("Grid Expansion",              "Explorer cells trigger the grid to grow when they reach an edge. Growth continues up to the Max Grid Size limit."),
+        ("Failure & Auto-Restart",      "The simulation ends (or auto-restarts) on: full extinction; population below Min Pop Threshold; population collapse after post-growth; or N-step stagnation."),
+    };
+
     // ── Test Cases ──────────────────────────────────────────────────────────────
 
     private int _startCols = 50;
@@ -292,9 +582,8 @@
     private double _popPercent = 0.4;
     private int _popCount = 10;
     private string _popPercentStr = "0.4";
-    private int _minNeighbors   = 2;
-    private int _maxNeighbors   = 3;
-    private int _birthNeighbors = 3;
+    private int _minNeighbors = 2;
+    private int _maxNeighbors = 3;
     private bool _nationsEnabled = true;
     private bool _famineEnabled = true;
     private int _famineCooldown = 15;
@@ -351,9 +640,8 @@
         [JsonPropertyName("popCount")]         public int PopCount { get; set; } = -1;
         [JsonPropertyName("intervalMs")]       public int IntervalMs { get; set; } = 1000;
         [JsonPropertyName("animationEnabled")] public bool AnimationEnabled { get; set; } = true;
-        [JsonPropertyName("minNeighbors")]     public int MinNeighbors   { get; set; } = 2;
-        [JsonPropertyName("maxNeighbors")]     public int MaxNeighbors   { get; set; } = 3;
-        [JsonPropertyName("birthNeighbors")]   public int BirthNeighbors { get; set; } = 3;
+        [JsonPropertyName("minNeighbors")]     public int MinNeighbors { get; set; } = 2;
+        [JsonPropertyName("maxNeighbors")]     public int MaxNeighbors { get; set; } = 3;
         [JsonPropertyName("famineEnabled")]    public bool FamineEnabled { get; set; } = true;
         [JsonPropertyName("famineCooldown")]   public int FamineCooldown { get; set; } = 15;
         [JsonPropertyName("famineDuration")]   public int FamineDuration { get; set; } = 10;
@@ -398,7 +686,6 @@
             PopValue          = _popCount,
             MinLivingNeighbors = Math.Clamp(_minNeighbors, 0, 7),
             MaxLivingNeighbors = Math.Clamp(_maxNeighbors, 0, 8),
-            BirthNeighbors     = Math.Clamp(_birthNeighbors, 0, 8),
             FamineEnabled     = _famineEnabled,
             FamineCooldown    = Math.Max(1, _famineCooldown),
             FamineDuration    = Math.Max(1, _famineDuration),
@@ -446,7 +733,6 @@
             _animationEnabled = s.AnimationEnabled;
             _minNeighbors     = Math.Clamp(s.MinNeighbors, 0, 7);
             _maxNeighbors     = Math.Clamp(s.MaxNeighbors, 0, 8);
-            _birthNeighbors   = Math.Clamp(s.BirthNeighbors, 0, 8);
             _famineEnabled    = s.FamineEnabled;
             _famineCooldown   = Math.Max(1, s.FamineCooldown);
             _famineDuration   = Math.Max(1, s.FamineDuration);
@@ -489,7 +775,6 @@
             AnimationEnabled = _animationEnabled,
             MinNeighbors     = _minNeighbors,
             MaxNeighbors     = _maxNeighbors,
-            BirthNeighbors   = _birthNeighbors,
             FamineEnabled    = _famineEnabled,
             FamineCooldown   = _famineCooldown,
             FamineDuration   = _famineDuration,
@@ -535,6 +820,72 @@
         catch { }
     }
 
+    private async Task OnStartColsChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            _startCols = Math.Clamp(v, 5, 300);
+            if (_autoFitGrid) await RecalcRowsFromCols();
+        }
+    }
+
+    private async Task OnStartRowsChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var v))
+        {
+            _startRows = Math.Clamp(v, 5, 300);
+            if (_autoFitGrid) await RecalcColsFromRows();
+        }
+    }
+
+    private async Task OnAutoFitChanged(ChangeEventArgs e)
+    {
+        _autoFitGrid = e.Value is true;
+        if (_autoFitGrid) await RecalcRowsFromCols();
+    }
+
+    private void OnPopPercentChange(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var pct))
+        {
+            _popPercent = Math.Clamp(pct, 0, 100);
+            _popPercentStr = _popPercent.ToString("F1");
+            _popCount = (int)Math.Round(_popPercent / 100.0 * _startCols * _startRows);
+        }
+    }
+
+    private void OnPopCountChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var cnt))
+        {
+            int total = _startCols * _startRows;
+            _popCount = Math.Clamp(cnt, 0, total);
+            _popPercent = total > 0 ? Math.Round(_popCount * 100.0 / total, 1) : 0;
+            _popPercentStr = _popPercent.ToString("F1");
+        }
+    }
+
+    private void OnRandomLifeThresholdPctChange(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var pct))
+        {
+            _randomLifeThresholdPct = Math.Clamp(pct, 0, 100);
+            _randomLifeThresholdPctStr = _randomLifeThresholdPct.ToString("F1");
+            _randomLifeThresholdCount = (int)Math.Round(_randomLifeThresholdPct / 100.0 * _startCols * _startRows);
+        }
+    }
+
+    private void OnRandomLifeThresholdCountChange(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var cnt))
+        {
+            int total = _startCols * _startRows;
+            _randomLifeThresholdCount = Math.Clamp(cnt, 0, total);
+            _randomLifeThresholdPct = total > 0 ? Math.Round(_randomLifeThresholdCount * 100.0 / total, 1) : 0;
+            _randomLifeThresholdPctStr = _randomLifeThresholdPct.ToString("F1");
+        }
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -548,7 +899,6 @@
                     _timer.Interval = _intervalMs;
                     InitSettings();
                     _model = new Model(_settings);
-                    SnapshotSettingsData(); // prime modal with loaded values before first open
                 }
             }
             catch { }
@@ -832,81 +1182,10 @@
         }
     }
 
-    /// <summary>Copies current applied _* fields into _settingsData so the modal shows live state.</summary>
-    private void SnapshotSettingsData()
+    private void OnWeightChange(string typeName, ChangeEventArgs e)
     {
-        _settingsData.StartCols                       = _startCols;
-        _settingsData.StartRows                       = _startRows;
-        _settingsData.AutoFitGrid                     = _autoFitGrid;
-        _settingsData.MaxGrid                         = _maxGrid;
-        _settingsData.MaxNations                      = _maxNations;
-        _settingsData.StartClusters                   = _startClusters;
-        _settingsData.PopPercent                      = _popPercent;
-        _settingsData.PopPercentStr                   = _popPercentStr;
-        _settingsData.PopCount                        = _popCount;
-        _settingsData.AnimationEnabled                = _animationEnabled;
-        _settingsData.MinNeighbors                    = _minNeighbors;
-        _settingsData.MaxNeighbors                    = _maxNeighbors;
-        _settingsData.BirthNeighbors                  = _birthNeighbors;
-        _settingsData.FamineEnabled                   = _famineEnabled;
-        _settingsData.FamineCooldown                  = _famineCooldown;
-        _settingsData.FamineDuration                  = _famineDuration;
-        _settingsData.FloodEnabled                    = _floodEnabled;
-        _settingsData.RandomLifeEnabled               = _randomLifeEnabled;
-        _settingsData.ReactiveDoctor                  = _reactiveDoctor;
-        _settingsData.RandomLifeThresholdPct          = _randomLifeThresholdPct;
-        _settingsData.RandomLifeThresholdPctStr       = _randomLifeThresholdPctStr;
-        _settingsData.RandomLifeThresholdCount        = _randomLifeThresholdCount;
-        _settingsData.AllowGridExpansion              = _allowGridExpansion;
-        _settingsData.NationsEnabled                  = _nationsEnabled;
-        _settingsData.FailurePopThreshold             = _failurePopThreshold;
-        _settingsData.FailurePopAfterGrowthThreshold  = _failurePopAfterGrowthThreshold;
-        _settingsData.StagnationSteps                 = _stagnationSteps;
-        _settingsData.AutoContinue                    = _autoContinue;
-        _settingsData.SpawnWeights                    = new Dictionary<string, int>(_spawnWeights);
-    }
-
-    /// <summary>Snapshots live _* fields into _settingsData and opens the modal.
-    /// Pass forceTab to override the active tab (e.g. Test Cases forces General tab);
-    /// omit to preserve the currently selected tab.</summary>
-    private void OpenSettings(int? forceTab = null)
-    {
-        SnapshotSettingsData();
-        if (forceTab.HasValue) _settingsTab = forceTab.Value;
-        _showSettings = true;
-    }
-
-    private void SyncFromSettingsData()
-    {
-        _startCols                       = _settingsData.StartCols;
-        _startRows                       = _settingsData.StartRows;
-        _autoFitGrid                     = _settingsData.AutoFitGrid;
-        _maxGrid                         = _settingsData.MaxGrid;
-        _maxNations                      = _settingsData.MaxNations;
-        _startClusters                   = _settingsData.StartClusters;
-        _popPercent                      = _settingsData.PopPercent;
-        _popPercentStr                   = _settingsData.PopPercentStr;
-        _popCount                        = _settingsData.PopCount;
-        _animationEnabled                = _settingsData.AnimationEnabled;
-        _minNeighbors                    = _settingsData.MinNeighbors;
-        _maxNeighbors                    = _settingsData.MaxNeighbors;
-        _birthNeighbors                  = _settingsData.BirthNeighbors;
-        _famineEnabled                   = _settingsData.FamineEnabled;
-        _famineCooldown                  = _settingsData.FamineCooldown;
-        _famineDuration                  = _settingsData.FamineDuration;
-        _floodEnabled                    = _settingsData.FloodEnabled;
-        _randomLifeEnabled               = _settingsData.RandomLifeEnabled;
-        _reactiveDoctor                  = _settingsData.ReactiveDoctor;
-        _randomLifeThresholdPct          = _settingsData.RandomLifeThresholdPct;
-        _randomLifeThresholdPctStr       = _settingsData.RandomLifeThresholdPctStr;
-        _randomLifeThresholdCount        = _settingsData.RandomLifeThresholdCount;
-        _allowGridExpansion              = _settingsData.AllowGridExpansion;
-        _nationsEnabled                  = _settingsData.NationsEnabled;
-        _failurePopThreshold             = _settingsData.FailurePopThreshold;
-        _failurePopAfterGrowthThreshold  = _settingsData.FailurePopAfterGrowthThreshold;
-        _stagnationSteps                 = _settingsData.StagnationSteps;
-        _autoContinue                    = _settingsData.AutoContinue;
-        _spawnWeights                    = new Dictionary<string, int>(_settingsData.SpawnWeights);
+        if (int.TryParse(e.Value?.ToString(), out var v))
+            _spawnWeights[typeName] = v;
     }
 
     private void ApplyTestCase()
@@ -935,12 +1214,12 @@
         }
         // Close test-cases modal and open settings so the user can inspect / tweak before running.
         _showTestCases = false;
-        OpenSettings(forceTab: 0);
+        _settingsTab   = 0;
+        _showSettings  = true;
     }
 
     private async Task ApplyAndRestart()
     {
-        SyncFromSettingsData();
         _timer.Stop();
         _running = false;
         _showSettings      = false;
@@ -1030,7 +1309,6 @@
         _animationEnabled = true;
         _minNeighbors     = 2;
         _maxNeighbors     = 3;
-        _birthNeighbors   = 3;
         _famineEnabled    = true;
         _famineCooldown   = 15;
         _famineDuration   = 10;
@@ -1049,9 +1327,6 @@
         var defaultSettings = new SimulationSettings();
         _spawnWeights = defaultSettings.SpawnWeights
             .ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
-
-        // Sync defaults back into _settingsData so the open modal refreshes without changing tab.
-        SnapshotSettingsData();
 
         _timer.Interval = _intervalMs;
         InitSettings();
