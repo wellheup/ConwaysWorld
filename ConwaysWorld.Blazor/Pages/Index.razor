@@ -32,7 +32,6 @@
     <span style="color:#888;font-size:11px">ms</span>
 
     <button @onclick="() => _showSettings = true">⚙ Settings</button>
-    <button @onclick="() => { _showTestCases = true; _selectedTestCase = 0; }">🧪 Test Cases</button>
     <button title="Toggle fullscreen (F)" @onclick="ToggleFullscreen">@(_isFullscreen ? "⊡ Exit Full" : "⛶ Full")</button>
     <button class="@(_editMode ? "cw-toolbar-edit-active" : "")" title="Toggle edit mode (E)" @onclick="ToggleEditMode">✏ Edit</button>
     <span style="margin-left:auto;color:#666;font-size:11px">
@@ -414,52 +413,46 @@
                         }
                     </div>
                 }
+                else if (_settingsTab == 4)
+                {
+                    <div class="cw-tc-list">
+                        @for (int i = 0; i < SimulationTestCases.All.Count; i++)
+                        {
+                            var tc = SimulationTestCases.All[i];
+                            var idx = i;
+                            <div class="cw-tc-row @(_selectedTestCase == idx ? "cw-tc-selected" : "")"
+                                 @onclick="() => _selectedTestCase = idx">
+                                <div class="cw-tc-name">@tc.Name</div>
+                                <div class="cw-tc-desc">@tc.Description</div>
+                                @if (_selectedTestCase == idx)
+                                {
+                                    <div class="cw-tc-detail">
+                                        Grid @tc.Settings.StartColumns×@tc.Settings.StartRows &nbsp;·&nbsp;
+                                        Max @tc.Settings.MaxGridSize &nbsp;·&nbsp;
+                                        Nations @tc.Settings.MaxNations &nbsp;·&nbsp;
+                                        Clusters @tc.Settings.StartClusters &nbsp;·&nbsp;
+                                        Pop @tc.Settings.PopValue
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
             </div>
-            @if (_settingsTab != 3)
+            @if (_settingsTab != 3 && _settingsTab != 4)
             {
                 <div class="cw-modal-footer">
                     <button class="cw-apply-btn" style="flex:1" @onclick="ApplyAndRestart">Apply & Restart</button>
                     <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="ResetToDefaults">Reset Defaults</button>
                 </div>
             }
-        </div>
-    </div>
-}
-
-@if (_showTestCases)
-{
-    <div class="cw-modal-overlay" @onclick="() => _showTestCases = false">
-        <div class="cw-modal cw-tc-modal" @onclick:stopPropagation>
-            <div class="cw-modal-header">
-                <span>Test Cases</span>
-                <button class="cw-modal-close" @onclick="() => _showTestCases = false">✕</button>
-            </div>
-            <div class="cw-tc-list">
-                @for (int i = 0; i < SimulationTestCases.All.Count; i++)
-                {
-                    var tc = SimulationTestCases.All[i];
-                    var idx = i;
-                    <div class="cw-tc-row @(_selectedTestCase == idx ? "cw-tc-selected" : "")"
-                         @onclick="() => _selectedTestCase = idx">
-                        <div class="cw-tc-name">@tc.Name</div>
-                        <div class="cw-tc-desc">@tc.Description</div>
-                        @if (_selectedTestCase == idx)
-                        {
-                            <div class="cw-tc-detail">
-                                Grid @tc.Settings.StartColumns×@tc.Settings.StartRows &nbsp;·&nbsp;
-                                Max @tc.Settings.MaxGridSize &nbsp;·&nbsp;
-                                Nations @tc.Settings.MaxNations &nbsp;·&nbsp;
-                                Clusters @tc.Settings.StartClusters &nbsp;·&nbsp;
-                                Pop @tc.Settings.PopValue
-                            </div>
-                        }
-                    </div>
-                }
-            </div>
-            <div class="cw-modal-footer">
-                <button class="cw-apply-btn" style="flex:1" @onclick="ApplyTestCase">Apply to Settings</button>
-                <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="() => _showTestCases = false">Cancel</button>
-            </div>
+            else if (_settingsTab == 4)
+            {
+                <div class="cw-modal-footer">
+                    <button class="cw-apply-btn" style="flex:1" @onclick="ApplyTestCase">Apply to Settings</button>
+                    <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="() => _showSettings = false">Cancel</button>
+                </div>
+            }
         </div>
     </div>
 }
@@ -473,7 +466,6 @@
     private bool _toolbarVisible = true;
     private bool _sidebarVisible = true;
     private bool _showSettings = false;
-    private bool _showTestCases = false;
     private bool _isFullscreen = false;
     private int _selectedTestCase = 0;
     private int _settingsTab = 0;
@@ -1212,9 +1204,8 @@
             if (_spawnWeights.ContainsKey(key))
                 _spawnWeights[key] = kv.Value;
         }
-        // Close test-cases modal and open settings so the user can inspect / tweak before running.
-        _showTestCases = false;
-        _settingsTab   = 0;
+        // Switch to General tab so the user can inspect / tweak before running.
+        _settingsTab = 0;
         _showSettings  = true;
     }
 
@@ -1420,7 +1411,6 @@
             return;
         }
         if (_showSettings) _showSettings = false;
-        else if (_showTestCases) _showTestCases = false;
         else if (_showFailurePopup) _showFailurePopup = false;
         InvokeAsync(StateHasChanged);
     }
