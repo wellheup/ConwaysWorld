@@ -1,6 +1,6 @@
 ---
 name: Model.cs LFS restore
-description: Model.cs is Git LFS tracked and silently goes empty after checkpoints/restores; how to recover it from the local LFS cache.
+description: LFS fully removed from repo (Jul 2026). Kept for historical reference on recovery procedure.
 ---
 
 ## Rule
