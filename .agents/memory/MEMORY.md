@@ -3,4 +3,4 @@
 - [Breed method grid update](conways-breed-grid.md) — Cell.Breed() must take Cell[,] parameter and write back to grid; local list assignment doesn't update the grid
 - [Simulation library conventions](sim-library-conventions.md) — tab indentation, XML doc comments on all public members; pure C# no framework deps.
 - [Unity cleanup complete](unity-cleanup.md) — all Unity files removed (Assets/, ProjectSettings/, obj/, bin/, ConwaysWorld.csproj, README.txt); index.html + server.js kept as JS reference per user preference.
-- [Model.cs LFS restore](model-lfs-restore.md) — LFS fully removed Jul 2026 (.gitattributes cleared); historical recovery notes kept in topic file.
+- [Blazor partial class usings](blazor-partial-usings.md) — .cs partial files don't inherit _Imports.razor usings; each needs explicit using for ConwaysWorld.Simulation, Microsoft.AspNetCore.Components, Microsoft.JSInterop.

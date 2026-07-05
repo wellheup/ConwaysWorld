@@ -35,9 +35,9 @@ public partial class Index
 	private bool _editMoveMode = false;
 
 	private record EditSnapshot(
-			int Col, int Row,
-			bool OldAlive, CellType OldType, int OldNat,
-			bool NewAlive, CellType NewType, int NewNat);
+					int Col, int Row,
+					bool OldAlive, CellType OldType, int OldNat,
+					bool NewAlive, CellType NewType, int NewNat);
 
 	private readonly Dictionary<(int, int), EditSnapshot> _currentStrokeCells = new();
 	private const int MaxUndoHistory = 200;
@@ -45,13 +45,13 @@ public partial class Index
 	private readonly LinkedList<List<EditSnapshot>> _redoStack = new();
 
 	private static readonly HashSet<CellType> NationCapableTypes = new()
-		{
-				CellType.Basic, CellType.Immortal, CellType.Diseased, CellType.Plague,
-				CellType.Doctor, CellType.Warrior, CellType.Hunter, CellType.Diplomat,
-				CellType.King, CellType.Rebel, CellType.Revolutionary, CellType.Voyager,
-				CellType.Wayfinder, CellType.Spy, CellType.Soldier, CellType.Conquistador,
-				CellType.Traveler, CellType.Explorer,
-		};
+				{
+								CellType.Basic, CellType.Immortal, CellType.Diseased, CellType.Plague,
+								CellType.Doctor, CellType.Warrior, CellType.Hunter, CellType.Diplomat,
+								CellType.King, CellType.Rebel, CellType.Revolutionary, CellType.Voyager,
+								CellType.Spy, CellType.Soldier, CellType.Conquistador,
+								CellType.Traveler, CellType.Explorer,
+				};
 
 	// ── Display state ──────────────────────────────────────────────────────────────
 
@@ -71,53 +71,53 @@ public partial class Index
 
 	private static readonly (string Name, string Desc)[] CellRules =
 	{
-				("Basic",         "Standard Conway cells. 25% chance of immune tag. 1% immaculate spawn chance."),
-				("Immortal",      "Lives forever unless isolated for more than 8 steps. Immune to disease."),
-				("Diseased",      "Spreads a unique disease strain to neighbours. Dies after a 3-step countdown."),
-				("Plague",        "Like Diseased but with 40% higher transmission rate."),
-				("Traveler",      "Moves each step. Dies if isolated >3 steps or surrounded >3 steps."),
-				("Explorer",      "Like Traveler. Triggers grid expansion when reaching an edge."),
-				("Doctor",        "Cures nearby disease and stamps vaccination markers. Survives while active."),
-				("Warrior",       "Fights foreign Diseased/Plague within range 2. Also hunts Saviors/Followers of any nation. Demotes to Basic after 3 idle steps."),
-				("Hunter",        "Hunts Immortals and Kings within range 5. Also hunts Saviors/Followers of any nation. Demotes to Basic after 3 idle steps."),
-				("Bomber",        "Detonates at age 2, killing all cells within a 2-cell radius."),
-				("Diplomat",      "Elected from large nations. Travels to foreign nations and converts adjacent cells."),
-				("King",          "Crowned from nations with 5+ citizens. Marks nearby Basic cells with toWar. Death triggers a neutralisation cooldown for distant cells."),
-				("Rebel",         "Short-lived diplomat variant with 3× conversion rate. Created by Revolutionaries. Hunted by Warriors and Hunters."),
-				("Revolutionary", "Defects from a dominant nation, founds a rival nation, recruits Warriors and Rebels."),
-				("Voyager",       "Travels to a disconnected foreign nation. On arrival either spawns diplomats and warriors or seeds 4 Plague cells."),
-				("Wayfinder",     "Finds the emptiest grid region and travels there. On arrival spawns 5 Islander cells."),
-				("Islander",      "Nationless. Lives by Conway rules but dies from overcrowding (20+ within 5 tiles). Converts to Barbarian when touched by a nation cell."),
-				("Barbarian",     "Nationless aggressor. Converts adjacent Islanders and kills nearby nation cells. Reverts to Islander when no targets remain."),
-				("Spy",           "Infiltrates enemy territory, seeking the enemy King. Converts displaced cells to Soldiers."),
-				("Soldier",       "Created by Spies and Conquistadors. Kills adjacent enemies; triggers nation-merge check when the last of its wave dies."),
-				("Conquistador",  "Like Voyager but on arrival teleports the nearest 10 home-nation cells to the landing zone and converts them into Soldiers."),
-				("Savior",        "At most one per grid. Flees birth nation toward a foreign nation, converting Basic cells into Followers. Hunted by Warriors/Hunters of all nations."),
-				("Follower",      "Created by a Savior. Follows the Savior's broadcast direction. Reverts to Basic after 4 consecutive blocked steps. Hunted by Warriors/Hunters of all nations."),
-				("Zealot",        "Created when a Savior dies. Attacks any adjacent living cell regardless of nation."),
-				("Irradiated",    "Permanent hazard tile. Kills any cell that moves onto it. Not counted as living."),
-				("PlagueRat",     "Nationless roamer that spreads a unique plague strain. Hunted by Warriors and Hunters."),
-				("Zombie",        "Resurrected by a Necromancer. Immune to Conway rules, disease, and old age. Invisible to non-zombie Conway counts. Permanently destroyed by Doctor/Warrior/Hunter."),
-				("Necromancer",   "Spawns randomly. Resurrects the nearest 3 dead cells as zombies on spawn, then 1 more each step. Survives while ≥2 zombies are alive."),
-				("Mutant",        "Randomly transforms into another cell type each step."),
-		};
+								("Basic",         "Standard Conway cells. 25% chance of immune tag. 1% immaculate spawn chance."),
+								("Immortal",      "Lives forever unless isolated for more than 8 steps. Immune to disease."),
+								("Diseased",      "Spreads a unique disease strain to neighbours. Dies after a 3-step countdown."),
+								("Plague",        "Like Diseased but with 40% higher transmission rate."),
+								("Traveler",      "Moves each step. Dies if isolated >3 steps or surrounded >3 steps."),
+								("Explorer",      "Like Traveler. Triggers grid expansion when reaching an edge."),
+								("Doctor",        "Cures nearby disease and stamps vaccination markers. Survives while active."),
+								("Warrior",       "Fights foreign Diseased/Plague within range 2. Also hunts Saviors/Followers of any nation. Demotes to Basic after 3 idle steps."),
+								("Hunter",        "Hunts Immortals and Kings within range 5. Also hunts Saviors/Followers of any nation. Demotes to Basic after 3 idle steps."),
+								("Bomber",        "Detonates at age 2, killing all cells within a 2-cell radius."),
+								("Diplomat",      "Elected from large nations. Travels to foreign nations and converts adjacent cells."),
+								("King",          "Crowned from nations with 5+ citizens. Marks nearby Basic cells with toWar. Death triggers a neutralisation cooldown for distant cells."),
+								("Rebel",         "Short-lived diplomat variant with 3× conversion rate. Created by Revolutionaries. Hunted by Warriors and Hunters."),
+								("Revolutionary", "Defects from a dominant nation, founds a rival nation, recruits Warriors and Rebels."),
+								("Voyager",       "Travels to a disconnected foreign nation. On arrival either spawns diplomats and warriors or seeds 4 Plague cells."),
+								("Wayfinder",     "Finds the emptiest grid region and travels there. On arrival spawns 5 Islander cells."),
+								("Islander",      "Nationless. Lives by Conway rules but dies from overcrowding (20+ within 5 tiles). Converts to Barbarian when touched by a nation cell."),
+								("Barbarian",     "Nationless aggressor. Converts adjacent Islanders and kills nearby nation cells. Reverts to Islander when no targets remain."),
+								("Spy",           "Infiltrates enemy territory, seeking the enemy King. Converts displaced cells to Soldiers."),
+								("Soldier",       "Created by Spies and Conquistadors. Kills adjacent enemies; triggers nation-merge check when the last of its wave dies."),
+								("Conquistador",  "Like Voyager but on arrival teleports the nearest 10 home-nation cells to the landing zone and converts them into Soldiers."),
+								("Savior",        "At most one per grid. Flees birth nation toward a foreign nation, converting Basic cells into Followers. Hunted by Warriors/Hunters of all nations."),
+								("Follower",      "Created by a Savior. Follows the Savior's broadcast direction. Reverts to Basic after 4 consecutive blocked steps. Hunted by Warriors/Hunters of all nations."),
+								("Zealot",        "Created when a Savior dies. Attacks any adjacent living cell regardless of nation."),
+								("Irradiated",    "Permanent hazard tile. Kills any cell that moves onto it. Not counted as living."),
+								("PlagueRat",     "Nationless roamer that spreads a unique plague strain. Hunted by Warriors and Hunters."),
+								("Zombie",        "Resurrected by a Necromancer. Immune to Conway rules, disease, and old age. Invisible to non-zombie Conway counts. Permanently destroyed by Doctor/Warrior/Hunter."),
+								("Necromancer",   "Spawns randomly. Resurrects the nearest 3 dead cells as zombies on spawn, then 1 more each step. Survives while ≥2 zombies are alive."),
+								("Mutant",        "Randomly transforms into another cell type each step."),
+				};
 
 	private static readonly Dictionary<string, string> CellDescriptions =
-			CellRules.ToDictionary(r => r.Name, r => r.Desc);
+					CellRules.ToDictionary(r => r.Name, r => r.Desc);
 
 	private static readonly (string Label, string Desc)[] SimulationEvents =
 	{
-				("Nation Formation",            "Cells inherit nationality from living neighbours. The first live cell in an area seeds a new nation."),
-				("King Crowning",               "A nation with 5+ citizens may crown a King, which marks nearby Basic cells with toWar to promote them to Warriors."),
-				("King-Distance Neutralisation","Basic cells further than (columns+rows)/3 from their King lose nationality and gain a 3-step neutral cooldown before they can rejoin any nation."),
-				("Diplomat Election",           "Large nations elect a Diplomat that travels to the nearest foreign nation and converts adjacent cells to its own nationality."),
-				("Revolutionary Defection",     "When one nation becomes too dominant, a member may defect and become a Revolutionary, founding a rival nation and recruiting Rebels and Warriors."),
-				("Famine",                      "Periodically kills cells in a random grid quadrant, simulating resource scarcity. Controlled by the Famine Cooldown and Famine Duration settings."),
-				("Flood",                       "Periodically wipes the outer border ring of the grid, separating nation clusters and resetting expansion pressure."),
-				("Random Life Injection",       "When population falls below the injection threshold, random cells are spawned to prevent total extinction. Threshold is set by % or absolute count."),
-				("Grid Expansion",              "Explorer cells trigger the grid to grow when they reach an edge. Growth continues up to the Max Grid Size limit."),
-				("Failure & Auto-Restart",      "The simulation ends (or auto-restarts) on: full extinction; population below Min Pop Threshold; population collapse after post-growth; or N-step stagnation."),
-		};
+								("Nation Formation",            "Cells inherit nationality from living neighbours. The first live cell in an area seeds a new nation."),
+								("King Crowning",               "A nation with 5+ citizens may crown a King, which marks nearby Basic cells with toWar to promote them to Warriors."),
+								("King-Distance Neutralisation","Basic cells further than (columns+rows)/3 from their King lose nationality and gain a 3-step neutral cooldown before they can rejoin any nation."),
+								("Diplomat Election",           "Large nations elect a Diplomat that travels to the nearest foreign nation and converts adjacent cells to its own nationality."),
+								("Revolutionary Defection",     "When one nation becomes too dominant, a member may defect and become a Revolutionary, founding a rival nation and recruiting Rebels and Warriors."),
+								("Famine",                      "Periodically kills cells in a random grid quadrant, simulating resource scarcity. Controlled by the Famine Cooldown and Famine Duration settings."),
+								("Flood",                       "Periodically wipes the outer border ring of the grid, separating nation clusters and resetting expansion pressure."),
+								("Random Life Injection",       "When population falls below the injection threshold, random cells are spawned to prevent total extinction. Threshold is set by % or absolute count."),
+								("Grid Expansion",              "Explorer cells trigger the grid to grow when they reach an edge. Growth continues up to the Max Grid Size limit."),
+								("Failure & Auto-Restart",      "The simulation ends (or auto-restarts) on: full extinction; population below Min Pop Threshold; population collapse after post-growth; or N-step stagnation."),
+				};
 
 	// ── Simulation settings fields ────────────────────────────────────────────────
 
@@ -159,21 +159,21 @@ public partial class Index
 
 	private static readonly string[] TypeNames =
 	{
-				"Dead","Basic","Immortal","Diseased","Plague",
-				"Traveler","Explorer","Doctor","Warrior","Hunter",
-				"Bomber","Diplomat","King","Rebel","Revolutionary","Voyager",
-				"Wayfinder","Islander","Barbarian","Spy","Soldier","Conquistador",
-				"Savior","Follower","Zealot","Zombie","Necromancer","Irradiated","PlagueRat","Mutant"
-		};
+								"Dead","Basic","Immortal","Diseased","Plague",
+								"Traveler","Explorer","Doctor","Warrior","Hunter",
+								"Bomber","Diplomat","King","Rebel","Revolutionary","Voyager",
+								"Wayfinder","Islander","Barbarian","Spy","Soldier","Conquistador",
+								"Savior","Follower","Zealot","Zombie","Necromancer","Irradiated","PlagueRat","Mutant"
+				};
 
 	private static readonly string[] TypeColors =
 	{
-				"#111","#e8e8e8","#e0c060","#7a2020","#c01010",
-				"#4090d0","#20c0e0","#e050a0","#d08020","#c04040",
-				"#e0a000","#a060e0","#f0d000","#ff5533","#9b1a4a","#00d4aa",
-				"#1e90ff","#c8a040","#bb2200","#3a3a5a","#5a9e20","#c87800",
-				"#ffffff","#b0e0ff","#ff4400","#111111","#111111","#55ff00","#8b2020","#cc44ff"
-		};
+								"#111","#e8e8e8","#e0c060","#7a2020","#c01010",
+								"#4090d0","#20c0e0","#e050a0","#d08020","#c04040",
+								"#e0a000","#a060e0","#f0d000","#ff5533","#9b1a4a","#00d4aa",
+								"#1e90ff","#c8a040","#bb2200","#3a3a5a","#5a9e20","#c87800",
+								"#ffffff","#b0e0ff","#ff4400","#111111","#111111","#55ff00","#8b2020","#cc44ff"
+				};
 
 	private static readonly System.Random _uiRandom = new();
 
@@ -219,7 +219,7 @@ public partial class Index
 	{
 		var defaultSettings = new SimulationSettings();
 		_spawnWeights = defaultSettings.SpawnWeights
-				.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
+						.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
 		InitSettings();
 		_model = new Model(_settings);
 		_timer = new System.Timers.Timer(_intervalMs);
@@ -246,11 +246,11 @@ public partial class Index
 
 			_dotNetRef = DotNetObjectReference.Create(this);
 			await JS.InvokeVoidAsync("ConwaysInterop.init",
-					"sim-canvas",
-					_model.Columns,
-					_model.Rows,
-					18,
-					_dotNetRef);
+							"sim-canvas",
+							_model.Columns,
+							_model.Rows,
+							18,
+							_dotNetRef);
 			_canvasReady = true;
 			await JS.InvokeVoidAsync("ConwaysInterop.watchToolbarHeight");
 			await RenderFrame();
@@ -404,8 +404,8 @@ public partial class Index
 			}
 
 		var moves = _model.PendingMoves
-				.Select(m => new { fromCol = m.FromCol, fromRow = m.FromRow, toCol = m.ToCol, toRow = m.ToRow, type = m.CellType, nat = m.Nationality })
-				.ToList<object>();
+						.Select(m => new { fromCol = m.FromCol, fromRow = m.FromRow, toCol = m.ToCol, toRow = m.ToRow, type = m.CellType, nat = m.Nationality })
+						.ToList<object>();
 
 		var births = new List<object>();
 		var deaths = new List<object>();
@@ -422,9 +422,9 @@ public partial class Index
 				var (col, row) = kv.Key;
 				var (type, nat) = kv.Value;
 				if (col < c && row < r
-						&& !grid[col, row].IsAlive
-						&& !moveSrcSet.Contains((col, row))
-						&& !moveDstSet.Contains((col, row)))
+								&& !grid[col, row].IsAlive
+								&& !moveSrcSet.Contains((col, row))
+								&& !moveDstSet.Contains((col, row)))
 				{
 					bool isEpic = type == (int)CellType.King || type == (int)CellType.Immortal;
 					if (isEpic)
@@ -439,15 +439,15 @@ public partial class Index
 				{
 					var cell = grid[col, row];
 					if (cell.IsAlive
-							&& !_prevCellMap.ContainsKey((col, row))
-							&& !moveSrcSet.Contains((col, row))
-							&& !moveDstSet.Contains((col, row)))
+									&& !_prevCellMap.ContainsKey((col, row))
+									&& !moveSrcSet.Contains((col, row))
+									&& !moveDstSet.Contains((col, row)))
 					{
 						births.Add(new { col, row, type = (int)cell.CellType, nat = cell.Nationality });
 					}
 					if (cell.IsAlive && cell.CellType == CellType.King
-							&& _prevCellMap.TryGetValue((col, row), out var prev)
-							&& prev.type != (int)CellType.King)
+									&& _prevCellMap.TryGetValue((col, row), out var prev)
+									&& prev.type != (int)CellType.King)
 					{
 						coronations.Add(new { col, row, type = (int)cell.CellType, nat = cell.Nationality });
 					}
@@ -459,9 +459,9 @@ public partial class Index
 		var famine = new { active = _model.FamineActive, quadrant = _model.FamineQuadrant };
 		var flood = new { active = _model.FloodActive };
 		await JS.InvokeVoidAsync("ConwaysInterop.renderFrame",
-				cells, nationColors, liveNationIndices, c, r,
-				moves, births, deaths, epicDeaths, coronations,
-				_animationEnabled, _intervalMs, famine, flood);
+						cells, nationColors, liveNationIndices, c, r,
+						moves, births, deaths, epicDeaths, coronations,
+						_animationEnabled, _intervalMs, famine, flood);
 	}
 
 	private void UpdateTypeCounts()
@@ -474,10 +474,10 @@ public partial class Index
 					counts[(int)grid[col, row].CellType]++;
 
 		_typeCounts = Enumerable.Range(1, TypeNames.Length - 1)
-				.Where(i => counts[i] > 0 || !_spawnWeights.TryGetValue(TypeNames[i], out var w) || w > 0)
-				.Select(i => (TypeNames[i], TypeColors[i], counts[i]))
-				.OrderBy(t => t.Item1)
-				.ToList();
+						.Where(i => counts[i] > 0 || !_spawnWeights.TryGetValue(TypeNames[i], out var w) || w > 0)
+						.Select(i => (TypeNames[i], TypeColors[i], counts[i]))
+						.OrderBy(t => t.Item1)
+						.ToList();
 	}
 
 	// ── Dispose ───────────────────────────────────────────────────────────────────
