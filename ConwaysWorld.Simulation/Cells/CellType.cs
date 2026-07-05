@@ -56,31 +56,59 @@ public enum CellType
 	/// <summary>Defects from a dominant nation, founds a rival nation, and recruits Warriors and Rebels from the old homeland.</summary>
 	Revolutionary,
 
-	/// <summary>Travels across open space to reach a disconnected foreign nation; on arrival either spawns diplomats and warriors (becoming an Explorer) or turns into Plague and seeds four Plague cells.</summary>
+	/// <summary>
+	/// Travels across open space to a disconnected foreign nation; on arrival either spawns
+	/// diplomats and warriors (becoming an Explorer) or seeds four Plague cells.
+	/// </summary>
 	Voyager,
 
-	/// <summary>Locates the emptiest region of the grid and travels toward it; on arrival spawns five Islander cells.</summary>
+	/// <summary>
+	/// Locates the emptiest region of the grid and travels toward it;
+	/// on arrival spawns five Islander cells.
+	/// </summary>
 	Wayfinder,
 
-	/// <summary>Nationless cell that lives by standard Conway rules but dies from crowding (20+ cells within 5 tiles). Converts to Barbarian when touched by a nation cell.</summary>
+	/// <summary>
+	/// Nationless cell that lives by standard Conway rules but dies from crowding
+	/// (20+ cells within 5 tiles). Converts to Barbarian when touched by a nation cell.
+	/// </summary>
 	Islander,
 
-	/// <summary>Nationless aggressor spawned from Islanders. Converts adjacent Islanders and kills nearby nation cells each step; reverts to Islander when no targets remain.</summary>
+	/// <summary>
+	/// Nationless aggressor spawned from Islanders. Converts adjacent Islanders and kills
+	/// nearby nation cells each step; reverts to Islander when no targets remain.
+	/// </summary>
 	Barbarian,
 
-	/// <summary>Infiltrates enemy territory; belongs to a minority nation; seeks the enemy King by swapping through living cells, converting each displaced cell into a Soldier.</summary>
+	/// <summary>
+	/// Infiltrates enemy territory from a minority nation; seeks the enemy King by swapping
+	/// through living cells, converting each displaced cell into a Soldier.
+	/// </summary>
 	Spy,
 
-	/// <summary>Combat cell created by Spies and Conquistadors; kills adjacent enemies and advances toward distant ones; triggers a nation-merge check when the last of its wave dies.</summary>
+	/// <summary>
+	/// Combat cell created by Spies and Conquistadors; kills adjacent enemies and advances
+	/// toward distant ones; triggers a nation-merge check when the last of its wave dies.
+	/// </summary>
 	Soldier,
 
-	/// <summary>Like Voyager but on arrival teleports the nearest 10 home-nation cells to the landing zone and converts them (and itself) into Soldiers.</summary>
+	/// <summary>
+	/// Like Voyager but on arrival teleports the nearest 10 home-nation cells to the
+	/// landing zone and converts them (and itself) into Soldiers.
+	/// </summary>
 	Conquistador,
 
-	/// <summary>At most one per grid. Flees its birth nation toward a random foreign nation, converting adjacent Basic cells into Followers. On reaching the target King: 50% assimilates (becomes Immortal, Followers become Basic in target nation) or 50% dies (Followers become Zealots).</summary>
+	/// <summary>
+	/// At most one per grid. Flees its birth nation toward a random foreign nation,
+	/// converting adjacent Basic cells into Followers. On reaching the target King:
+	/// 50 % assimilates (→ Immortal, Followers → Basic) or 50 % dies (Followers → Zealots).
+	/// </summary>
 	Savior,
 
-	/// <summary>Created by a Savior. Waits 3 steps then follows the Savior's last broadcast direction. Reverts to Basic after 4 consecutive blocked steps. Immune to Conway crowding/isolation.</summary>
+	/// <summary>
+	/// Created by a Savior. Waits 3 steps then follows the Savior's last broadcast direction.
+	/// Reverts to Basic after 4 consecutive blocked steps. Immune to Conway crowding/isolation.
+	/// </summary>
 	Follower,
 
 	/// <summary>Created when a Savior dies. Attacks any adjacent cell regardless of nation. Like a Soldier but with no nation allegiance checks.</summary>
@@ -129,20 +157,28 @@ public enum CellType
 - Add to Conway's world an event that uses a "find the largest island" algorithm
 - I need better error logging for when the simulation fails
 - it looks like the simulation does not wrap around the edges of the grid when spawning initial population clusters
-- I ended up with 360 wayfinders in a population of 14000 all clusterd in a grid without spaces, which is way too many. I need a way for wayfinders to die when they are too close to neighbors
--I notice that there is no entry in the spawn weights to represent the number of empty cells which will be on the grid at simulation start, but I would like there to be. The value should not be editable, but present for better understanding of the scenario being designed.
--I'd like to add a setting called "reactive doctors" which, when toggled on, will cause the spawn weight for doctor cells to increase by 1 for every 30 diseased cells present on the grid.
--Make the rules descriptions for each cell more thorough including how long they live, how their crowding factors lead to death or breeding. Normalize the numbers in rules descriptions as well as hover descriptions so that they use integers not strings for numbers.
+- I ended up with 360 wayfinders in a population of 14000 all clusterd in a grid without spaces, which is way too many. I need a way for wayfinders to die
+  when they are too close to neighbors
+-I notice that there is no entry in the spawn weights to represent the number of empty cells which will be on the grid at simulation start, but I would like
+  there to be. The value should not be editable, but present for better understanding of the scenario being designed.
+-I'd like to add a setting called "reactive doctors" which, when toggled on, will cause the spawn weight for doctor cells to increase by 1 for every 30
+  diseased cells present on the grid.
+-Make the rules descriptions for each cell more thorough including how long they live, how their crowding factors lead to death or breeding. Normalize the
+  numbers in rules descriptions as well as hover descriptions so that they use integers not strings for numbers.
 -organize the cell lists in the rules, settings, and cell types to be alphabetical.
 -adjust so that diplomats only spawn in nations with 25 cells or more in population
 -for cell hover text descriptions, make the descriptions multi-line and no wider than the current width of the Cell types panel.
--add a setting for the grid to adjust based on the dimensions of the window it is in. If this setting is set to true, which it should be by default, then set the either the start columns value or the start rows value to -1, depending on which is smaller in the window dimensions, height or width. Then, wi base the dimensions of the grid off of the remaining row or column value and fill the rest of the grid to fit the space available.
+-add a setting for the grid to adjust based on the dimensions of the window it is in. If this setting is set to true, which it should be by default, then set
+  the either the start columns value or the start rows value to -1, depending on which is smaller in the window dimensions, height or width. Then, wi base the
+  dimensions of the grid off of the remaining row or column value and fill the rest of the grid to fit the space available.
 -ask clarifying questions as needed
-- add to the plan that we need to change the wayfinder cell so that instead of checking for empty spots at intervals, just check for one at spawn, then travel towards it, but when reaching within a 5-tile chebyshev neighbourhood of that destination, check if that destination still has no population in the 5-tile radius. If there are cells there, then set a new destionation, otherwise proceed with the arrival behavior when reaching the destination
--	 teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
-		- god? (effects every living cell on the board in some way)
-		- natural disasters? opportunity for largest island?
+- add to the plan that we need to change the wayfinder cell so that instead of checking for empty spots at intervals, just check for one at spawn, then travel
+  towards it, but when reaching within a 5-tile chebyshev neighbourhood of that destination, check if that destination still has no population in the 5-tile
+  radius. If there are cells there, then set a new destionation, otherwise proceed with the arrival behavior when reaching the destination
+-        teacher/ elder (Random chance to promote adjacent basic_cells to a new type)
+                - god? (effects every living cell on the board in some way)
+                - natural disasters? opportunity for largest island?
 - utilize a Number of Islands and a Max/Min size of an island algorithm for some cell type
 - make doctors more aggressive. Maybe make range a modifiable number in ConwaysWorld? Make this a setting called responsive doctors, which 
-	will modulate doctor spawn weight depending on the number of diseases on the grid
+        will modulate doctor spawn weight depending on the number of diseases on the grid
 */

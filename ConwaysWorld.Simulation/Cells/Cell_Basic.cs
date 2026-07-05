@@ -7,8 +7,12 @@ namespace ConwaysWorld.Simulation;
 /// <para>
 /// Spawn-time variants (applied by <see cref="Cell_Generator.CreateBasic"/>):
 /// <list type="bullet">
-///   <item><term>immune (25 % chance)</term><description>All disease conditions (<c>d_</c>/<c>p_</c>) are stripped each step — the cell can never be infected.</description></item>
-///   <item><term>immaculate (1 % chance)</term><description>Triggers <see cref="Cell.Immaculate"/> once: the cell and two axis-aligned neighbours are forced alive regardless of Conway rules.</description></item>
+///   <item><term>immune (25 % chance)</term>
+///   <description>All disease conditions (<c>d_</c>/<c>p_</c>) are stripped each step —
+///   the cell can never be infected.</description></item>
+///   <item><term>immaculate (1 % chance)</term>
+///   <description>Triggers <see cref="Cell.Immaculate"/> once: the cell and two
+///   axis-aligned neighbours are forced alive regardless of Conway rules.</description></item>
 /// </list>
 /// Basic cells can be promoted to <see cref="CellType.Warrior"/> by a neighbouring King,
 /// and are used as the replacement type when Warriors or Hunters demote after 3 idle steps.

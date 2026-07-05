@@ -2,12 +2,17 @@
   "compilerOptions": {
     "target": "ES6",
     "lib": ["ES6", "DOM"],
-    "module": "ES2015",
+    "module": "None",
     "strict": true,
-    "outDir": "./wwwroot",
-    "rootDir": "./ts",
+    "outFile": "./wwwroot/canvas-interop.js",
     "declaration": false,
     "removeComments": false
   },
-  "include": ["./ts/**/*.ts"]
+  "files": [
+    "./ts/canvas-types.ts",
+    "./ts/canvas-state.ts",
+    "./ts/canvas-draw.ts",
+    "./ts/canvas-events.ts",
+    "./ts/canvas-interop.ts"
+  ]
 }

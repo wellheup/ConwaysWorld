@@ -62,7 +62,7 @@ public partial class Index
 			{
 				_popCount = Math.Clamp(s.PopCount, 0, _startCols * _startRows);
 				double pct = _startCols * _startRows > 0
-								? Math.Round(_popCount * 100.0 / (_startCols * _startRows), 1) : 0;
+												? Math.Round(_popCount * 100.0 / (_startCols * _startRows), 1) : 0;
 				_popPercent = pct;
 				_popPercentStr = pct.ToString("F1");
 			}
@@ -385,5 +385,16 @@ public partial class Index
 		await RenderFrame();
 		CapturePrevCells();
 		UpdateTypeCounts();
+	}
+
+	private void OnRandomLifeThresholdPctKeyDown(KeyboardEventArgs e)
+	{
+		if (e.Key == "Enter")
+			OnRandomLifeThresholdPctChange(new ChangeEventArgs { Value = _randomLifeThresholdPctStr });
+	}
+	private void OnRandomLifeThresholdCountKeyDown(KeyboardEventArgs e)
+	{
+		if (e.Key == "Enter")
+			OnRandomLifeThresholdCountChange(new ChangeEventArgs { Value = _randomLifeThresholdCount.ToString() });
 	}
 }

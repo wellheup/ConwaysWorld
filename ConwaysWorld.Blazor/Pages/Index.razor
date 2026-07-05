@@ -79,7 +79,8 @@
         }
     </div>
 
-    <button class="cw-sidebar-edge-tab @(_sidebarVisible ? "sidebar-open" : "sidebar-closed")" @onclick="() => _sidebarVisible = !_sidebarVisible">@(_sidebarVisible ? "▶" : "◀")</button>
+    <button class="cw-sidebar-edge-tab @(_sidebarVisible ? "sidebar-open" : "sidebar-closed")"
+            @onclick="() => _sidebarVisible = !_sidebarVisible">@(_sidebarVisible ? "▶" : "◀")</button>
     <div class="cw-sidebar @(!_sidebarVisible ? "cw-collapsed" : "")">
         <div class="cw-sidebar-tabs">
             <button class="cw-sidebar-tab @(_editSidebarTab == 0 ? "active" : "")" @onclick="() => _editSidebarTab = 0">Cell Types</button>
@@ -196,7 +197,8 @@
                 @if (_settingsTab == 0)
                 {
                     <div class="cw-settings-grid">
-                        <div class="cw-field cw-field-full" title="When enabled, editing columns recalculates rows to match the window's aspect ratio, and vice versa. Both remain editable.">
+                        <div class="cw-field cw-field-full"
+                             title="When on, editing columns recalculates rows to match the window aspect ratio, and vice versa.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" checked="@_autoFitGrid" @onchange="OnAutoFitChanged" />
                                 Auto-fit grid to window shape
@@ -210,15 +212,16 @@
                             <label>Start rows @(_autoFitGrid ? "(auto)" : "")</label>
                             <input type="number" min="5" max="300" value="@_startRows" @onchange="OnStartRowsChange" />
                         </div>
-                        <div class="cw-field" title="Maximum grid dimension after expansion. Set to 0 for no limit. The grid grows when Explorer cells reach an edge.">
+                        <div class="cw-field"
+                             title="Maximum grid dimension after expansion. Set to 0 for no limit.">
                             <label>Max grid size (0 = unlimited)</label>
                             <input type="number" min="0" max="500" @bind="_maxGrid" />
                         </div>
-                        <div class="cw-field" title="Maximum number of distinct nations that can coexist (1–20). Kings and Diplomats appear only when multiple nations are active.">
+                        <div class="cw-field" title="Maximum number of distinct nations (1–20). Kings and Diplomats require multiple nations.">
                             <label>Max nations (1–20)</label>
                             <input type="number" min="1" max="20" @bind="_maxNations" />
                         </div>
-                        <div class="cw-field" title="Number of initial cell clusters placed at startup. Set to 0 to use MaxNations ÷ 4 automatically.">
+                        <div class="cw-field" title="Initial cell clusters at startup. Set to 0 to use MaxNations ÷ 4 automatically.">
                             <label>Start clusters (0 = MaxNations ÷ 4)</label>
                             <input type="number" min="0" max="20" @bind="_startClusters" />
                         </div>
@@ -228,7 +231,7 @@
                                 Movement animation
                             </label>
                         </div>
-                        <div class="cw-field cw-field-full" title="How many cells are placed at the start of each run, expressed as a percentage of the grid or a fixed cell count.">
+                        <div class="cw-field cw-field-full" title="Cells placed at startup, as a % of the grid or a fixed count.">
                             <label>Initial population</label>
                             <div class="cw-pop-fields">
                                 <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
@@ -245,27 +248,27 @@
                         </div>
 
                         <h3 class="cw-settings-section">Conway Rules</h3>
-                        <div class="cw-field" title="Minimum live neighbours a cell needs to survive. Cells with fewer neighbours die of solitude. Standard Conway value is 2.">
+                        <div class="cw-field" title="Minimum live neighbours to survive. Fewer → dies of solitude. Standard Conway value: 2.">
                             <label>Min neighbors (survive)</label>
                             <input type="number" min="0" max="7" @bind="_minNeighbors" />
                         </div>
-                        <div class="cw-field" title="Maximum live neighbours a cell can have and still survive. Cells with more neighbours die of overcrowding. Standard Conway value is 3.">
+                        <div class="cw-field" title="Maximum live neighbours to survive. More → dies of overcrowding. Standard Conway value: 3.">
                             <label>Max neighbors (survive)</label>
                             <input type="number" min="0" max="8" @bind="_maxNeighbors" />
                         </div>
-                        <div class="cw-field" title="Exact number of live neighbours an empty cell needs to be born. Default is Min+1. Standard Conway value is 3.">
+                        <div class="cw-field" title="Live neighbours needed for an empty cell to be born. Default: Min+1. Standard Conway: 3.">
                             <label>Birth neighbors (default: Min+1)</label>
                             <input type="number" min="0" max="8" @bind="_birthNeighbors" />
                         </div>
 
                         <h3 class="cw-settings-section">World Events</h3>
-                        <div class="cw-field" title="Periodically kills cells in a random grid quadrant, simulating a food shortage. Controlled by Cooldown and Duration settings below.">
+                        <div class="cw-field" title="Periodically kills cells in a random quadrant. Controlled by Cooldown and Duration settings.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_famineEnabled" />
                                 Enable Famine
                             </label>
                         </div>
-                        <div class="cw-field" title="Periodically wipes the outer border ring of the grid, separating nation clusters and resetting expansion pressure.">
+                        <div class="cw-field" title="Periodically wipes the outer border ring, separating nation clusters.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_floodEnabled" />
                                 Enable Flood
@@ -282,40 +285,40 @@
                                 <input type="number" min="1" max="100" @bind="_famineDuration" />
                             </div>
                         }
-                        <div class="cw-field" title="When population falls below the injection threshold, random cells are spawned to prevent total extinction.">
+                        <div class="cw-field" title="Spawns random cells when population falls below the injection threshold.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_randomLifeEnabled" />
                                 Random Life Injection
                             </label>
                         </div>
-                        <div class="cw-field" title="When Random Life Injection is on, the Doctor spawn weight increases by 1 for every 30 Diseased or Plague cells alive — the simulation spawns more Doctors automatically when disease is rampant.">
+                        <div class="cw-field" title="Doctor spawn weight increases automatically when disease is rampant (1 per 30 Diseased/Plague cells).">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_reactiveDoctor" />
                                 Reactive Doctors
                             </label>
                         </div>
-                        <div class="cw-field cw-field-full" title="Population level (as % of grid or absolute count) below which new random cells are injected.">
+                        <div class="cw-field cw-field-full" title="Population level below which new random cells are injected.">
                             <label>Inject when pop falls below</label>
                             <div class="cw-pop-fields">
                                 <input type="number" class="cw-pop-input" min="0" max="100" step="0.1"
                                        value="@_randomLifeThresholdPct.ToString("F1")"
                                        @onchange="OnRandomLifeThresholdPctChange"
-                                       @onkeydown="@(e => { if (e.Key == "Enter") OnRandomLifeThresholdPctChange(new ChangeEventArgs { Value = _randomLifeThresholdPctStr }); })" />
+                                       @onkeydown="OnRandomLifeThresholdPctKeyDown" />
                                 <span class="cw-pop-sep">%</span>
                                 <input type="number" class="cw-pop-input" min="0" max="@(_startCols * _startRows)"
                                        value="@_randomLifeThresholdCount"
                                        @onchange="OnRandomLifeThresholdCountChange"
-                                       @onkeydown="@(e => { if (e.Key == "Enter") OnRandomLifeThresholdCountChange(new ChangeEventArgs { Value = _randomLifeThresholdCount.ToString() }); })" />
+                                       @onkeydown="OnRandomLifeThresholdCountKeyDown" />
                                 <span class="cw-pop-sep">/ @(_startCols * _startRows)</span>
                             </div>
                         </div>
-                        <div class="cw-field" title="Allow Explorer cells to expand the grid beyond its starting size, up to the Max Grid Size limit.">
+                        <div class="cw-field" title="Allow Explorer cells to expand the grid up to the Max Grid Size limit.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_allowGridExpansion" />
                                 Allow grid expansion
                             </label>
                         </div>
-                        <div class="cw-field" title="Enable the full nation system: proximity-based nationality, King crowning, Diplomat election, and Revolutionary defection.">
+                        <div class="cw-field" title="Enable proximity-based nationality, King crowning, Diplomat election, and Revolutionary defection.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_nationsEnabled" />
                                 Enable nations &amp; kings
@@ -327,15 +330,15 @@
                             <label>Min pop threshold (0 = off)</label>
                             <input type="number" min="0" max="10000" @bind="_failurePopThreshold" />
                         </div>
-                        <div class="cw-field" title="Simulation ends if population collapses back below this count after previously growing above it. Set to 0 to disable.">
+                        <div class="cw-field" title="Ends if population collapses back below this count after previously growing above it. 0 = off.">
                             <label>Min pop after growth (0 = off)</label>
                             <input type="number" min="0" max="10000" @bind="_failurePopAfterGrowthThreshold" />
                         </div>
-                        <div class="cw-field" title="Simulation ends if population stays at exactly the same count for this many consecutive steps. Set to 0 to disable.">
+                        <div class="cw-field" title="Ends if population is unchanged for this many consecutive steps. 0 = off.">
                             <label>Stagnation steps (0 = off)</label>
                             <input type="number" min="0" max="500" @bind="_stagnationSteps" />
                         </div>
-                        <div class="cw-field cw-field-full" title="Automatically restart the simulation when a failure condition triggers, instead of showing the failure popup.">
+                        <div class="cw-field cw-field-full" title="Auto-restart on failure instead of showing the failure popup.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
                                 <input type="checkbox" @bind="_autoContinue" />
                                 Auto-restart on failure
@@ -359,7 +362,7 @@
                                        @onchange="@(e => OnWeightChange(kv.Key, e))" />
                             </div>
                         }
-                        <div class="cw-weight-row cw-weight-row-empty" title="Cells that start empty (not populated). Calculated as grid size minus initial population — not a spawn weight.">
+                        <div class="cw-weight-row cw-weight-row-empty" title="Empty cells at start = grid size − initial population. Not a spawn weight.">
                             <div class="cw-weight-empty-swatch"></div>
                             <span class="cw-weight-name">Empty</span>
                             <span class="cw-weight-readonly">@(_startCols * _startRows - _popCount)</span>

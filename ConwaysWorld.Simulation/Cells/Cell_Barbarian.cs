@@ -61,8 +61,8 @@ public class Cell_Barbarian : Cell_Combatant
 		var target = SelectNearbyCellByRule(
 										cellGrid,
 										c => c.IsAlive &&
-														 c.CellType != CellType.Islander &&
-														 c.CellType != CellType.Barbarian,
+										 c.CellType != CellType.Islander &&
+										 c.CellType != CellType.Barbarian,
 										3); // maxRange is exclusive; 3 covers Chebyshev range 2
 
 		if (target == null)

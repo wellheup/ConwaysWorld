@@ -9,7 +9,8 @@ namespace ConwaysWorld.Simulation;
 ///   <item>Invisible to non-zombie cells' Conway neighbor counts (see <see cref="Cell_Neighborhood.NumNonZombieNeighbors"/>).</item>
 ///   <item>Treats its Necromancer as its King and sibling zombies as its nation.</item>
 ///   <item>Dies if its Necromancer dies (handled by <see cref="Cell_Necromancer.KillAllZombies"/>).</item>
-///   <item>Killed by any cell that targets killers (Warriors, Hunters, Soldiers, etc.) — on kill the slot becomes a dead Basic with no last-type (permanently destroyed).</item>
+///   <item>Killed by any cell that targets killers (Warriors, Hunters, Soldiers, etc.) —
+///   on kill the slot becomes a dead Basic with no last-type (permanently destroyed).</item>
 ///   <item>Doctor cells treat a Zombie as a diseased cell: curing it kills it and permanently destroys the slot.</item>
 ///   <item>Does not breed, does not age out, does not gain conditions.</item>
 /// </list>

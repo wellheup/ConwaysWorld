@@ -51,8 +51,8 @@ public class Cell_Revolutionary : Cell_Converter
 		foreach (var neighbor in CellNeighborhood.NeighborhoodDict.Values)
 		{
 			if (neighbor.IsAlive && neighbor != this &&
-											neighbor.CellType == CellType.Basic &&
-											neighbor.Nationality == Nationality)
+										neighbor.CellType == CellType.Basic &&
+										neighbor.Nationality == Nationality)
 				neighbor.Conditions.Add("toWar");
 		}
 	}
@@ -72,9 +72,9 @@ public class Cell_Revolutionary : Cell_Converter
 
 		var candidates = GetAllCellsInRangeByRule(cellGrid,
 										c => c.IsAlive &&
-																		 c.Nationality == OldNationality &&
-																		 c.CellType != CellType.King &&
-																		 c.CellType != CellType.Revolutionary,
+										 c.Nationality == OldNationality &&
+										 c.CellType != CellType.King &&
+										 c.CellType != CellType.Revolutionary,
 										8);
 
 		candidates.Sort((a, b) =>

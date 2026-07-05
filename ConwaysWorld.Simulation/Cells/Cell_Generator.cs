@@ -143,12 +143,12 @@ public class Cell_Generator
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-																																																																																																																																			? new Cell_Diseased(column, row, true)
-																																																																																																																																			: (Cell)new Cell_Plague(column, row, true),
+										? new Cell_Diseased(column, row, true)
+										: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-																																																																																																																																			? new Cell_Traveler(column, row, true)
-																																																																																																																																			: (Cell)new Cell_Explorer(column, row, true),
+										? new Cell_Traveler(column, row, true)
+										: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),
@@ -177,12 +177,12 @@ public class Cell_Generator
 			CellType.Basic => CreateBasic(column, row),
 			CellType.Immortal => new Cell_Immortal(column, row, true),
 			CellType.Diseased => variant > 0.2f
-																																																																																																																																			? new Cell_Diseased(column, row, true)
-																																																																																																																																			: (Cell)new Cell_Plague(column, row, true),
+										? new Cell_Diseased(column, row, true)
+										: (Cell)new Cell_Plague(column, row, true),
 			CellType.Plague => new Cell_Plague(column, row, true),
 			CellType.Traveler => variant > 0.4f
-																																																																																																																																			? new Cell_Traveler(column, row, true)
-																																																																																																																																			: (Cell)new Cell_Explorer(column, row, true),
+										? new Cell_Traveler(column, row, true)
+										: (Cell)new Cell_Explorer(column, row, true),
 			CellType.Explorer => new Cell_Explorer(column, row, true),
 			CellType.Doctor => new Cell_Doctor(column, row, true),
 			CellType.Hunter => new Cell_Hunter(column, row, true),

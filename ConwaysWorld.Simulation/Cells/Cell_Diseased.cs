@@ -8,7 +8,8 @@ namespace ConwaysWorld.Simulation;
 /// Infection mechanism (shared with <see cref="Cell_Plague"/> via <see cref="SpreadDisease"/>):
 /// <list type="bullet">
 ///   <item>The disease strain tag (<c>d_XXXXXXXX</c>) is added to an eligible neighbour's <see cref="Cell.Conditions"/>.</item>
-///   <item>On the next <see cref="Model.UpdateCellConditions"/> pass the tag triggers <see cref="Cell_Diseased.Infect"/>, converting the neighbour into a full Diseased cell.</item>
+///   <item>On the next <see cref="Model.UpdateCellConditions"/> pass the tag triggers
+///   <see cref="Cell_Diseased.Infect"/>, converting the neighbour into a full Diseased cell.</item>
 ///   <item>Immune cells (<c>immune</c> condition) strip disease tags every step and are never converted.</item>
 ///   <item>Immortal cells are unconditionally skipped.</item>
 ///   <item>Vaccinated cells (<c>vax_&lt;strain&gt;</c>) are skipped for that specific strain.</item>
@@ -28,7 +29,7 @@ public class Cell_Diseased : Cell_Spreader
 	/// generates the unique <see cref="Cell_Spreader.StrainId"/> tag automatically.
 	/// </summary>
 	public Cell_Diseased(int column, int row, bool isAlive)
-			: base(column, row, isAlive, 'd')
+					: base(column, row, isAlive, 'd')
 	{
 		CellType = CellType.Diseased;
 	}

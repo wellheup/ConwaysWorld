@@ -43,7 +43,7 @@ public class Cell_Diplomat : Cell_Converter
 	/// and has a valid nation index.
 	/// </summary>
 	private bool IsForeignAlive(Cell c) =>
-																																																																	c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
+										c.IsAlive && c.Nationality != Nationality && c.Nationality >= 0;
 
 	/// <summary>
 	/// Returns <c>true</c> when a conversion attempt should succeed.
