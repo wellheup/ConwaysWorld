@@ -153,6 +153,7 @@ public enum CellType
 	Mutant,
 }
 /*TODO:
+- in order to match original conway rules, breading due to maturity needs to be toggled off
 - maybe cells should be more likely to survive death for every neighbor of the same nation?
 - Add to Conway's world an event that uses a "find the largest island" algorithm
 - I need better error logging for when the simulation fails

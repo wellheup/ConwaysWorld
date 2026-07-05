@@ -40,6 +40,7 @@ public class Cell_Neighborhood
 	/// All 9 cells in the 3×3 block including <c>"center"</c>.
 	/// Keys are compass directions: <c>"north"</c>, <c>"south"</c>, <c>"east"</c>, <c>"west"</c>,
 	/// <c>"northEast"</c>, <c>"northWest"</c>, <c>"southEast"</c>, <c>"southWest"</c>, <c>"center"</c>.
+	/// North = rowOff −1 (visually up, smaller row index); South = rowOff +1 (visually down).
 	/// Pre-sized to capacity 9 to avoid bucket-array resizing.
 	/// </summary>
 	public Dictionary<string, Cell> NeighborhoodDict;
@@ -53,13 +54,14 @@ public class Cell_Neighborhood
 	/// <summary>
 	/// Ordered key names for the 9-slot neighbourhood, matching the iteration order used in the
 	/// constructor (column-major, -1→+1 column offset, -1→+1 row offset within each column).
+	/// Row 0 is the visual top of the grid, so rowOff=-1 is North and rowOff=+1 is South.
 	/// </summary>
 	public static readonly string[] NeighborHoodKeys =
 	{
-								"southWest", "west", "northWest",
-								"south",               "north",
-								"southEast", "east",  "northEast",
-								"center",
+				"northWest", "west", "southWest",
+				"north",               "south",
+				"northEast", "east",  "southEast",
+				"center",
 		};
 
 	/// <summary>

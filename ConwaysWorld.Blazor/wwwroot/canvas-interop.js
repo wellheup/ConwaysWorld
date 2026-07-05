@@ -397,9 +397,7 @@ function onMouseDown(e) {
     else if (e.button === 0 && editMode) {
         if (editMoveMode) {
             const cell = hoveredCell;
-            const isAlive = cell
-                ? cachedCells.some(c => c.col === cell.col && c.row === cell.row && c.alive)
-                : false;
+            const isAlive = cell ? cachedCells.some(c => c.col === cell.col && c.row === cell.row && c.alive) : false;
             if (cell && isAlive) {
                 editMoveWasSelectedBeforeMouseDown = !!(editMoveSelected &&
                     editMoveSelected.col === cell.col &&
