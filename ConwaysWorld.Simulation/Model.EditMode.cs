@@ -54,6 +54,19 @@ public partial class Model
                 if (col < 0 || col >= _columns || row < 0 || row >= _rows)
                         return;
                 CellGrid[col, row] = CreateCellOfType(type, col, row, nationality);
+                EnsureNationExists(nationality);
+        }
+
+        /// <summary>
+        /// Ensures a nation object exists for the given nationality number.
+        /// Called after any edit-mode placement so the nation registry stays consistent
+        /// with the grid and painted cells participate fully in nation mechanics.
+        /// </summary>
+        private void EnsureNationExists(int nationality)
+        {
+                if (nationality >= 0 && _settings.NationsEnabled
+                        && !Nations.ContainsKey(nationality))
+                        Nations[nationality] = new Cell_Nation(nationality);
         }
 
         /// <summary>Replaces the cell at (col, row) with a dead Basic cell.</summary>
@@ -114,6 +127,9 @@ public partial class Model
                 if (!alive || type == CellType.Dead)
                         CellGrid[col, row] = new Cell_Basic(col, row, false);
                 else
+                {
                         CellGrid[col, row] = CreateCellOfType(type, col, row, nat);
+                        EnsureNationExists(nat);
+                }
         }
 }
