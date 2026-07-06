@@ -448,6 +448,8 @@
             {
                 <div class="cw-modal-footer">
                     <button class="cw-apply-btn" style="flex:1" @onclick="ApplyAndRestart">Apply & Restart</button>
+                    <button class="cw-apply-btn" style="flex:1;background:#1a3a1a" @onclick="ApplyPureConway"
+                            title="Reset to standard Conway rules only — no famine, flood, nations, breeding, or disease. Basic cells only. Stagnation detection off.">🔬 Pure Conway</button>
                     <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="ResetToDefaults">Reset Defaults</button>
                 </div>
             }

@@ -21,6 +21,7 @@ public partial class Index
 	private bool _isFullscreen = false;
 	private int _selectedTestCase = 0;
 	private int _settingsTab = 0;
+	private bool _pureConwayMode = false;
 	private int _intervalMs = 1000;
 	private bool _animationEnabled = true;
 	private bool _canvasReady = false;
@@ -35,9 +36,9 @@ public partial class Index
 	private bool _editMoveMode = false;
 
 	private record EditSnapshot(
-									int Col, int Row,
-									bool OldAlive, CellType OldType, int OldNat,
-									bool NewAlive, CellType NewType, int NewNat);
+																	int Col, int Row,
+																	bool OldAlive, CellType OldType, int OldNat,
+																	bool NewAlive, CellType NewType, int NewNat);
 
 	private readonly Dictionary<(int, int), EditSnapshot> _currentStrokeCells = new();
 	private const int MaxUndoHistory = 200;
@@ -47,12 +48,12 @@ public partial class Index
 	// Nationless types: Islander, Barbarian, Wayfinder, PlagueRat, Zombie, Necromancer, Bomber.
 	// Everything else is nation-capable.
 	private static readonly HashSet<CellType> _nationlessTypes = new()
-		{
-				CellType.Islander, CellType.Barbarian, CellType.Wayfinder,
-				CellType.PlagueRat, CellType.Zombie, CellType.Necromancer, CellType.Bomber,
-		};
+				{
+								CellType.Islander, CellType.Barbarian, CellType.Wayfinder,
+								CellType.PlagueRat, CellType.Zombie, CellType.Necromancer, CellType.Bomber,
+				};
 	private static bool IsNationCapable(CellType t) =>
-			t != CellType.Dead && !_nationlessTypes.Contains(t);
+					t != CellType.Dead && !_nationlessTypes.Contains(t);
 
 	// ── Display state ──────────────────────────────────────────────────────────────
 
@@ -75,7 +76,7 @@ public partial class Index
 	{
 		var defaultSettings = new SimulationSettings();
 		_spawnWeights = defaultSettings.SpawnWeights
-										.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
+																		.ToDictionary(kv => kv.Key.ToString(), kv => kv.Value);
 		InitSettings();
 		_model = new Model(_settings);
 		_timer = new System.Timers.Timer(_intervalMs);
@@ -102,11 +103,11 @@ public partial class Index
 
 			_dotNetRef = DotNetObjectReference.Create(this);
 			await JS.InvokeVoidAsync("ConwaysInterop.init",
-											"sim-canvas",
-											_model.Columns,
-											_model.Rows,
-											18,
-											_dotNetRef);
+																			"sim-canvas",
+																			_model.Columns,
+																			_model.Rows,
+																			18,
+																			_dotNetRef);
 			_canvasReady = true;
 			await JS.InvokeVoidAsync("ConwaysInterop.watchToolbarHeight");
 			await RenderFrame();
@@ -260,16 +261,16 @@ public partial class Index
 			}
 
 		var moves = _model.PendingMoves
-				.Select(m => new
-				{
-					fromCol = m.FromCol,
-					fromRow = m.FromRow,
-					toCol = m.ToCol,
-					toRow = m.ToRow,
-					type = m.CellType,
-					nat = m.Nationality,
-				})
-				.ToList<object>();
+						.Select(m => new
+						{
+							fromCol = m.FromCol,
+							fromRow = m.FromRow,
+							toCol = m.ToCol,
+							toRow = m.ToRow,
+							type = m.CellType,
+							nat = m.Nationality,
+						})
+						.ToList<object>();
 
 		var births = new List<object>();
 		var deaths = new List<object>();
@@ -286,9 +287,9 @@ public partial class Index
 				var (col, row) = kv.Key;
 				var (type, nat) = kv.Value;
 				if (col < c && row < r
-		&& !grid[col, row].IsAlive
-		&& !moveSrcSet.Contains((col, row))
-		&& !moveDstSet.Contains((col, row)))
+&& !grid[col, row].IsAlive
+&& !moveSrcSet.Contains((col, row))
+&& !moveDstSet.Contains((col, row)))
 				{
 					bool isEpic = type == (int)CellType.King || type == (int)CellType.Immortal;
 					if (isEpic)
@@ -303,15 +304,15 @@ public partial class Index
 				{
 					var cell = grid[col, row];
 					if (cell.IsAlive
-	&& !_prevCellMap.ContainsKey((col, row))
-	&& !moveSrcSet.Contains((col, row))
-	&& !moveDstSet.Contains((col, row)))
+&& !_prevCellMap.ContainsKey((col, row))
+&& !moveSrcSet.Contains((col, row))
+&& !moveDstSet.Contains((col, row)))
 					{
 						births.Add(new { col, row, type = (int)cell.CellType, nat = cell.Nationality });
 					}
 					if (cell.IsAlive && cell.CellType == CellType.King
-	&& _prevCellMap.TryGetValue((col, row), out var prev)
-	&& prev.type != (int)CellType.King)
+&& _prevCellMap.TryGetValue((col, row), out var prev)
+&& prev.type != (int)CellType.King)
 					{
 						coronations.Add(new { col, row, type = (int)cell.CellType, nat = cell.Nationality });
 					}
@@ -323,9 +324,9 @@ public partial class Index
 		var famine = new { active = _model.FamineActive, quadrant = _model.FamineQuadrant };
 		var flood = new { active = _model.FloodActive };
 		await JS.InvokeVoidAsync("ConwaysInterop.renderFrame",
-										cells, nationColors, liveNationIndices, c, r,
-										moves, births, deaths, epicDeaths, coronations,
-										_animationEnabled, _intervalMs, famine, flood);
+																		cells, nationColors, liveNationIndices, c, r,
+																		moves, births, deaths, epicDeaths, coronations,
+																		_animationEnabled, _intervalMs, famine, flood);
 	}
 
 	private void UpdateTypeCounts()
@@ -338,10 +339,10 @@ public partial class Index
 					counts[(int)grid[col, row].CellType]++;
 
 		_typeCounts = Enumerable.Range(1, TypeNames.Length - 1)
-										.Where(i => counts[i] > 0 || !_spawnWeights.TryGetValue(TypeNames[i], out var w) || w > 0)
-										.Select(i => (TypeNames[i], TypeColors[i], counts[i]))
-										.OrderBy(t => t.Item1)
-										.ToList();
+																		.Where(i => counts[i] > 0 || !_spawnWeights.TryGetValue(TypeNames[i], out var w) || w > 0)
+																		.Select(i => (TypeNames[i], TypeColors[i], counts[i]))
+																		.OrderBy(t => t.Item1)
+																		.ToList();
 	}
 
 	// ── Dispose ───────────────────────────────────────────────────────────────────

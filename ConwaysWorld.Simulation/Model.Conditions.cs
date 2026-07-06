@@ -40,9 +40,15 @@ public partial class Model
 				if (cell.Conditions.Contains("immune"))
 					cell.Conditions.RemoveWhere(s => s.StartsWith("d_") || s.StartsWith("p_") || s.StartsWith("r_"));
 
+				// Pure Conway mode: skip all condition processing beyond cleanup and immune clearing.
+				// Breeding, disease conversion, immaculate, toWar promotion, nation assignment, and
+				// idle-demotion are all suppressed so only the Conway birth/death rules run.
+				if (_settings.PureConwayMode)
+					continue;
+
 				bool isUndeadType = cell.CellType == CellType.Zombie
-					|| cell.CellType == CellType.Necromancer
-					|| cell.CellType == CellType.Bomber;
+						|| cell.CellType == CellType.Necromancer
+						|| cell.CellType == CellType.Bomber;
 
 				if (!isUndeadType)
 				{
@@ -90,15 +96,15 @@ public partial class Model
 				}
 
 				if (cell.IsAlive && cell.CellType == CellType.Explorer &&
-					(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1) &&
-					_settings.AllowGridExpansion)
+						(c == 0 || c == _columns - 1 || r == 0 || r == _rows - 1) &&
+						_settings.AllowGridExpansion)
 					needResize = true;
 
 				// Basic-cell king-distance neutralisation.
 				if (cell.IsAlive && cell.CellType == CellType.Basic && cell.Nationality >= 0)
 				{
 					if (Nations.TryGetValue(cell.Nationality, out var cellNation)
-						&& cellNation.King != null && cellNation.King.IsAlive)
+							&& cellNation.King != null && cellNation.King.IsAlive)
 					{
 						int threshold = (_columns + _rows) / 3;
 						int dc = Math.Abs(cell.Column - cellNation.King.Column);
@@ -136,15 +142,15 @@ public partial class Model
 
 				// Nationless-by-design types never join a nation via proximity.
 				bool isNationlessType = cell.CellType == CellType.Islander
-					|| cell.CellType == CellType.Barbarian
-					|| cell.CellType == CellType.Wayfinder
-					|| cell.CellType == CellType.PlagueRat
-					|| cell.CellType == CellType.Zombie
-					|| cell.CellType == CellType.Necromancer
-					|| cell.CellType == CellType.Bomber;
+						|| cell.CellType == CellType.Barbarian
+						|| cell.CellType == CellType.Wayfinder
+						|| cell.CellType == CellType.PlagueRat
+						|| cell.CellType == CellType.Zombie
+						|| cell.CellType == CellType.Necromancer
+						|| cell.CellType == CellType.Bomber;
 
 				if (cell.IsAlive && cell.Age >= 1 && cell.Nationality < 0
-					&& !hasCooldown && !isNationlessType && _settings.NationsEnabled)
+						&& !hasCooldown && !isNationlessType && _settings.NationsEnabled)
 				{
 					_nationJoinScratch.Clear();
 					int c3lo = Math.Max(0, c - 3), c3hi = Math.Min(_columns - 1, c + 3);
@@ -232,8 +238,8 @@ public partial class Model
 		_selectedNat = cell.Nationality;
 		_selectedConditionsBefore = new HashSet<string>(cell.Conditions);
 		_selectedLivingNeighbors = cell.CellNeighborhood.NeighborhoodDict
-			.Where(kv => kv.Key != "center" && kv.Value.IsAlive)
-			.Count();
+				.Where(kv => kv.Key != "center" && kv.Value.IsAlive)
+				.Count();
 	}
 
 	/// <summary>
@@ -330,8 +336,8 @@ public partial class Model
 					neighbor.Die();
 					neighbor.Conditions.Add("cleanup");
 					PendingEvents.Add(
-						$"revolution_start:Revolutionary of Nation {cell.Nationality} " +
-						$"assassinated the King of Nation {neighbor.Nationality}!");
+							$"revolution_start:Revolutionary of Nation {cell.Nationality} " +
+							$"assassinated the King of Nation {neighbor.Nationality}!");
 				}
 			}
 	}
@@ -382,8 +388,8 @@ public partial class Model
 				duelled.Add(a);
 				duelled.Add(b);
 				PendingEvents.Add(
-					$"regicide_duel:Kings of Nations {a.Nationality} and {b.Nationality} " +
-					$"met in single combat — both fell!");
+						$"regicide_duel:Kings of Nations {a.Nationality} and {b.Nationality} " +
+						$"met in single combat — both fell!");
 			}
 		}
 	}

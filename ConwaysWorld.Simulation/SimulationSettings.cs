@@ -142,6 +142,18 @@ public class SimulationSettings
 	/// </summary>
 	public int StagnationSteps { get; set; } = 10;
 
+	// ── Pure Conway mode ─────────────────────────────────────────────────────────
+
+	/// <summary>
+	/// When <c>true</c>, only the core Conway birth/death rules run each step.
+	/// Famine, flood, conditions (breeding, disease, immaculate, promotion),
+	/// special actions (movement, combat), and nation mechanics are all suppressed
+	/// so the engine behaves as a reference Conway's Game of Life implementation.
+	/// Individual flags (<see cref="FamineEnabled"/> etc.) are still respected for
+	/// any code paths not gated directly by this flag.
+	/// </summary>
+	public bool PureConwayMode { get; set; } = false;
+
 	// ── Life floor ───────────────────────────────────────────────────────────────
 
 	/// <summary>
@@ -158,51 +170,51 @@ public class SimulationSettings
 	/// Warriors, Diplomats, and Kings are intentionally absent — they are only promoted from existing cells.
 	/// </summary>
 	public Dictionary<CellType, int> SpawnWeights { get; set; } = new()
-								{
-																{ CellType.Basic,        50 },
-																{ CellType.Immortal,      2 },
-																{ CellType.Diseased,     15 },
-																{ CellType.Plague,        3 },
-																{ CellType.Traveler,      6 },
-																{ CellType.Explorer,      3 },
-																{ CellType.Doctor,        5 },
-																{ CellType.Hunter,        5 },
-																{ CellType.Bomber,        8 },
-																{ CellType.Voyager,       3 },
-																{ CellType.Wayfinder,     2 },
-																{ CellType.Spy,           3 },
-																{ CellType.Conquistador,  2 },
-																{ CellType.Savior,        1 },
-																{ CellType.Irradiated,    3 },
-																{ CellType.PlagueRat,     2 },
-																{ CellType.Necromancer,   2 },
-																{ CellType.Mutant,        2 },
-								};
+																{
+																																{ CellType.Basic,        50 },
+																																{ CellType.Immortal,      2 },
+																																{ CellType.Diseased,     15 },
+																																{ CellType.Plague,        3 },
+																																{ CellType.Traveler,      6 },
+																																{ CellType.Explorer,      3 },
+																																{ CellType.Doctor,        5 },
+																																{ CellType.Hunter,        5 },
+																																{ CellType.Bomber,        8 },
+																																{ CellType.Voyager,       3 },
+																																{ CellType.Wayfinder,     2 },
+																																{ CellType.Spy,           3 },
+																																{ CellType.Conquistador,  2 },
+																																{ CellType.Savior,        1 },
+																																{ CellType.Irradiated,    3 },
+																																{ CellType.PlagueRat,     2 },
+																																{ CellType.Necromancer,   2 },
+																																{ CellType.Mutant,        2 },
+																};
 
 	/// <summary>
 	/// The set of types that are eligible for spawning.
 	/// Only types present in both this set and <see cref="SpawnWeights"/> are considered.
 	/// </summary>
 	public HashSet<CellType> SpawnEnabled { get; set; } = new()
-								{
-																CellType.Basic,
-																CellType.Immortal,
-																CellType.Diseased,
-																CellType.Plague,
-																CellType.Traveler,
-																CellType.Explorer,
-																CellType.Doctor,
-																CellType.Hunter,
-																CellType.Bomber,
-																CellType.Voyager,
-																CellType.Wayfinder,
-																CellType.Spy,
-																CellType.Conquistador,
-																CellType.Savior,
-																CellType.Irradiated,
-																CellType.PlagueRat,
-																CellType.Mutant,
-								};
+																{
+																																CellType.Basic,
+																																CellType.Immortal,
+																																CellType.Diseased,
+																																CellType.Plague,
+																																CellType.Traveler,
+																																CellType.Explorer,
+																																CellType.Doctor,
+																																CellType.Hunter,
+																																CellType.Bomber,
+																																CellType.Voyager,
+																																CellType.Wayfinder,
+																																CellType.Spy,
+																																CellType.Conquistador,
+																																CellType.Savior,
+																																CellType.Irradiated,
+																																CellType.PlagueRat,
+																																CellType.Mutant,
+																};
 
 	// ── Derived ──────────────────────────────────────────────────────────────────
 

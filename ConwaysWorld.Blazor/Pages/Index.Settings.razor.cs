@@ -37,6 +37,7 @@ public partial class Index
 			FailurePopThreshold = _failurePopThreshold,
 			FailurePopAfterGrowthThreshold = _failurePopAfterGrowthThreshold,
 			StagnationSteps = _stagnationSteps,
+			PureConwayMode = _pureConwayMode,
 		};
 		foreach (var kv in _spawnWeights)
 			if (Enum.TryParse<CellType>(kv.Key, out var ct))
@@ -62,7 +63,7 @@ public partial class Index
 			{
 				_popCount = Math.Clamp(s.PopCount, 0, _startCols * _startRows);
 				double pct = _startCols * _startRows > 0
-												? Math.Round(_popCount * 100.0 / (_startCols * _startRows), 1) : 0;
+																				? Math.Round(_popCount * 100.0 / (_startCols * _startRows), 1) : 0;
 				_popPercent = pct;
 				_popPercentStr = pct.ToString("F1");
 			}
@@ -276,6 +277,7 @@ public partial class Index
 	{
 		_timer.Stop();
 		_running = false;
+		_pureConwayMode = false;
 		_showSettings = false;
 		_showFailurePopup = false;
 		_failureMessage = "";
@@ -341,10 +343,52 @@ public partial class Index
 		UpdateTypeCounts();
 	}
 
+	/// <summary>
+	/// Applies a "Pure Conway" preset: only Basic cells, no famine/flood/nations/breeding/disease.
+	/// Uses standard Conway rules (2/3/3) and disables stagnation detection so still patterns
+	/// do not end the simulation prematurely.
+	/// </summary>
+	private async Task ApplyPureConway()
+	{
+		_timer.Stop();
+		_running = false;
+		_pureConwayMode = true;
+		_famineEnabled = false;
+		_floodEnabled = false;
+		_randomLifeEnabled = false;
+		_nationsEnabled = false;
+		_allowGridExpansion = false;
+		_stagnationSteps = 0;
+		_minNeighbors = 2;
+		_maxNeighbors = 3;
+		_birthNeighbors = 3;
+		var keys = _spawnWeights.Keys.ToList();
+		foreach (var k in keys)
+			_spawnWeights[k] = k == "Basic" ? 1 : 0;
+		_showSettings = false;
+		_showFailurePopup = false;
+		_failureMessage = "";
+		_failureStats = "";
+		if (_autoFitGrid)
+			await RecalcRowsFromCols();
+		InitSettings();
+		_eventLog.Clear();
+		_model = new Model(_settings);
+		_timer.Interval = _intervalMs;
+		try
+		{ await JS.InvokeVoidAsync("ConwaysInterop.saveSettings", SerializeSettings()); }
+		catch { }
+		_prevCellMap.Clear();
+		await RenderFrame();
+		CapturePrevCells();
+		UpdateTypeCounts();
+	}
+
 	private async Task ResetToDefaults()
 	{
 		_timer.Stop();
 		_running = false;
+		_pureConwayMode = false;
 		_startCols = 50;
 		_startRows = 50;
 		_maxGrid = 120;

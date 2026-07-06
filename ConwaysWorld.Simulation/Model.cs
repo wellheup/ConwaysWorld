@@ -178,39 +178,45 @@ public partial class Model
 	{
 		PendingEvents.Clear();
 		PendingMoves.Clear();
-		UpdateFamine();
-		UpdateFlood();
+		if (!_settings.PureConwayMode)
+		{
+			UpdateFamine();
+			UpdateFlood();
+		}
 		ApplyCellNeighborRules();
 		UpdateNeighborhoodsGrid();
 		EmitSelectedCellSnapshot();
 		UpdateAliveNextGenGrid();
 		UpdateCellLives();
 		UpdateCellConditions();
-		UpdateNeighborhoodsGrid();
-		UpdateSpecialActions();
-		TrackActiveSavior();
-		UpdateNecromancers();
-		CheckSoldierAttackOutcomes();
-		if (_settings.RandomLifeEnabled)
+		if (!_settings.PureConwayMode)
 		{
-			if (_settings.ReactiveDoctor)
+			UpdateNeighborhoodsGrid();
+			UpdateSpecialActions();
+			TrackActiveSavior();
+			UpdateNecromancers();
+			CheckSoldierAttackOutcomes();
+			if (_settings.RandomLifeEnabled)
 			{
-				int diseasedCount = 0;
-				for (int c2 = 0; c2 < _columns; c2++)
-					for (int r2 = 0; r2 < _rows; r2++)
-						if (CellGrid[c2, r2].IsAlive &&
-							(CellGrid[c2, r2].CellType == CellType.Diseased || CellGrid[c2, r2].CellType == CellType.Plague))
-							diseasedCount++;
-				int bonus = diseasedCount / 30;
-				if (bonus != _lastDoctorBonus)
+				if (_settings.ReactiveDoctor)
 				{
-					_lastDoctorBonus = bonus;
-					_generator.RebuildWithDoctorBonus(bonus);
+					int diseasedCount = 0;
+					for (int c2 = 0; c2 < _columns; c2++)
+						for (int r2 = 0; r2 < _rows; r2++)
+							if (CellGrid[c2, r2].IsAlive &&
+									(CellGrid[c2, r2].CellType == CellType.Diseased || CellGrid[c2, r2].CellType == CellType.Plague))
+								diseasedCount++;
+					int bonus = diseasedCount / 30;
+					if (bonus != _lastDoctorBonus)
+					{
+						_lastDoctorBonus = bonus;
+						_generator.RebuildWithDoctorBonus(bonus);
+					}
 				}
+				AddRandomLife();
 			}
-			AddRandomLife();
+			UpdateNations();
 		}
-		UpdateNations();
 		CheckFailureConditions();
 		EmitSelectedCellOutcome();
 		Generation++;
@@ -263,6 +269,11 @@ public partial class Model
 					if (willLive)
 					{
 						CellGrid[c, r].Live();
+						// Irradiated, Zombie, and Necromancer cells do NOT count toward the
+						// living population (so a grid of only such cells reads as "all dead").
+						var ct = CellGrid[c, r].CellType;
+						if (ct != CellType.Irradiated && ct != CellType.Zombie && ct != CellType.Necromancer)
+							_currentPopulation++;
 						var nat = CellGrid[c, r].Nationality;
 						if (nat >= 0 && Nations.ContainsKey(nat))
 							Nations[nat].CitizensList.Add(CellGrid[c, r]);
@@ -271,11 +282,6 @@ public partial class Model
 					{
 						CellGrid[c, r].Die();
 					}
-					// Irradiated, Zombie, and Necromancer cells do NOT count toward the living
-					// population (so a grid of only such cells still reads as "all dead").
-					var ct = CellGrid[c, r].CellType;
-					if (ct != CellType.Irradiated && ct != CellType.Zombie && ct != CellType.Necromancer)
-						_currentPopulation++;
 				}
 				else
 				{
@@ -292,6 +298,10 @@ public partial class Model
 						{
 							CellGrid[c, r].Live();
 						}
+						// Newly born cells count toward the living population.
+						var ct = CellGrid[c, r].CellType;
+						if (ct != CellType.Irradiated && ct != CellType.Zombie && ct != CellType.Necromancer)
+							_currentPopulation++;
 					}
 				}
 			}
