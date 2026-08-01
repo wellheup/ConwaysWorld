@@ -153,7 +153,6 @@ public enum CellType
 	Mutant,
 }
 /*TODO:
-- in order to match original conway rules, breading due to maturity needs to be toggled off
 - maybe cells should be more likely to survive death for every neighbor of the same nation?
 - Add to Conway's world an event that uses a "find the largest island" algorithm
 - I need better error logging for when the simulation fails
@@ -169,10 +168,6 @@ public enum CellType
 -organize the cell lists in the rules, settings, and cell types to be alphabetical.
 -adjust so that diplomats only spawn in nations with 25 cells or more in population
 -for cell hover text descriptions, make the descriptions multi-line and no wider than the current width of the Cell types panel.
--add a setting for the grid to adjust based on the dimensions of the window it is in. If this setting is set to true, which it should be by default, then set
-  the either the start columns value or the start rows value to -1, depending on which is smaller in the window dimensions, height or width. Then, wi base the
-  dimensions of the grid off of the remaining row or column value and fill the rest of the grid to fit the space available.
--ask clarifying questions as needed
 - add to the plan that we need to change the wayfinder cell so that instead of checking for empty spots at intervals, just check for one at spawn, then travel
   towards it, but when reaching within a 5-tile chebyshev neighbourhood of that destination, check if that destination still has no population in the 5-tile
   radius. If there are cells there, then set a new destionation, otherwise proceed with the arrival behavior when reaching the destination
