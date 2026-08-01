@@ -548,7 +548,7 @@ canvas#sim-canvas {
 
 .cw-tc-list {
     overflow-y: auto;
-    max-height: 380px;
+    flex: 1;
     padding: 8px 0;
 }
 
