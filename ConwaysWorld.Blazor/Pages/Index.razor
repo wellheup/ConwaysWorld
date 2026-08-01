@@ -192,6 +192,8 @@
                         @onclick="() => _settingsTab = 2">Hotkeys</button>
                 <button class="cw-modal-tab @(_settingsTab == 3 ? "cw-modal-tab-active" : "")"
                         @onclick="() => _settingsTab = 3">Rules</button>
+                <button class="cw-modal-tab @(_settingsTab == 4 ? "cw-modal-tab-active" : "")"
+                        @onclick="() => _settingsTab = 4">Test Cases</button>
             </div>
             <div class="cw-settings-scroll">
                 @if (_settingsTab == 0)
