@@ -241,7 +241,11 @@ public partial class Index
 	{
 		if (int.TryParse(e.Value?.ToString(), out var v))
 			_spawnWeights[typeName] = v;
+		InvalidatePureConway();
 	}
+
+	/// <summary>Clears PureConwayMode when any competing setting is changed.</summary>
+	private void InvalidatePureConway() => _pureConwayMode = false;
 
 	// ── Settings actions ──────────────────────────────────────────────────────────
 
@@ -263,6 +267,16 @@ public partial class Index
 		_floodEnabled = s.FloodEnabled;
 		_randomLifeEnabled = s.RandomLifeEnabled;
 		_allowGridExpansion = s.AllowGridExpansion;
+		_nationsEnabled = s.NationsEnabled;
+		_minNeighbors = s.MinLivingNeighbors;
+		_maxNeighbors = s.MaxLivingNeighbors;
+		_birthNeighbors = s.BirthNeighborCount;
+		_stagnationSteps = s.StagnationSteps;
+		_pureConwayMode = s.PureConwayMode;
+		// Zero out all weights first so test-case-omitted types default to 0
+		var allKeys = _spawnWeights.Keys.ToList();
+		foreach (var k in allKeys)
+			_spawnWeights[k] = 0;
 		foreach (var kv in s.SpawnWeights)
 		{
 			var key = kv.Key.ToString();
@@ -277,7 +291,6 @@ public partial class Index
 	{
 		_timer.Stop();
 		_running = false;
-		_pureConwayMode = false;
 		_showSettings = false;
 		_showFailurePopup = false;
 		_failureMessage = "";
@@ -334,47 +347,6 @@ public partial class Index
 		InitSettings();
 		_eventLog.Clear();
 		_model = new Model(_settings);
-		try
-		{ await JS.InvokeVoidAsync("ConwaysInterop.saveSettings", SerializeSettings()); }
-		catch { }
-		_prevCellMap.Clear();
-		await RenderFrame();
-		CapturePrevCells();
-		UpdateTypeCounts();
-	}
-
-	/// <summary>
-	/// Applies a "Pure Conway" preset: only Basic cells, no famine/flood/nations/breeding/disease.
-	/// Uses standard Conway rules (2/3/3) and disables stagnation detection so still patterns
-	/// do not end the simulation prematurely.
-	/// </summary>
-	private async Task ApplyPureConway()
-	{
-		_timer.Stop();
-		_running = false;
-		_pureConwayMode = true;
-		_famineEnabled = false;
-		_floodEnabled = false;
-		_randomLifeEnabled = false;
-		_nationsEnabled = false;
-		_allowGridExpansion = false;
-		_stagnationSteps = 0;
-		_minNeighbors = 2;
-		_maxNeighbors = 3;
-		_birthNeighbors = 3;
-		var keys = _spawnWeights.Keys.ToList();
-		foreach (var k in keys)
-			_spawnWeights[k] = k == "Basic" ? 1 : 0;
-		_showSettings = false;
-		_showFailurePopup = false;
-		_failureMessage = "";
-		_failureStats = "";
-		if (_autoFitGrid)
-			await RecalcRowsFromCols();
-		InitSettings();
-		_eventLog.Clear();
-		_model = new Model(_settings);
-		_timer.Interval = _intervalMs;
 		try
 		{ await JS.InvokeVoidAsync("ConwaysInterop.saveSettings", SerializeSettings()); }
 		catch { }

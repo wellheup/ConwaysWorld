@@ -252,27 +252,32 @@
                         <h3 class="cw-settings-section">Conway Rules</h3>
                         <div class="cw-field" title="Minimum live neighbours to survive. Fewer → dies of solitude. Standard Conway value: 2.">
                             <label>Min neighbors (survive)</label>
-                            <input type="number" min="0" max="7" @bind="_minNeighbors" />
+                            <input type="number" min="0" max="7" value="@_minNeighbors"
+                                   @onchange="e => { if (int.TryParse(e.Value?.ToString(), out var v)) _minNeighbors = v; InvalidatePureConway(); }" />
                         </div>
                         <div class="cw-field" title="Maximum live neighbours to survive. More → dies of overcrowding. Standard Conway value: 3.">
                             <label>Max neighbors (survive)</label>
-                            <input type="number" min="0" max="8" @bind="_maxNeighbors" />
+                            <input type="number" min="0" max="8" value="@_maxNeighbors"
+                                   @onchange="e => { if (int.TryParse(e.Value?.ToString(), out var v)) _maxNeighbors = v; InvalidatePureConway(); }" />
                         </div>
                         <div class="cw-field" title="Live neighbours needed for an empty cell to be born. Default: Min+1. Standard Conway: 3.">
                             <label>Birth neighbors (default: Min+1)</label>
-                            <input type="number" min="0" max="8" @bind="_birthNeighbors" />
+                            <input type="number" min="0" max="8" value="@_birthNeighbors"
+                                   @onchange="e => { if (int.TryParse(e.Value?.ToString(), out var v)) _birthNeighbors = v; InvalidatePureConway(); }" />
                         </div>
 
                         <h3 class="cw-settings-section">World Events</h3>
                         <div class="cw-field" title="Periodically kills cells in a random quadrant. Controlled by Cooldown and Duration settings.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                                <input type="checkbox" @bind="_famineEnabled" />
+                                <input type="checkbox" checked="@_famineEnabled"
+                                       @onchange="e => { _famineEnabled = (bool)e.Value!; InvalidatePureConway(); }" />
                                 Enable Famine
                             </label>
                         </div>
                         <div class="cw-field" title="Periodically wipes the outer border ring, separating nation clusters.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                                <input type="checkbox" @bind="_floodEnabled" />
+                                <input type="checkbox" checked="@_floodEnabled"
+                                       @onchange="e => { _floodEnabled = (bool)e.Value!; InvalidatePureConway(); }" />
                                 Enable Flood
                             </label>
                         </div>
@@ -289,7 +294,8 @@
                         }
                         <div class="cw-field" title="Spawns random cells when population falls below the injection threshold.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                                <input type="checkbox" @bind="_randomLifeEnabled" />
+                                <input type="checkbox" checked="@_randomLifeEnabled"
+                                       @onchange="e => { _randomLifeEnabled = (bool)e.Value!; InvalidatePureConway(); }" />
                                 Random Life Injection
                             </label>
                         </div>
@@ -316,13 +322,15 @@
                         </div>
                         <div class="cw-field" title="Allow Explorer cells to expand the grid up to the Max Grid Size limit.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                                <input type="checkbox" @bind="_allowGridExpansion" />
+                                <input type="checkbox" checked="@_allowGridExpansion"
+                                       @onchange="e => { _allowGridExpansion = (bool)e.Value!; InvalidatePureConway(); }" />
                                 Allow grid expansion
                             </label>
                         </div>
                         <div class="cw-field" title="Enable proximity-based nationality, King crowning, Diplomat election, and Revolutionary defection.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-                                <input type="checkbox" @bind="_nationsEnabled" />
+                                <input type="checkbox" checked="@_nationsEnabled"
+                                       @onchange="e => { _nationsEnabled = (bool)e.Value!; InvalidatePureConway(); }" />
                                 Enable nations &amp; kings
                             </label>
                         </div>
@@ -338,7 +346,8 @@
                         </div>
                         <div class="cw-field" title="Ends if population is unchanged for this many consecutive steps. 0 = off.">
                             <label>Stagnation steps (0 = off)</label>
-                            <input type="number" min="0" max="500" @bind="_stagnationSteps" />
+                            <input type="number" min="0" max="500" value="@_stagnationSteps"
+                                   @onchange="e => { if (int.TryParse(e.Value?.ToString(), out var v)) _stagnationSteps = v; InvalidatePureConway(); }" />
                         </div>
                         <div class="cw-field cw-field-full" title="Auto-restart on failure instead of showing the failure popup.">
                             <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
@@ -450,8 +459,6 @@
             {
                 <div class="cw-modal-footer">
                     <button class="cw-apply-btn" style="flex:1" @onclick="ApplyAndRestart">Apply & Restart</button>
-                    <button class="cw-apply-btn" style="flex:1;background:#1a3a1a" @onclick="ApplyPureConway"
-                            title="Reset to standard Conway rules only — no famine, flood, nations, breeding, or disease. Basic cells only. Stagnation detection off.">🔬 Pure Conway</button>
                     <button class="cw-apply-btn" style="flex:1;background:#555" @onclick="ResetToDefaults">Reset Defaults</button>
                 </div>
             }

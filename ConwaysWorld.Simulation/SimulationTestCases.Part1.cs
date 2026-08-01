@@ -7,7 +7,7 @@ public static partial class SimulationTestCases
 			{
 		new(
 			"Conway Basics",
-			"Pure Conway rules: only Basic cells, tiny grid. Observe classic birth/survival/death patterns.",
+			"Standard Conway rules on a small grid. Famine, flood, and nations are off, but breeding and conditions still run.",
 			new SimulationSettings
 			{
 				StartColumns = 10, StartRows = 10, MaxGridSize = 500,
@@ -16,10 +16,32 @@ public static partial class SimulationTestCases
 				FamineEnabled = false, FloodEnabled = false,
 				RandomLifeEnabled = false, AllowGridExpansion = false,
 				NationsEnabled = false,
+				MinLivingNeighbors = 2, MaxLivingNeighbors = 3, BirthNeighborCount = 3,
+				StagnationSteps = 0,
 				SpawnWeights = new()
 				{
 					[CellType.Basic] = 50,
 					[CellType.Dead]  = 50,
+				},
+			}),
+
+		new(
+			"Conway Pure",
+			"Strict Conway's Game of Life: Basic cells only, no conditions, no breeding, no nations, no events. Pure birth/survive/die.",
+			new SimulationSettings
+			{
+				StartColumns = 10, StartRows = 10, MaxGridSize = 500,
+				MaxNations = 0, StartClusters = 1,
+				PopMode = PopMode.Count, PopValue = 10,
+				FamineEnabled = false, FloodEnabled = false,
+				RandomLifeEnabled = false, AllowGridExpansion = false,
+				NationsEnabled = false,
+				MinLivingNeighbors = 2, MaxLivingNeighbors = 3, BirthNeighborCount = 3,
+				StagnationSteps = 0,
+				PureConwayMode = true,
+				SpawnWeights = new()
+				{
+					[CellType.Basic] = 1,
 				},
 			}),
 
