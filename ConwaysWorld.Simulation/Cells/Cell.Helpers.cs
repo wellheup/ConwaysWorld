@@ -190,8 +190,9 @@ public abstract partial class Cell
 		int range = 1;
 		int cols = cellGrid.GetLength(0);
 		int rows = cellGrid.GetLength(1);
+		int searchLimit = Math.Min(maxRange, Math.Max(cols, rows) + 1);
 
-		while (candidates.Count == 0 && range < maxRange)
+		while (candidates.Count == 0 && range < searchLimit)
 		{
 			for (int x = -range; x <= range; x++)
 			{
