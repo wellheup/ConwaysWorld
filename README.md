@@ -25,6 +25,28 @@ bash run.sh
 
 `run.sh` formats the C# source, compiles TypeScript, and starts the Blazor dev server on **http://localhost:5000**.
 
+## VS Code Setup
+
+1. Install [Visual Studio Code](https://code.visualstudio.com/).
+2. Install the [C# Dev Kit extension](https://marketplace.visualstudio.com/items?itemName=ms-dotnettools.csdevkit). It provides C# language support, IntelliSense, project navigation, and debugging for the .NET projects.
+3. Clone the repository and open its folder in VS Code:
+
+   ```bash
+   git clone https://github.com/wellheup/ConwaysWorld.git
+   cd ConwaysWorld
+   code .
+   ```
+
+4. Open VS Code's integrated terminal and start the app:
+
+   ```bash
+   bash run.sh
+   ```
+
+5. Open **http://localhost:5000** in your browser. Stop the app with `Ctrl+C`.
+
+You can also open `ConwaysWorld.Blazor/ConwaysWorld.Blazor.csproj` or the solution folder in VS Code for project-aware C# editing. The repository does not require a separate VS Code launch configuration; `bash run.sh` starts the development server.
+
 ---
 
 ## Controls
