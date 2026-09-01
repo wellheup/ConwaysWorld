@@ -222,6 +222,25 @@ function getCanvasSize(): { width: number; height: number } {
     return { width: canvas.width, height: canvas.height };
 }
 
+function getCanvasViewport(): {
+    grid: { width: number; height: number };
+    scale: number;
+    tx: number;
+    ty: number;
+    userHasTransformed: boolean;
+} {
+    return {
+        grid: {
+            width: cols * cellSize,
+            height: rows * cellSize,
+        },
+        scale,
+        tx,
+        ty,
+        userHasTransformed,
+    };
+}
+
 function updateGridSize(c: number, r: number): void {
     cols = c;
     rows = r;
@@ -302,6 +321,7 @@ function watchToolbarHeight(): void {
     init,
     renderFrame,
     getCanvasSize,
+    getCanvasViewport,
     updateGridSize,
     saveSettings,
     loadSettings,

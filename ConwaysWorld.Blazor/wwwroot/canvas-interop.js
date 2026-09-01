@@ -800,6 +800,18 @@ function getCanvasSize() {
         return { width: 800, height: 600 };
     return { width: canvas.width, height: canvas.height };
 }
+function getCanvasViewport() {
+    return {
+        grid: {
+            width: cols * cellSize,
+            height: rows * cellSize,
+        },
+        scale,
+        tx,
+        ty,
+        userHasTransformed,
+    };
+}
 function updateGridSize(c, r) {
     cols = c;
     rows = r;
@@ -880,6 +892,7 @@ window.ConwaysInterop = {
     init,
     renderFrame,
     getCanvasSize,
+    getCanvasViewport,
     updateGridSize,
     saveSettings,
     loadSettings,
