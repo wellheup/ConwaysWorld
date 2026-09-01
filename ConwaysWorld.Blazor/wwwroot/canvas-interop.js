@@ -112,27 +112,50 @@ function scheduleRedraw() {
         drawFrame();
     });
 }
+const MIN_SCALE = 0.001;
 function getVisibleCanvasArea() {
-    var _a;
     if (!canvas)
         return { left: 0, top: 0, width: 1, height: 1 };
+    const canvasRect = canvas.getBoundingClientRect();
     const toolbar = document.querySelector('.cw-toolbar');
     const sidebar = document.querySelector('.cw-sidebar');
-    const toolbarHeight = (_a = toolbar === null || toolbar === void 0 ? void 0 : toolbar.getBoundingClientRect().height) !== null && _a !== void 0 ? _a : 0;
-    const sidebarWidth = sidebar && !sidebar.classList.contains('cw-collapsed') ? sidebar.getBoundingClientRect().width : 0;
+    const toolbarRect = toolbar === null || toolbar === void 0 ? void 0 : toolbar.getBoundingClientRect();
+    const sidebarRect = sidebar === null || sidebar === void 0 ? void 0 : sidebar.getBoundingClientRect();
+    // The panes are fixed overlays, so convert their rendered rectangles into
+    // canvas-local bounds rather than relying on the canvas being at (0, 0).
+    let top = 0;
+    if (toolbarRect &&
+        toolbarRect.bottom > canvasRect.top &&
+        toolbarRect.top < canvasRect.bottom &&
+        toolbarRect.right > canvasRect.left &&
+        toolbarRect.left < canvasRect.right) {
+        top = Math.max(0, Math.min(canvasRect.height, toolbarRect.bottom - canvasRect.top));
+    }
+    let right = canvasRect.width;
+    if (sidebarRect &&
+        sidebarRect.left < canvasRect.right &&
+        sidebarRect.right > canvasRect.left &&
+        sidebarRect.top < canvasRect.bottom &&
+        sidebarRect.bottom > canvasRect.top) {
+        right = Math.max(0, Math.min(canvasRect.width, sidebarRect.left - canvasRect.left));
+    }
     return {
         left: 0,
-        top: toolbarHeight,
-        width: Math.max(1, canvas.width - sidebarWidth),
-        height: Math.max(1, canvas.height - toolbarHeight),
+        top,
+        width: Math.max(1, right),
+        height: Math.max(1, canvasRect.height - top),
     };
+}
+function getFitScale() {
+    if (!cols || !rows)
+        return MIN_SCALE;
+    const view = getVisibleCanvasArea();
+    return Math.min(view.width / (cols * cellSize), view.height / (rows * cellSize)) * 0.97;
 }
 function fitToWindow() {
     if (!canvas || !cols || !rows)
         return;
-    const view = getVisibleCanvasArea();
-    const fitScale = Math.min(view.width / (cols * cellSize), view.height / (rows * cellSize)) * 0.97;
-    scale = Math.max(0.1, fitScale);
+    scale = Math.max(MIN_SCALE, getFitScale());
     centerGrid();
 }
 function centerGrid() {
@@ -379,11 +402,10 @@ function onWheel(e) {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
-    const newScale = Math.max(0.2, Math.min(10, scale * factor));
+    const newScale = Math.max(MIN_SCALE, Math.min(10, scale * factor));
     if (e.deltaY > 0 && userHasTransformed) {
-        const view = getVisibleCanvasArea();
-        const fitScale = Math.min(view.width / (cols * cellSize), view.height / (rows * cellSize)) * 0.97;
-        if (newScale <= Math.max(fitScale, 0.2)) {
+        const minimumScale = Math.max(MIN_SCALE, getFitScale());
+        if (newScale <= minimumScale) {
             userHasTransformed = false;
             fitToWindow();
             scheduleRedraw();
@@ -814,9 +836,12 @@ function clearSettings() {
 }
 function watchToolbarHeight() {
     const toolbar = document.querySelector('.cw-toolbar');
+    const sidebar = document.querySelector('.cw-sidebar');
+    let updatePending = false;
     const update = () => {
         if (toolbar) {
-            document.documentElement.style.setProperty('--toolbar-h', toolbar.offsetHeight + 'px');
+            const toolbarHeight = toolbar.getBoundingClientRect().height;
+            document.documentElement.style.setProperty('--toolbar-h', `${toolbarHeight}px`);
         }
         if (canvas) {
             if (!userHasTransformed)
@@ -826,11 +851,28 @@ function watchToolbarHeight() {
             scheduleRedraw();
         }
     };
+    // Queue measurement after a class change so fixed-pane transitions are
+    // measured at their rendered size. ResizeObserver then tracks each frame
+    // of the transition and content-driven height changes.
+    const queueUpdate = () => {
+        if (updatePending)
+            return;
+        updatePending = true;
+        requestAnimationFrame(() => {
+            updatePending = false;
+            update();
+        });
+    };
+    const resizeObserver = new ResizeObserver(queueUpdate);
     if (toolbar)
-        new ResizeObserver(update).observe(toolbar);
-    const sidebar = document.querySelector('.cw-sidebar');
+        resizeObserver.observe(toolbar);
     if (sidebar)
-        new ResizeObserver(update).observe(sidebar);
+        resizeObserver.observe(sidebar);
+    const mutationObserver = new MutationObserver(queueUpdate);
+    if (toolbar)
+        mutationObserver.observe(toolbar, { attributes: true, attributeFilter: ['class'] });
+    if (sidebar)
+        mutationObserver.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
     update();
 }
 // ── Public API ────────────────────────────────────────────────────────────────

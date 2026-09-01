@@ -19,28 +19,58 @@ function scheduleRedraw(): void {
     });
 }
 
+const MIN_SCALE = 0.001;
+
 function getVisibleCanvasArea(): { left: number; top: number; width: number; height: number } {
     if (!canvas) return { left: 0, top: 0, width: 1, height: 1 };
 
+    const canvasRect = canvas.getBoundingClientRect();
     const toolbar = document.querySelector('.cw-toolbar') as HTMLElement | null;
     const sidebar = document.querySelector('.cw-sidebar') as HTMLElement | null;
-    const toolbarHeight = toolbar?.getBoundingClientRect().height ?? 0;
-    const sidebarWidth =
-        sidebar && !sidebar.classList.contains('cw-collapsed') ? sidebar.getBoundingClientRect().width : 0;
+    const toolbarRect = toolbar?.getBoundingClientRect();
+    const sidebarRect = sidebar?.getBoundingClientRect();
+
+    // The panes are fixed overlays, so convert their rendered rectangles into
+    // canvas-local bounds rather than relying on the canvas being at (0, 0).
+    let top = 0;
+    if (
+        toolbarRect &&
+        toolbarRect.bottom > canvasRect.top &&
+        toolbarRect.top < canvasRect.bottom &&
+        toolbarRect.right > canvasRect.left &&
+        toolbarRect.left < canvasRect.right
+    ) {
+        top = Math.max(0, Math.min(canvasRect.height, toolbarRect.bottom - canvasRect.top));
+    }
+
+    let right = canvasRect.width;
+    if (
+        sidebarRect &&
+        sidebarRect.left < canvasRect.right &&
+        sidebarRect.right > canvasRect.left &&
+        sidebarRect.top < canvasRect.bottom &&
+        sidebarRect.bottom > canvasRect.top
+    ) {
+        right = Math.max(0, Math.min(canvasRect.width, sidebarRect.left - canvasRect.left));
+    }
 
     return {
         left: 0,
-        top: toolbarHeight,
-        width: Math.max(1, canvas.width - sidebarWidth),
-        height: Math.max(1, canvas.height - toolbarHeight),
+        top,
+        width: Math.max(1, right),
+        height: Math.max(1, canvasRect.height - top),
     };
+}
+
+function getFitScale(): number {
+    if (!cols || !rows) return MIN_SCALE;
+    const view = getVisibleCanvasArea();
+    return Math.min(view.width / (cols * cellSize), view.height / (rows * cellSize)) * 0.97;
 }
 
 function fitToWindow(): void {
     if (!canvas || !cols || !rows) return;
-    const view = getVisibleCanvasArea();
-    const fitScale = Math.min(view.width / (cols * cellSize), view.height / (rows * cellSize)) * 0.97;
-    scale = Math.max(0.1, fitScale);
+    scale = Math.max(MIN_SCALE, getFitScale());
     centerGrid();
 }
 

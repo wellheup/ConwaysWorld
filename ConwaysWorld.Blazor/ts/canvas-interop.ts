@@ -259,9 +259,13 @@ function clearSettings(): void {
 
 function watchToolbarHeight(): void {
     const toolbar = document.querySelector('.cw-toolbar') as HTMLElement | null;
+    const sidebar = document.querySelector('.cw-sidebar') as HTMLElement | null;
+    let updatePending = false;
+
     const update = () => {
         if (toolbar) {
-            document.documentElement.style.setProperty('--toolbar-h', toolbar.offsetHeight + 'px');
+            const toolbarHeight = toolbar.getBoundingClientRect().height;
+            document.documentElement.style.setProperty('--toolbar-h', `${toolbarHeight}px`);
         }
         if (canvas) {
             if (!userHasTransformed) fitToWindow();
@@ -269,10 +273,27 @@ function watchToolbarHeight(): void {
             scheduleRedraw();
         }
     };
-    if (toolbar) new ResizeObserver(update).observe(toolbar);
 
-    const sidebar = document.querySelector('.cw-sidebar') as HTMLElement | null;
-    if (sidebar) new ResizeObserver(update).observe(sidebar);
+    // Queue measurement after a class change so fixed-pane transitions are
+    // measured at their rendered size. ResizeObserver then tracks each frame
+    // of the transition and content-driven height changes.
+    const queueUpdate = () => {
+        if (updatePending) return;
+        updatePending = true;
+        requestAnimationFrame(() => {
+            updatePending = false;
+            update();
+        });
+    };
+
+    const resizeObserver = new ResizeObserver(queueUpdate);
+    if (toolbar) resizeObserver.observe(toolbar);
+    if (sidebar) resizeObserver.observe(sidebar);
+
+    const mutationObserver = new MutationObserver(queueUpdate);
+    if (toolbar) mutationObserver.observe(toolbar, { attributes: true, attributeFilter: ['class'] });
+    if (sidebar) mutationObserver.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+
     update();
 }
 

@@ -19,12 +19,11 @@ function onWheel(e: WheelEvent): void {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
-    const newScale = Math.max(0.2, Math.min(10, scale * factor));
+    const newScale = Math.max(MIN_SCALE, Math.min(10, scale * factor));
 
     if (e.deltaY > 0 && userHasTransformed) {
-        const view = getVisibleCanvasArea();
-        const fitScale = Math.min(view.width / (cols * cellSize), view.height / (rows * cellSize)) * 0.97;
-        if (newScale <= Math.max(fitScale, 0.2)) {
+        const minimumScale = Math.max(MIN_SCALE, getFitScale());
+        if (newScale <= minimumScale) {
             userHasTransformed = false;
             fitToWindow();
             scheduleRedraw();
