@@ -272,7 +272,8 @@ public partial class Index
 		_maxNeighbors = s.MaxLivingNeighbors;
 		_birthNeighbors = s.BirthNeighborCount;
 		_stagnationSteps = s.StagnationSteps;
-		_pureConwayMode = s.PureConwayMode;
+		if (s.PureConwayMode)
+			_pureConwayMode = true;
 		// Zero out all weights first so test-case-omitted types default to 0
 		var allKeys = _spawnWeights.Keys.ToList();
 		foreach (var k in allKeys)

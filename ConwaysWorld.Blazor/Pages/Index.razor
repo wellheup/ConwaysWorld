@@ -206,6 +206,13 @@
 								Auto-fit grid to window shape
 							</label>
 						</div>
+						<div class="cw-field cw-field-full"
+							 title="When on, only the core Conway birth, survival, and death rules run.">
+							<label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+								<input type="checkbox" @bind="_pureConwayMode" />
+								Pure Conway mode
+							</label>
+						</div>
 						<div class="cw-field" title="Width of the starting grid in cells (5–300). Larger grids use more CPU.">
 							<label>Start columns</label>
 							<input type="number" min="5" max="300" value="@_startCols" @onchange="OnStartColsChange" />
