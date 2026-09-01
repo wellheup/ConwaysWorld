@@ -259,12 +259,21 @@ function clearSettings(): void {
 
 function watchToolbarHeight(): void {
     const toolbar = document.querySelector('.cw-toolbar') as HTMLElement | null;
-    if (!toolbar) return;
     const update = () => {
-        document.documentElement.style.setProperty('--toolbar-h', toolbar.offsetHeight + 'px');
+        if (toolbar) {
+            document.documentElement.style.setProperty('--toolbar-h', toolbar.offsetHeight + 'px');
+        }
+        if (canvas) {
+            if (!userHasTransformed) fitToWindow();
+            else centerGrid();
+            scheduleRedraw();
+        }
     };
+    if (toolbar) new ResizeObserver(update).observe(toolbar);
+
+    const sidebar = document.querySelector('.cw-sidebar') as HTMLElement | null;
+    if (sidebar) new ResizeObserver(update).observe(sidebar);
     update();
-    new ResizeObserver(update).observe(toolbar);
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────

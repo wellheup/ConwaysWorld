@@ -22,7 +22,8 @@ function onWheel(e: WheelEvent): void {
     const newScale = Math.max(0.2, Math.min(10, scale * factor));
 
     if (e.deltaY > 0 && userHasTransformed) {
-        const fitScale = Math.min(canvas.width / (cols * cellSize), canvas.height / (rows * cellSize)) * 0.97;
+        const view = getVisibleCanvasArea();
+        const fitScale = Math.min(view.width / (cols * cellSize), view.height / (rows * cellSize)) * 0.97;
         if (newScale <= Math.max(fitScale, 0.2)) {
             userHasTransformed = false;
             fitToWindow();

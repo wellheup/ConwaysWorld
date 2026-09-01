@@ -19,17 +19,36 @@ function scheduleRedraw(): void {
     });
 }
 
+function getVisibleCanvasArea(): { left: number; top: number; width: number; height: number } {
+    if (!canvas) return { left: 0, top: 0, width: 1, height: 1 };
+
+    const toolbar = document.querySelector('.cw-toolbar') as HTMLElement | null;
+    const sidebar = document.querySelector('.cw-sidebar') as HTMLElement | null;
+    const toolbarHeight = toolbar?.getBoundingClientRect().height ?? 0;
+    const sidebarWidth =
+        sidebar && !sidebar.classList.contains('cw-collapsed') ? sidebar.getBoundingClientRect().width : 0;
+
+    return {
+        left: 0,
+        top: toolbarHeight,
+        width: Math.max(1, canvas.width - sidebarWidth),
+        height: Math.max(1, canvas.height - toolbarHeight),
+    };
+}
+
 function fitToWindow(): void {
     if (!canvas || !cols || !rows) return;
-    const fitScale = Math.min(canvas.width / (cols * cellSize), canvas.height / (rows * cellSize)) * 0.97;
+    const view = getVisibleCanvasArea();
+    const fitScale = Math.min(view.width / (cols * cellSize), view.height / (rows * cellSize)) * 0.97;
     scale = Math.max(0.1, fitScale);
     centerGrid();
 }
 
 function centerGrid(): void {
     if (!canvas) return;
-    tx = (canvas.width - cols * cellSize * scale) / 2;
-    ty = (canvas.height - rows * cellSize * scale) / 2;
+    const view = getVisibleCanvasArea();
+    tx = view.left + (view.width - cols * cellSize * scale) / 2;
+    ty = view.top + (view.height - rows * cellSize * scale) / 2;
 }
 
 function drawCell(

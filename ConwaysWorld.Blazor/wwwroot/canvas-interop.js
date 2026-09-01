@@ -112,18 +112,35 @@ function scheduleRedraw() {
         drawFrame();
     });
 }
+function getVisibleCanvasArea() {
+    var _a;
+    if (!canvas)
+        return { left: 0, top: 0, width: 1, height: 1 };
+    const toolbar = document.querySelector('.cw-toolbar');
+    const sidebar = document.querySelector('.cw-sidebar');
+    const toolbarHeight = (_a = toolbar === null || toolbar === void 0 ? void 0 : toolbar.getBoundingClientRect().height) !== null && _a !== void 0 ? _a : 0;
+    const sidebarWidth = sidebar && !sidebar.classList.contains('cw-collapsed') ? sidebar.getBoundingClientRect().width : 0;
+    return {
+        left: 0,
+        top: toolbarHeight,
+        width: Math.max(1, canvas.width - sidebarWidth),
+        height: Math.max(1, canvas.height - toolbarHeight),
+    };
+}
 function fitToWindow() {
     if (!canvas || !cols || !rows)
         return;
-    const fitScale = Math.min(canvas.width / (cols * cellSize), canvas.height / (rows * cellSize)) * 0.97;
+    const view = getVisibleCanvasArea();
+    const fitScale = Math.min(view.width / (cols * cellSize), view.height / (rows * cellSize)) * 0.97;
     scale = Math.max(0.1, fitScale);
     centerGrid();
 }
 function centerGrid() {
     if (!canvas)
         return;
-    tx = (canvas.width - cols * cellSize * scale) / 2;
-    ty = (canvas.height - rows * cellSize * scale) / 2;
+    const view = getVisibleCanvasArea();
+    tx = view.left + (view.width - cols * cellSize * scale) / 2;
+    ty = view.top + (view.height - rows * cellSize * scale) / 2;
 }
 function drawCell(px, py, cs, type, nat, nationColors, col, row) {
     var _a;
@@ -364,7 +381,8 @@ function onWheel(e) {
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
     const newScale = Math.max(0.2, Math.min(10, scale * factor));
     if (e.deltaY > 0 && userHasTransformed) {
-        const fitScale = Math.min(canvas.width / (cols * cellSize), canvas.height / (rows * cellSize)) * 0.97;
+        const view = getVisibleCanvasArea();
+        const fitScale = Math.min(view.width / (cols * cellSize), view.height / (rows * cellSize)) * 0.97;
         if (newScale <= Math.max(fitScale, 0.2)) {
             userHasTransformed = false;
             fitToWindow();
@@ -796,13 +814,24 @@ function clearSettings() {
 }
 function watchToolbarHeight() {
     const toolbar = document.querySelector('.cw-toolbar');
-    if (!toolbar)
-        return;
     const update = () => {
-        document.documentElement.style.setProperty('--toolbar-h', toolbar.offsetHeight + 'px');
+        if (toolbar) {
+            document.documentElement.style.setProperty('--toolbar-h', toolbar.offsetHeight + 'px');
+        }
+        if (canvas) {
+            if (!userHasTransformed)
+                fitToWindow();
+            else
+                centerGrid();
+            scheduleRedraw();
+        }
     };
+    if (toolbar)
+        new ResizeObserver(update).observe(toolbar);
+    const sidebar = document.querySelector('.cw-sidebar');
+    if (sidebar)
+        new ResizeObserver(update).observe(sidebar);
     update();
-    new ResizeObserver(update).observe(toolbar);
 }
 // ── Public API ────────────────────────────────────────────────────────────────
 window.ConwaysInterop = {
